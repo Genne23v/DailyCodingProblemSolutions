@@ -3,9 +3,12 @@ import java.util.HashSet;
 import java.util.Arrays;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.Random;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Stack;
 import java.util.Collections;
+import java.util.HashMap;
 
 public class QuestionsAndSolutions {
     // S1.
@@ -21,17 +24,17 @@ public class QuestionsAndSolutions {
     }
 
     // S2.
-    class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
+    static class TreeNode<T> {
+        T val;
+        TreeNode<T> left;
+        TreeNode<T> right;
 
-        TreeNode(int val) {
+        TreeNode(T val) {
             this.val = val;
         }
     }
 
-    class Tuple {
+    static class Tuple {
         boolean isUnival;
         int value;
         int count;
@@ -43,12 +46,12 @@ public class QuestionsAndSolutions {
         }
     }
 
-    class UnivalTreeCount {
-        public int countUnivalSubtrees(TreeNode root) {
+    static class UnivalTreeCount {
+        public int countUnivalSubtrees(TreeNode<Integer> root) {
             return helper(root).count;
         }
 
-        private Tuple helper(TreeNode node) {
+        private Tuple helper(TreeNode<Integer> node) {
             if (node == null) {
                 return new Tuple(true, 0, 0);
             }
@@ -80,7 +83,7 @@ public class QuestionsAndSolutions {
     }
 
     // S3.
-    class ListNode {
+    static class ListNode {
         int val;
         ListNode next;
 
@@ -89,7 +92,7 @@ public class QuestionsAndSolutions {
         }
     }
 
-    class LinkedListIntersection {
+    static class LinkedListIntersection {
         public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
             int lengthA = getLength(headA);
             int lengthB = getLength(headB);
@@ -131,7 +134,7 @@ public class QuestionsAndSolutions {
     }
 
     // S4.
-    class MinimumRooms {
+    static class MinimumRooms {
         public int minMeetingRooms(int[][] intervals) {
             if (intervals == null || intervals.length == 0) {
                 return 0;
@@ -163,7 +166,7 @@ public class QuestionsAndSolutions {
     }
 
     // S5.
-    class Cell {
+    static class Cell {
         int row;
         int col;
 
@@ -173,7 +176,7 @@ public class QuestionsAndSolutions {
         }
     }
 
-    class Node {
+    static class Node {
         Cell cell;
         int dist;
         Node parent;
@@ -185,7 +188,7 @@ public class QuestionsAndSolutions {
         }
     }
 
-    class MatrixPathFinder {
+    static class MatrixPathFinder {
         public Integer findShortestPath(boolean[][] board, Cell start, Cell end) {
             int m = board.length;
             int n = board[0].length;
@@ -244,7 +247,7 @@ public class QuestionsAndSolutions {
     }
 
     // S7.
-    class BracketChecker {
+    static class BracketChecker {
         public boolean isBalanced(String str) {
             Stack<Character> stack = new Stack<>();
             for (char ch : str.toCharArray()) {
@@ -265,7 +268,7 @@ public class QuestionsAndSolutions {
     }
 
     // S8.
-    class RunLengthEncoderDecoder {
+    static class RunLengthEncoderDecoder {
         public String encode(String input) {
             StringBuilder sb = new StringBuilder();
             int count = 1;
@@ -328,7 +331,7 @@ public class QuestionsAndSolutions {
     }
 
     // S10.
-    class RunningMedian {
+    static class RunningMedian {
         private PriorityQueue<Integer> maxHeap;
         private PriorityQueue<Integer> minHeap;
 
@@ -367,8 +370,144 @@ public class QuestionsAndSolutions {
         }
     }
 
+    // S11.
+    class PowerSet {
+        public static Set<Set<Integer>> generatePowerSet(Set<Integer> set) {
+            Set<Set<Integer>> powerSet = new HashSet<>();
+            powerSet.add(new HashSet<>());
+
+            for (int element : set) {
+                Set<Set<Integer>> newSubsets = new HashSet<>(); // Each iteration returns new Sets with element
+                for (Set<Integer> subset : powerSet) {
+                    Set<Integer> newSubset = new HashSet<>(subset);
+                    newSubset.add(element); // Additional Set with new element
+                    newSubsets.add(newSubset);
+                }
+                powerSet.addAll(newSubsets);
+            }
+
+            return powerSet;
+        }
+    }
+
+    // S12.
+    static class MaxStack {
+        // Additional stack to manage max value
+        private Stack<Integer> stack;
+        private Stack<Integer> maxStack;
+
+        public MaxStack() {
+            stack = new Stack<>();
+            maxStack = new Stack<>();
+        }
+
+        public void push(int val) {
+            stack.push(val);
+            if (maxStack.isEmpty() || val >= maxStack.peek()) {
+                maxStack.push(val);
+            }
+        }
+
+        public int pop() {
+            if (stack.isEmpty()) {
+                throw new RuntimeException("Stack is empty");
+            }
+            int val = stack.pop();
+            if (val == maxStack.peek()) {
+                maxStack.pop();
+            }
+            return val;
+        }
+
+        public int max() {
+            if (maxStack.isEmpty()) {
+                throw new RuntimeException("Stack is empty");
+            }
+            return maxStack.peek();
+        }
+    }
+
+    // S13.
+    public static int maxProfit(int[] prices) {
+        if (prices == null || prices.length < 2) {
+            return 0;
+        }
+        int minPrice = prices[0];
+        int maxProfit = 0;
+        for (int i = 1; i < prices.length; i++) {
+            maxProfit = Math.max(maxProfit, prices[i] - minPrice);
+            minPrice = Math.min(minPrice, prices[i]);
+        }
+        return maxProfit;
+    }
+
+    // S14.
+    public static int evaluate(TreeNode<Character> root) {
+        if (root == null) {
+            return 0;
+        }
+        if (root.left == null && root.right == null) {
+            return Character.getNumericValue(root.val); // leaf node
+        }
+        int leftValue = evaluate(root.left);
+        int rightValue = evaluate(root.right);
+        switch (root.val) {
+            case '+':
+                return leftValue + rightValue;
+            case '-':
+                return leftValue - rightValue;
+            case '*':
+                return leftValue * rightValue;
+            case '/':
+                return leftValue / rightValue;
+            default:
+                throw new IllegalArgumentException("Invalid operator: " + root.val);
+        }
+    }
+
+    // S15.
+    static class UrlShortener {
+        private Map<String, String> urlsToKeys;
+        private Map<String, String> keysToUrls;
+        private static final String BASE_URL = "https://example.com/";
+
+        public UrlShortener() {
+            urlsToKeys = new HashMap<>();
+            keysToUrls = new HashMap<>();
+        }
+
+        public String shorten(String url) {
+            if (urlsToKeys.containsKey(url)) {
+                return BASE_URL + urlsToKeys.get(url);
+            }
+            String key = generateKey();
+            urlsToKeys.put(url, key);
+            keysToUrls.put(key, url);
+            return BASE_URL + key;
+        }
+
+        public String restore(String shortUrl) {
+            String key = shortUrl.substring(BASE_URL.length());
+            if (keysToUrls.containsKey(key)) {
+                return keysToUrls.get(key);
+            }
+            return null;
+        }
+
+        private String generateKey() {
+            String key = "";
+            String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            Random random = new Random();
+            for (int i = 0; i < 6; i++) {
+                key += characters.charAt(random.nextInt(characters.length()));
+            }
+            return key;
+        }
+    }
+
     public static void main(String[] args) {
         /*
+         * Q1.
          * Given a list of numbers and a number k, return whether any two numbers from
          * the list add up to k.
          * For example, given [10, 15, 3, 7] and k of 17, return true since 10 + 7 is
@@ -382,6 +521,7 @@ public class QuestionsAndSolutions {
         System.out.print(result);
 
         /*
+         * Q2.
          * A unival tree (which stands for "universal value") is a tree where all nodes
          * under it have the same value.
          * Given the root to a binary tree, count the number of unival subtrees.
@@ -394,19 +534,20 @@ public class QuestionsAndSolutions {
          * "    / \      "
          * "   1   1     "
          */
-        TreeNode root = new TreeNode(0);
-        root.left = new TreeNode(1);
-        root.right = new TreeNode(0);
-        root.right.left = new TreeNode(1);
-        root.right.right = new TreeNode(0);
-        root.right.left.left = new TreeNode(1);
-        root.right.left.right = new TreeNode(1);
+        TreeNode<Integer> root = new TreeNode<Integer>(0);
+        root.left = new TreeNode<Integer>(1);
+        root.right = new TreeNode<Integer>(0);
+        root.right.left = new TreeNode<Integer>(1);
+        root.right.right = new TreeNode<Integer>(0);
+        root.right.left.left = new TreeNode<Integer>(1);
+        root.right.left.right = new TreeNode<Integer>(1);
 
         UnivalTreeCount univalTreeCount = new UnivalTreeCount();
         System.out.print("Unival Tree Count: ");
         System.out.println(univalTreeCount.countUnivalSubtrees(root));
 
         /*
+         * Q3.
          * Given two singly linked lists that intersect at some point, find the
          * intersecting node. The lists are non-cyclical.
          * For example, given A = 3 -> 7 -> 8 -> 10 and B = 99 -> 1 -> 8 -> 10, return
@@ -432,6 +573,7 @@ public class QuestionsAndSolutions {
         System.out.println(intersection.val);
 
         /*
+         * Q4.
          * Given an array of time intervals (start, end) for classroom lectures
          * (possibly overlapping), find the minimum number of rooms required.
          * For example, given [(30, 75), (0, 50), (60, 150)], you should return 2.
@@ -444,6 +586,7 @@ public class QuestionsAndSolutions {
         System.out.println(numRooms);
 
         /*
+         * Q5.
          * You are given an M by N matrix consisting of booleans that represents a
          * board. Each True boolean represents a wall. Each False boolean represents a
          * tile you can walk on.
@@ -477,6 +620,7 @@ public class QuestionsAndSolutions {
         }
 
         /*
+         * Q6.
          * You run an e-commerce website and want to record the last N order ids in a
          * log. Implement a data structure to accomplish this, with the following API:
          * record(order_id): adds the order_id to the log
@@ -488,6 +632,7 @@ public class QuestionsAndSolutions {
         // Solution implemented in S6 OrderLog class
 
         /*
+         * Q7.
          * Given a string of round, curly, and square open and closing brackets, return
          * whether the brackets are balanced (well-formed).
          * For example, given the string "([])[]({})", you should return true.
@@ -503,6 +648,7 @@ public class QuestionsAndSolutions {
         System.out.println(bracketChecker.isBalanced(str3));
 
         /*
+         * Q8.
          * Run-length encoding is a fast and simple method of encoding strings. The
          * basic idea is to represent repeated successive characters as a single count
          * and character. For example, the string "AAAABBBCCDAA" would be encoded as
@@ -519,6 +665,7 @@ public class QuestionsAndSolutions {
         System.out.println("Decoded string: " + decoded);
 
         /*
+         * Q9.
          * The edit distance between two strings refers to the minimum number of
          * character insertions, deletions, and substitutions required to change one
          * string to the other. For example, the edit distance between “kitten” and
@@ -544,6 +691,7 @@ public class QuestionsAndSolutions {
         System.out.println(editDistanceOfTwoStrings);
 
         /*
+         * Q10.
          * Compute the running median of a sequence of numbers. That is, given a stream
          * of numbers, print out the median of the list so far on each new element.
          * Recall that the median of an even-numbered list is the average of the two
@@ -573,5 +721,86 @@ public class QuestionsAndSolutions {
         System.out.println(rm.getMedian());
         rm.addNumber(5);
         System.out.println(rm.getMedian());
+
+        /*
+         * Q11.
+         * The power set of a set is the set of all its subsets. Write a function that,
+         * given a set, generates its power set.
+         * For example, given the set {1, 2, 3}, it should return {{}, {1}, {2}, {3},
+         * {1, 2}, {1, 3}, {2, 3}, {1, 2, 3}}.
+         * You may also use a list or array to represent a set.
+         */
+        Set<Integer> set = new HashSet<>(Arrays.asList(1, 2, 3));
+        Set<Set<Integer>> powerSet = PowerSet.generatePowerSet(set);
+        System.out.println(powerSet);
+
+        /*
+         * Q12.
+         * Implement a stack that has the following methods:
+         * push(val), which pushes an element onto the stack
+         * pop(), which pops off and returns the topmost element of the stack. If there
+         * are no elements in the stack, then it should throw an error or return null.
+         * max(), which returns the maximum value in the stack currently. If there are
+         * no elements in the stack, then it should throw an error or return null.
+         * Each method should run in constant time.
+         */
+        MaxStack stack = new MaxStack();
+        stack.push(3);
+        stack.push(1);
+        stack.push(5);
+        System.out.println(stack.max()); // should print 5
+        System.out.println(stack.pop()); // should print 5
+        System.out.println(stack.max()); // should print 3
+
+        /*
+         * Q13.
+         * Given a array of numbers representing the stock prices of a company in
+         * chronological order, write a function that calculates the maximum profit you
+         * could have made from buying and selling that stock once. You must buy before
+         * you can sell it.
+         * For example, given [9, 11, 8, 5, 7, 10], you should return 5, since you could
+         * buy the stock at 5 dollars and sell it at 10 dollars.
+         */
+        int[] stockHistory = { 9, 11, 8, 5, 7, 10 };
+        int maxProfit = maxProfit(stockHistory);
+        System.out.print("Max profit: ");
+        System.out.println(maxProfit);
+
+        /*
+         * Q14.
+         * Suppose an arithmetic expression is given as a binary tree. Each leaf is an
+         * integer and each internal node is one of '+', '−', '∗', or '/'.
+         * Given the root to such a tree, write a function to evaluate it.
+         * For example, given the following tree:
+         * "    *      "
+         * "   / \     "
+         * "  +    +   "
+         * " / \  / \  "
+         * "3  2  4  5 "
+         * You should return 45, as it is (3 + 2) * (4 + 5).
+         */
+        TreeNode<Character> arithmeticExpTree = new TreeNode<Character>('*');
+        arithmeticExpTree.left = new TreeNode<Character>('+');
+        arithmeticExpTree.right = new TreeNode<Character>('+');
+        arithmeticExpTree.left.left = new TreeNode<Character>('3');
+        arithmeticExpTree.left.right = new TreeNode<Character>('2');
+        arithmeticExpTree.right.left = new TreeNode<Character>('4');
+        arithmeticExpTree.right.right = new TreeNode<Character>('5');
+        int arithmeticExpTreeResult = evaluate(arithmeticExpTree);
+        System.out.println(arithmeticExpTreeResult);
+
+        /*
+         * Q15.
+         * Implement a URL shortener with the following methods:
+         * shorten(url), which shortens the url into a six-character alphanumeric
+         * string, such as zLg6wl.
+         * restore(short), which expands the shortened string into the original url. If
+         * no such shortened string exists, return null.
+         * Hint: What if we enter the same URL twice?
+         */
+        String url = "";
+        UrlShortener urlShortener = new UrlShortener();
+        String shortenedUrl = urlShortener.shorten(url);
+        System.out.println(shortenedUrl);
     }
 }
