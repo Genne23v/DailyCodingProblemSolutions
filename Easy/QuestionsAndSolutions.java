@@ -505,6 +505,145 @@ public class QuestionsAndSolutions {
         }
     }
 
+    // S16.
+    public static boolean isWordPresent(char[][] matrix, String target) {
+        int rows = matrix.length;
+        int cols = matrix[0].length;
+
+        for (int i = 0; i < rows; i++) {
+            String rowStr = new String(matrix[i]);
+            if (rowStr.contains(target)) {
+                return true;
+            }
+        }
+
+        for (int j = 0; j < cols; j++) {
+            StringBuilder colStrBuilder = new StringBuilder();
+            for (int i = 0; i < rows; i++) {
+                colStrBuilder.append(matrix[i][j]);
+            }
+            String colStr = colStrBuilder.toString();
+            if (colStr.contains(target)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // S17.
+    public static void printMatrixInSpiralOrder(int[][] matrix) {
+        int rows = matrix.length;
+        int cols = matrix[0].length;
+        int topRow = 0, bottomRow = rows - 1, leftCol = 0, rightCol = cols - 1;
+
+        while (topRow <= bottomRow && leftCol <= rightCol) {
+            for (int j = leftCol; j <= rightCol; j++) {
+                System.out.println(matrix[topRow][j]);
+            }
+            topRow++;
+
+            for (int i = topRow; i <= bottomRow; i++) {
+                System.out.println(matrix[i][rightCol]);
+            }
+            rightCol--;
+
+            if (topRow <= bottomRow) {
+                for (int j = rightCol; j >= leftCol; j--) {
+                    System.out.println(matrix[bottomRow][j]);
+                }
+                bottomRow--;
+            }
+
+            if (leftCol <= rightCol) {
+                for (int i = bottomRow; i >= topRow; i--) {
+                    System.out.println(matrix[i][leftCol]);
+                }
+                leftCol++;
+            }
+        }
+    }
+
+    // S18.
+    public static int largestProductOfThree(int[] nums) {
+        int n = nums.length;
+        int largest1 = Integer.MIN_VALUE, largest2 = Integer.MIN_VALUE, largest3 = Integer.MIN_VALUE;
+        int smallest1 = Integer.MAX_VALUE, smallest2 = Integer.MAX_VALUE;
+
+        // Find the three largest and two smallest numbers in case two smallest numbers
+        // are negative
+        for (int i = 0; i < n; i++) {
+            int num = nums[i];
+            if (num > largest1) {
+                largest3 = largest2;
+                largest2 = largest1;
+                largest1 = num;
+            } else if (num > largest2) {
+                largest3 = largest2;
+                largest2 = num;
+            } else if (num > largest3) {
+                largest3 = num;
+            }
+
+            if (num < smallest1) {
+                smallest2 = smallest1;
+                smallest1 = num;
+            } else if (num < smallest2) {
+                smallest2 = num;
+            }
+        }
+
+        return Math.max(largest1 * largest2 * largest3, largest1 * smallest1 * smallest2);
+    }
+
+    // S19.
+    public static int nthPerfectNumber(int n) {
+        int count = 0;
+        int num = 19;
+
+        while (count < n) {
+            int sum = 0;
+            int temp = num;
+
+            // Sum up the digits of the current number
+            while (temp > 0) {
+                sum += temp % 10;
+                temp /= 10;
+            }
+
+            // If the sum is 10, increment the count
+            if (sum == 10) {
+                count++;
+            }
+
+            // If we've found the nth perfect number, return it
+            if (count == n) {
+                return num;
+            }
+
+            // Otherwise, move on to the next number
+            num += 9;
+        }
+
+        // This line is unreachable, but required by Java
+        return -1;
+    }
+
+    // S20.
+    public static ListNode reverseList(ListNode head) {
+        ListNode prev = null;
+        ListNode current = head;
+        ListNode next = null;
+
+        while (current != null) {
+            next = current.next;
+            current.next = prev;
+            prev = current;
+            current = next;
+        }
+
+        return prev;
+    }
+
     public static void main(String[] args) {
         /*
          * Q1.
@@ -798,9 +937,108 @@ public class QuestionsAndSolutions {
          * no such shortened string exists, return null.
          * Hint: What if we enter the same URL twice?
          */
-        String url = "";
+        String url = "user/create-order";
         UrlShortener urlShortener = new UrlShortener();
         String shortenedUrl = urlShortener.shorten(url);
         System.out.println(shortenedUrl);
+        String restoredUrl = urlShortener.restore(shortenedUrl);
+        System.out.println(restoredUrl);
+
+        /*
+         * Q16.
+         * Given a 2D matrix of characters and a target word, write a function that
+         * returns whether the word can be found in the matrix by going left-to-right,
+         * or up-to-down.
+         * For example, given the following matrix:
+         * [['F', 'A', 'C', 'I'],
+         * ['O', 'B', 'Q', 'P'],
+         * ['A', 'N', 'O', 'B'],
+         * ['M', 'A', 'S', 'S']]
+         * and the target word 'FOAM', you should return true, since it's the leftmost
+         * column. Similarly, given the target word 'MASS', you should return true,
+         * since it's the last row.
+         */
+        char[][] matrix = { { 'F', 'A', 'C', 'I' }, { 'O', 'B', 'Q', 'P' }, { 'A', 'N', 'O', 'B' },
+                { 'M', 'A', 'S', 'S' } };
+        String target = "FOAM";
+        boolean isPresent = isWordPresent(matrix, target);
+        System.out.println(isPresent);
+
+        target = "MASS";
+        isPresent = isWordPresent(matrix, target);
+        System.out.println(isPresent);
+
+        /*
+         * Q17.
+         * Given a N by M matrix of numbers, print out the matrix in a clockwise spiral.
+         * For example, given the following matrix:
+         * [[1, 2, 3, 4, 5],
+         * [6, 7, 8, 9, 10],
+         * [11, 12, 13, 14, 15],
+         * [16, 17, 18, 19, 20]]
+         * You should print out the following:
+         * 1
+         * 2
+         * 3
+         * 4
+         * 5
+         * 10
+         * 15
+         * 20
+         * 19
+         * 18
+         * 17
+         * 16
+         * 11
+         * 6
+         * 7
+         * 8
+         * 9
+         * 14
+         * 13
+         * 12
+         */
+        int[][] matrixForSpiralPrint = { { 1, 2, 3, 4, 5 }, { 6, 7, 8, 9, 10 }, { 11, 12, 13, 14, 15 },
+                { 16, 17, 18, 19, 20 } };
+        printMatrixInSpiralOrder(matrixForSpiralPrint);
+
+        /*
+         * Q18.
+         * Given a list of integers, return the largest product that can be made by
+         * multiplying any three integers.
+         * For example, if the list is [-10, -10, 5, 2], we should return 500, since
+         * that's -10 * -10 * 5.
+         * You can assume the list has at least three integers.
+         */
+        int[] listOfIntegers = { -10, -10, 5, 2 };
+        int largestProduct = largestProductOfThree(listOfIntegers);
+        System.out.println(largestProduct);
+
+        /*
+         * Q19.
+         * A number is considered perfect if its digits sum up to exactly 10.
+         * Given a positive integer n, return the n-th perfect number.
+         * For example, given 1, you should return 19. Given 2, you should return 28.
+         */
+        int n = 1;
+        int nthPerfectNumber = nthPerfectNumber(n);
+        System.out.println(nthPerfectNumber);
+
+        /*
+         * Q20.
+         * Given the head of a singly linked list, reverse it in-place.
+         */
+        ListNode head = new ListNode(1);
+        head.next = new ListNode(2);
+        head.next.next = new ListNode(3);
+
+        ListNode reversed = reverseList(head);
+
+        while (reversed != null) {
+            System.out.print(reversed.val + " -> ");
+            reversed = reversed.next;
+        }
+        System.out.print("null");
+
     }
 }
