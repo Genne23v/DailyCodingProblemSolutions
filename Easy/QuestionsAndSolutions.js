@@ -589,6 +589,32 @@ console.log(`Median: ${runningMedian.getMedian()}\n`);
  * {1, 2}, {1, 3}, {2, 3}, {1, 2, 3}}.
  * You may also use a list or array to represent a set.
  */
+function generatePowerSet(set) {
+    let powerSet = [];
+    powerSet.push([]);
+
+    for (const element of set) {
+        // Each iteration returns new Sets with element
+        let newSubsets = [];
+        for (const subset of powerSet) {
+            let newSubset = [];
+            newSubset = JSON.parse(JSON.stringify(subset));
+            // Additional Set with new element
+            newSubset.push(element);
+            newSubsets.push(newSubset);
+        }
+        // console.log(powerSet, newSubsets);
+        powerSet = powerSet.concat(newSubsets);
+    }
+    return powerSet;
+}
+
+console.log('========= Q11 =========');
+const set = [1, 2, 3];
+const powerSet = generatePowerSet(set);
+console.log(`Power sets: `);
+console.log(powerSet);
+console.log(`\n`);
 
 /*
  * Q12.
@@ -600,6 +626,49 @@ console.log(`Median: ${runningMedian.getMedian()}\n`);
  * no elements in the stack, then it should throw an error or return null.
  * Each method should run in constant time.
  */
+class MaxStack {
+    #stack = [];
+    #maxStack = [];
+
+    push(val) {
+        this.#stack.push(val);
+        if (
+            this.#maxStack.length === 0 ||
+            val >= this.#maxStack[this.#maxStack.length - 1]
+        ) {
+            this.#maxStack.push(val);
+        }
+    }
+
+    pop() {
+        if (this.#stack.length === 0) {
+            throw new Error('Stack is empty');
+        }
+
+        const val = this.#stack.pop();
+        if (val === this.#maxStack[this.#maxStack.length - 1]) {
+            this.#maxStack.pop();
+        }
+        return val;
+    }
+
+    max() {
+        if (this.#maxStack.length === 0) {
+            throw new Error('Stack is empty');
+        }
+        return this.#maxStack[this.#maxStack.length - 1];
+    }
+}
+
+console.log('========= Q12 =========');
+const maxStack = new MaxStack();
+maxStack.push(3);
+maxStack.push(1);
+maxStack.push(5);
+console.log(maxStack.max());
+console.log(maxStack.pop());
+console.log(maxStack.max());
+console.log('\n');
 
 /*
  * Q13.
@@ -610,6 +679,23 @@ console.log(`Median: ${runningMedian.getMedian()}\n`);
  * For example, given [9, 11, 8, 5, 7, 10], you should return 5, since you could
  * buy the stock at 5 dollars and sell it at 10 dollars.
  */
+function maxProfit(prices) {
+    if (prices === null || prices.length < 2) return 0;
+
+    let minPrice = prices[0];
+    let maxProfit = 0;
+    for (let i = 1; i < prices.length; i++) {
+        maxProfit = Math.max(maxProfit, prices[i] - minPrice);
+        minPrice = Math.min(minPrice, prices[i]);
+    }
+
+    return maxProfit;
+}
+
+console.log('========= Q13 =========');
+const stockHistory = [9, 11, 8, 5, 7, 10];
+const maximumProfit = maxProfit(stockHistory);
+console.log(`Max profit: ${maximumProfit}\n`);
 
 /*
  * Q14.
@@ -624,6 +710,41 @@ console.log(`Median: ${runningMedian.getMedian()}\n`);
  * "3  2  4  5 "
  * You should return 45, as it is (3 + 2) * (4 + 5).
  */
+function evaluate(root) {
+    if (root === null) {
+        return 0;
+    }
+
+    if (!root.left && !root.right) {
+        return parseInt(root.val, 10);
+    }
+
+    const leftValue = evaluate(root.left);
+    const rightValue = evaluate(root.right);
+    switch (root.val) {
+        case '+':
+            return leftValue + rightValue;
+        case '-':
+            return leftValue - rightValue;
+        case '*':
+            return leftValue * rightValue;
+        case '/':
+            return leftValue / rightValue;
+        default:
+            throw new Error(`Invalid operator: ${root.val}`);
+    }
+}
+
+console.log('========= Q14 =========');
+const arithmeticExpTree = new TreeNode('*');
+arithmeticExpTree.left = new TreeNode('+');
+arithmeticExpTree.right = new TreeNode('+');
+arithmeticExpTree.left.left = new TreeNode('3');
+arithmeticExpTree.left.right = new TreeNode('2');
+arithmeticExpTree.right.left = new TreeNode('4');
+arithmeticExpTree.right.right = new TreeNode('5');
+const arithmeticExpTreeResult = evaluate(arithmeticExpTree);
+console.log(`Arithmetic tree evaluation: ${arithmeticExpTreeResult}\n`);
 
 /*
  * Q15.
@@ -634,6 +755,48 @@ console.log(`Median: ${runningMedian.getMedian()}\n`);
  * no such shortened string exists, return null.
  * Hint: What if we enter the same URL twice?
  */
+class UrlShortener {
+    #urlsToKeys = {};
+    #keysToUrls = {};
+    #BASE_URL = 'https://example.com/';
+
+    shorten(url) {
+        if (Object.keys(this.#urlsToKeys).includes(url)) {
+            return this.#BASE_URL + this.#urlsToKeys[url];
+        }
+
+        const key = this.generateKey();
+        this.#urlsToKeys[url] = key;
+        this.#keysToUrls[key] = url;
+        return this.#BASE_URL + key;
+    }
+
+    restore(shortUrl) {
+        const key = shortUrl.substring(this.#BASE_URL.length);
+        if (Object.keys(this.#keysToUrls).includes(key)) {
+            return this.#keysToUrls[key];
+        }
+        return null;
+    }
+
+    generateKey() {
+        let key = '';
+        const characters =
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        for (let i = 0; i < 6; i++) {
+            key += characters[Math.floor(Math.random() * characters.length)];
+        }
+        return key;
+    }
+}
+
+console.log('========= Q15 =========');
+const url = 'user/create-order';
+const urlShortener = new UrlShortener();
+const shortenedUrl = urlShortener.shorten(url);
+console.log(`Shortened URL: ${shortenedUrl}`);
+const restoredUrl = urlShortener.restore(shortenedUrl);
+console.log(`Restored URL: ${restoredUrl}\n`);
 
 /*
  * Q16.
@@ -649,6 +812,39 @@ console.log(`Median: ${runningMedian.getMedian()}\n`);
  * column. Similarly, given the target word 'MASS', you should return true,
  * since it's the last row.
  */
+function isWordPresent(matrix, target) {
+    const rows = matrix.length;
+    const cols = matrix[0].length;
+
+    for (let i = 0; i < rows; i++) {
+        const rowStr = matrix[i];
+        if (rowStr.includes(target)) {
+            return true;
+        }
+    }
+
+    for (let j = 0; j < cols; j++) {
+        let colStr = '';
+        for (let i = 0; i < rows; i++) {
+            colStr += matrix[i][j];
+        }
+        if (colStr.includes(target)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+console.log('========= Q16 =========');
+const matrix = [
+    ['F', 'A', 'C', 'I'],
+    ['O', 'B', 'Q', 'P'],
+    ['A', 'N', 'O', 'B'],
+    ['M', 'A', 'S', 'S'],
+];
+const target = 'FOAM';
+const isPresent = isWordPresent(matrix, target);
+console.log(`Is ${target} present in the matrix: ${isPresent}\n`);
 
 /*
  * Q17.
@@ -680,6 +876,50 @@ console.log(`Median: ${runningMedian.getMedian()}\n`);
  * 13
  * 12
  */
+function printMatrixInSpiralOrder(matrix) {
+    const rows = matrix.length;
+    const cols = matrix[0].length;
+    let topRow = 0,
+        bottomRow = rows - 1,
+        leftCol = 0,
+        rightCol = cols - 1;
+
+    while (topRow <= bottomRow && leftCol <= rightCol) {
+        for (let j = leftCol; j <= rightCol; j++) {
+            console.log(matrix[topRow][j]);
+        }
+        topRow++;
+
+        for (let i = topRow; i <= bottomRow; i++) {
+            console.log(matrix[i][rightCol]);
+        }
+        rightCol--;
+
+        if (topRow <= bottomRow) {
+            for (let j = rightCol; j >= leftCol; j--) {
+                console.log(matrix[bottomRow][j]);
+            }
+            bottomRow--;
+        }
+
+        if (leftCol <= rightCol) {
+            for (let i = bottomRow; i >= topRow; i--) {
+                console.log(matrix[i][leftCol]);
+            }
+            leftCol++;
+        }
+    }
+}
+
+console.log('========= Q17 =========');
+const matrixForSpiralPrint = [
+    [1, 2, 3, 4, 5],
+    [6, 7, 8, 9, 10],
+    [11, 12, 13, 14, 15],
+    [16, 17, 18, 19, 20],
+];
+printMatrixInSpiralOrder(matrixForSpiralPrint);
+console.log('\n');
 
 /*
  * Q18.
@@ -689,6 +929,46 @@ console.log(`Median: ${runningMedian.getMedian()}\n`);
  * that's -10 * -10 * 5.
  * You can assume the list has at least three integers.
  */
+function largestProductOfThree(nums) {
+    const n = nums.length;
+    let largest1 = -9999,
+        largest2 = -9999,
+        largest3 = -9999;
+    let smallest1 = 9999,
+        smallest2 = 9999;
+
+    for (let i = 0; i < n; i++) {
+        const num = nums[i];
+        if (num > largest1) {
+            largest3 = largest2;
+            largest2 = largest1;
+            largest1 = num;
+        } else if (num > largest2) {
+            largest3 = largest2;
+            largest2 = num;
+        } else if (num > largest3) {
+            largest3 = num;
+        }
+
+        if (num < smallest1) {
+            smallest2 = smallest1;
+            smallest1 = num;
+        } else if (num < smallest2) {
+            smallest2 = num;
+        }
+    }
+    return Math.max(
+        largest1 * largest2 * largest3,
+        largest1 * smallest1 * smallest2
+    );
+}
+
+console.log('========= Q18 =========');
+const listOfIntegers = [-10, -10, 5, 2];
+const largestProduct = largestProductOfThree(listOfIntegers);
+console.log(
+    `The largest product from multiplying three numbers in the array: ${largestProduct}\n`
+);
 
 /*
  * Q19.
@@ -696,8 +976,66 @@ console.log(`Median: ${runningMedian.getMedian()}\n`);
  * Given a positive integer n, return the n-th perfect number.
  * For example, given 1, you should return 19. Given 2, you should return 28.
  */
+function nthPerfectNumber(n) {
+    let count = 0;
+    let num = 19;
+
+    while (count < n) {
+        let sum = 0;
+        let temp = num;
+
+        while (temp > 0) {
+            sum += temp % 10;
+            temp = Math.floor(temp / 10);
+        }
+
+        if (sum === 10) {
+            count++;
+        }
+
+        if (count === n) {
+            return num;
+        }
+
+        num += 9;
+    }
+
+    return -1;
+}
+
+console.log('========= Q19 =========');
+const n = 2;
+const nthPerfectNum = nthPerfectNumber(n);
+console.log(`${n}th perfect number: ${nthPerfectNum}\n`);
 
 /*
  * Q20.
  * Given the head of a singly linked list, reverse it in-place.
  */
+function reverseList(head) {
+    let prev = null;
+    let current = head;
+    let next = null;
+
+    while (current) {
+        next = current.next;
+        current.next = prev;
+        prev = current;
+        current = next;
+    }
+
+    return prev;
+}
+
+console.log('========= Q20 =========');
+const head = new ListNode(1);
+head.next = new ListNode(2);
+head.next.next = new ListNode(3);
+
+let reversed = reverseList(head);
+let output = '';
+while (reversed) {
+    output += `${reversed.val} -> `;
+    reversed = reversed.next;
+}
+console.log(`${output}null\n`);
