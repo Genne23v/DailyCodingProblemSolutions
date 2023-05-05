@@ -1,13 +1,21 @@
 import java.util.Set;
 import java.util.HashSet;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 
 public class QuestionsAndSolutions {
@@ -234,11 +242,12 @@ public class QuestionsAndSolutions {
             if (size < buffer.length) {
                 size++;
             } else {
-                start = (start + 1) % buffer.length; // When the buffer is full, use start to circulate the buffer array
+                // When the buffer is full, use start to circulate the buffer array
+                start = (start + 1) % buffer.length;
             }
         }
 
-        public int get_last(int i) {
+        public int getLast(int i) {
             if (i <= 0 || i > size) {
                 throw new IllegalArgumentException("Invalid i value");
             }
@@ -347,6 +356,7 @@ public class QuestionsAndSolutions {
             } else {
                 minHeap.offer(num);
             }
+
             // Balance two heaps to find the middle
             if (maxHeap.size() - minHeap.size() > 1) {
                 minHeap.offer(maxHeap.poll());
@@ -377,10 +387,12 @@ public class QuestionsAndSolutions {
             powerSet.add(new HashSet<>());
 
             for (int element : set) {
-                Set<Set<Integer>> newSubsets = new HashSet<>(); // Each iteration returns new Sets with element
+                // Each iteration returns new Sets with element
+                Set<Set<Integer>> newSubsets = new HashSet<>();
                 for (Set<Integer> subset : powerSet) {
                     Set<Integer> newSubset = new HashSet<>(subset);
-                    newSubset.add(element); // Additional Set with new element
+                    // Additional Set with new element
+                    newSubset.add(element);
                     newSubsets.add(newSubset);
                 }
                 powerSet.addAll(newSubsets);
@@ -620,12 +632,10 @@ public class QuestionsAndSolutions {
                 return num;
             }
 
-            // Otherwise, move on to the next number
-            num += 9;
+            num += 9; // Otherwise, move on to the next number
         }
 
-        // This line is unreachable, but required by Java
-        return -1;
+        return -1; // This line is unreachable, but required by Java
     }
 
     // S20.
@@ -642,6 +652,278 @@ public class QuestionsAndSolutions {
         }
 
         return prev;
+    }
+
+    // S21.
+    static class Interval {
+        int start;
+        int end;
+
+        Interval(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        public String toString() {
+            return "(" + start + ", " + end + ")";
+        }
+    }
+
+    class IntervalMerger {
+
+        public static List<Interval> mergeIntervals(List<Interval> intervals) {
+            Collections.sort(intervals, Comparator.comparingInt(interval -> interval.start));
+
+            List<Interval> mergedIntervals = new ArrayList<>();
+            Interval currentInterval = null;
+
+            for (Interval interval : intervals) {
+                if (currentInterval == null) {
+                    // If this is the first interval, add it to the merged intervals list
+                    currentInterval = interval;
+                    mergedIntervals.add(currentInterval);
+                } else if (interval.start <= currentInterval.end) {
+                    // If the current interval overlaps with the previous interval, merge them
+                    currentInterval.end = Math.max(currentInterval.end, interval.end);
+                } else {
+                    // If the current interval doesn't overlap with the previous interval, add it to
+                    // the merged intervals list
+                    currentInterval = interval;
+                    mergedIntervals.add(currentInterval);
+                }
+            }
+
+            return mergedIntervals;
+        }
+    }
+
+    // S22.
+    class DeepestNodeFinder {
+        public static TreeNode<Character> findDeepestNode(TreeNode<Character> root) {
+            if (root == null) {
+                return null;
+            }
+
+            Queue<TreeNode<Character>> queue = new LinkedList<>();
+            queue.offer(root);
+
+            TreeNode<Character> deepestNode = null;
+
+            while (!queue.isEmpty()) {
+                int size = queue.size();
+
+                for (int i = 0; i < size; i++) {
+                    TreeNode<Character> node = queue.poll();
+
+                    deepestNode = node;
+
+                    if (node.left != null) {
+                        queue.offer(node.left);
+                    }
+
+                    if (node.right != null) {
+                        queue.offer(node.right);
+                    }
+                }
+            }
+
+            return deepestNode;
+        }
+    }
+
+    // S23.
+    class LetterCombinations {
+        public static List<String> letterCombinations(String digits, Map<Character, char[]> digitToLetters) {
+            List<String> result = new ArrayList<>();
+            if (digits == null || digits.length() == 0) {
+                return result;
+            }
+            backtrack(result, new StringBuilder(), digits, 0, digitToLetters);
+            return result;
+        }
+
+        private static void backtrack(List<String> result, StringBuilder temp, String digits, int index,
+                Map<Character, char[]> digitToLetters) {
+            if (temp.length() == digits.length()) {
+                result.add(temp.toString());
+                return;
+            }
+            char[] letters = digitToLetters.get(digits.charAt(index));
+            for (char letter : letters) {
+                temp.append(letter);
+                backtrack(result, temp, digits, index + 1, digitToLetters);
+                temp.deleteCharAt(temp.length() - 1); // To reuse in next iteration
+            }
+        }
+    }
+
+    // S24.
+    class FileReader {
+        private int pos = 0;
+        private String buffer = "";
+
+        public String readN(int n) {
+            StringBuilder sb = new StringBuilder();
+            while (sb.length() < n) {
+                if (buffer.length() == pos) { // need to read more characters from file
+                    File file = new File("file.txt");
+                    buffer = read7(file);
+                    pos = 0;
+                    if (buffer.isEmpty()) { // end of file reached
+                        break;
+                    }
+                }
+                sb.append(buffer.charAt(pos++));
+            }
+            return sb.toString();
+        }
+
+        private String read7(File file) {
+            StringBuilder sb = new StringBuilder();
+            try {
+                FileInputStream fis = new FileInputStream(file);
+                BufferedInputStream bis = new BufferedInputStream(fis);
+                byte[] buffer = new byte[7];
+                int bytesRead = bis.read(buffer);
+                while (bytesRead != -1) {
+                    sb.append(new String(buffer, 0, bytesRead));
+                    bytesRead = bis.read(buffer);
+                }
+                bis.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return sb.toString();
+
+        }
+    }
+
+    // S26.
+    class MaxSumInBinaryTree {
+        private int maxSum = Integer.MIN_VALUE;
+
+        public int maxPathSum(TreeNode<Integer> root) {
+            maxSumHelper(root);
+            return maxSum;
+        }
+
+        private int maxSumHelper(TreeNode<Integer> node) {
+            if (node == null) {
+                return 0;
+            }
+
+            int leftSum = Math.max(maxSumHelper(node.left), 0);
+            int rightSum = Math.max(maxSumHelper(node.right), 0);
+
+            int currentSum = node.val + Math.max(leftSum, rightSum);
+            maxSum = Math.max(maxSum, currentSum);
+
+            return node.val + Math.max(leftSum, rightSum);
+        }
+    }
+
+    // S27.
+    public static List<List<Integer>> permute(int[] nums) {
+        List<List<Integer>> result = new ArrayList<>();
+        if (nums == null || nums.length == 0) {
+            return result;
+        }
+        List<Integer> current = new ArrayList<>();
+        boolean[] used = new boolean[nums.length];
+        backtrack(nums, current, used, result);
+        return result;
+    }
+
+    private static void backtrack(int[] nums, List<Integer> current, boolean[] used, List<List<Integer>> result) {
+        if (current.size() == nums.length) {
+            result.add(new ArrayList<>(current));
+            return;
+        }
+        for (int i = 0; i < nums.length; i++) {
+            if (used[i]) {
+                continue;
+            }
+            current.add(nums[i]);
+            used[i] = true;
+            backtrack(nums, current, used, result);
+            used[i] = false;
+            current.remove(current.size() - 1);
+        }
+    }
+
+    // S28.
+    public static boolean exists(char[][] board, String word) {
+        if (board == null || board.length == 0 || board[0].length == 0 || word == null) {
+            return false;
+        }
+        int m = board.length;
+        int n = board[0].length;
+        boolean[][] visited = new boolean[m][n];
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (board[i][j] == word.charAt(0)) {
+                    if (search(board, visited, word, i, j, 0)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean search(char[][] board, boolean[][] visited, String word, int row, int col, int index) {
+        if (index == word.length()) {
+            return true;
+        }
+        if (row < 0 || row >= board.length || col < 0 || col >= board[0].length
+                || visited[row][col] || board[row][col] != word.charAt(index)) {
+            return false;
+        }
+        visited[row][col] = true;
+        boolean found = search(board, visited, word, row - 1, col, index + 1)
+                || search(board, visited, word, row + 1, col, index + 1)
+                || search(board, visited, word, row, col - 1, index + 1)
+                || search(board, visited, word, row, col + 1, index + 1);
+        visited[row][col] = false;
+        return found;
+    }
+
+    // S29.
+    public static int minSteps(int[][] points) {
+        int steps = 0;
+        int[] current = points[0];
+        for (int i = 1; i < points.length; i++) {
+            int[] next = points[i];
+            steps += Math.max(Math.abs(next[0] - current[0]), Math.abs(next[1] - current[1]));
+            current = next;
+        }
+        return steps;
+    }
+
+    // S30.
+    public static int[] getPrimes(int n) {
+        boolean[] isPrime = new boolean[n + 1];
+        Arrays.fill(isPrime, true);
+        isPrime[0] = isPrime[1] = false;
+
+        // Sieve of Eratosthenes
+        for (int i = 2; i * i <= n; i++) {
+            if (isPrime[i]) {
+                for (int j = i * i; j <= n; j += i) {
+                    isPrime[j] = false;
+                }
+            }
+        }
+
+        int[] primes = new int[2];
+        for (int i = 2; i <= n / 2; i++) {
+            if (isPrime[i] && isPrime[n - i]) {
+                primes[0] = i;
+                primes[1] = n - i;
+                break;
+            }
+        }
+        return primes;
     }
 
     public static void main(String[] args) {
@@ -1040,5 +1322,180 @@ public class QuestionsAndSolutions {
         }
         System.out.print("null");
 
+        /*
+         * Q21.
+         * Given a list of possibly overlapping intervals, return a new list of
+         * intervals where all overlapping intervals have been merged.
+         * The input list is not necessarily ordered in any way.
+         * For example, given [(1, 3), (5, 8), (4, 10), (20, 25)], you should return
+         * [(1, 3), (4, 10), (20, 25)].
+         */
+        List<Interval> listOfIntervals = new ArrayList<>();
+        listOfIntervals.add(new Interval(1, 3));
+        listOfIntervals.add(new Interval(5, 8));
+        listOfIntervals.add(new Interval(4, 10));
+        listOfIntervals.add(new Interval(20, 25));
+
+        List<Interval> mergedIntervals = IntervalMerger.mergeIntervals(listOfIntervals);
+        System.out.println("Merged intervals: " + mergedIntervals);
+
+        /*
+         * Q22.
+         * Given the root of a binary tree, return a deepest node. For example, in the
+         * following tree, return d.
+         * "    a      "
+         * "   / \     "
+         * "  b   c    "
+         * " /         "
+         * "d          "
+         */
+        TreeNode<Character> binaryRoot = new TreeNode<Character>('a');
+        binaryRoot.left = new TreeNode<Character>('b');
+        binaryRoot.right = new TreeNode<Character>('c');
+        binaryRoot.left.left = new TreeNode<Character>('d');
+
+        TreeNode<Character> deepestNode = DeepestNodeFinder.findDeepestNode(binaryRoot);
+        System.out.println("Deepest node value: " + deepestNode.val);
+
+        /*
+         * Q23.
+         * Given a mapping of digits to letters (as in a phone number), and a digit
+         * string, return all possible letters the number could represent. You can
+         * assume each valid number in the mapping is a single digit.
+         * For example if {“2”: [“a”, “b”, “c”], 3: [“d”, “e”, “f”], …} then “23” should
+         * return [“ad”, “ae”, “af”, “bd”, “be”, “bf”, “cd”, “ce”, “cf"].
+         */
+        Map<Character, char[]> digitToLetters = new HashMap<>();
+        digitToLetters.put('2', new char[] { 'a', 'b', 'c' });
+        digitToLetters.put('3', new char[] { 'd', 'e', 'f' });
+        digitToLetters.put('4', new char[] { 'g', 'h', 'i' });
+        digitToLetters.put('5', new char[] { 'j', 'k', 'l' });
+        digitToLetters.put('6', new char[] { 'm', 'n', 'o' });
+        digitToLetters.put('7', new char[] { 'p', 'q', 'r', 's' });
+        digitToLetters.put('8', new char[] { 't', 'u', 'v' });
+        digitToLetters.put('9', new char[] { 'w', 'x', 'y', 'z' });
+
+        String digits = "23";
+        List<String> lettersForDigit = LetterCombinations.letterCombinations(digits, digitToLetters);
+
+        System.out.println("Letter combinations for " + digits + ": " + lettersForDigit);
+
+        /*
+         * Q24.
+         * Using a read7() method that returns 7 characters from a file, implement
+         * readN(n) which reads n characters.
+         * For example, given a file with the content “Hello world”, three read7()
+         * returns “Hello w”, “orld” and then “”.
+         */
+        // Solution implemented in S24 (NOT tested)
+
+        /*
+         * Q25.
+         * What does the below code snippet print out? How can we fix the anonymous
+         * functions to behave as we'd expect?
+         * 
+         * functions = []
+         * for i in range(10):
+         * functions.append(lambda : i)
+         * 
+         * for f in functions:
+         * print(f())
+         */
+        // It will print '9' tem times as the lambda functions created using `lambda: i`
+        // all reference the same variable 'i'
+        // CORRECTION: functions.append(lambda x=i: x)
+
+        /*
+         * Q26.
+         * Given a binary tree of integers, find the maximum path sum between two nodes.
+         * The path must go through at least one node, and does not need to go through
+         * the root.
+         */
+        // Solution implemented in S26 (NOT tested)
+
+        /*
+         * Q27.
+         * Given a number in the form of a list of digits, return all possible
+         * permutations.
+         * For example, given [1,2,3], return
+         * [[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]].
+         */
+        int[] list = { 1, 2, 3 };
+        List<List<Integer>> permutations = permute(list);
+        System.out.print("Permutations for [1, 2, 3]: ");
+        System.out.println(permutations);
+
+        /*
+         * Q28.
+         * Given a 2D board of characters and a word, find if the word exists in the
+         * grid.
+         * The word can be constructed from letters of sequentially adjacent cell, where
+         * "adjacent" cells are those horizontally or vertically neighboring. The same
+         * letter cell may not be used more than once.
+         * For example, given the following board:
+         * [
+         * ['A','B','C','E'],
+         * ['S','F','C','S'],
+         * ['A','D','E','E']
+         * ]
+         * exists(board, "ABCCED") returns true, exists(board, "SEE") returns true,
+         * exists(board, "ABCB") returns false.
+         */
+        char[][] characterBoard = { { 'A', 'B', 'C', 'D' }, { 'S', 'F', 'C', 'S' }, { 'A', 'D', 'E', 'E' } };
+        String word1 = "ABCCED";
+        String word2 = "SEE";
+        String word3 = "ABCB";
+        boolean exists = exists(characterBoard, word1);
+        System.out.println(exists);
+        System.out.println(exists(characterBoard, word2));
+        System.out.println(exists(characterBoard, word3));
+
+        /*
+         * Q29.
+         * You are in an infinite 2D grid where you can move in any of the 8 directions:
+         * (x,y) to
+         * (x+1, y),
+         * (x - 1, y),
+         * (x, y+1),
+         * (x, y-1),
+         * (x-1, y-1),
+         * (x+1,y+1),
+         * (x-1,y+1),
+         * (x+1,y-1)
+         * You are given a sequence of points and the order in which you need to cover
+         * the points. Give the minimum number of steps in which you can achieve it. You
+         * start from the first point.
+         * Example:
+         * Input: [(0, 0), (1, 1), (1, 2)]
+         * Output: 2
+         * It takes 1 step to move from (0, 0) to (1, 1). It takes one more step to move
+         * from (1, 1) to (1, 2).
+         */
+        int[][] points = { { 0, 0 }, { 1, 1 }, { 1, 2 } };
+        int minSteps = minSteps(points);
+        System.out.println(minSteps);
+
+        /*
+         * Q30.
+         * Given an even number (greater than 2), return two prime numbers whose sum
+         * will be equal to the given number.
+         * A solution will always exist. See Goldbach’s conjecture.
+         * https://en.wikipedia.org/wiki/Goldbach%27s_conjecture
+         * Example:
+         * Input: 4
+         * Output: 2 + 2 = 4
+         * If there are more than one solution possible, return the lexicographically
+         * smaller solution.
+         * If [a, b] is one solution with a <= b, and [c, d] is another solution with c
+         * <= d, then
+         * [a, b] < [c, d]
+         * If a < c OR a==c AND b < d.
+         */
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter an even number greater than 2: ");
+        int num = sc.nextInt();
+        int[] primes = getPrimes(num);
+        System.out.printf("%d + %d = %d\n", primes[0], primes[1], num);
+        sc.close();
     }
 }

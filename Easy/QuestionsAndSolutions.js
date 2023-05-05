@@ -1039,3 +1039,495 @@ while (reversed) {
     reversed = reversed.next;
 }
 console.log(`${output}null\n`);
+
+/*
+ * Q21.
+ * Given a list of possibly overlapping intervals, return a new list of
+ * intervals where all overlapping intervals have been merged.
+ * The input list is not necessarily ordered in any way.
+ * For example, given [(1, 3), (5, 8), (4, 10), (20, 25)], you should return
+ * [(1, 3), (4, 10), (20, 25)].
+ */
+class Interval {
+    constructor(start, end) {
+        this.start = start;
+        this.end = end;
+    }
+}
+
+function mergedIntervals(intervals) {
+    intervals.sort((a, b) => a.start - b.start);
+
+    let mergedIntervals = [];
+    let currentInterval;
+
+    for (const interval of intervals) {
+        if (!currentInterval) {
+            currentInterval = interval;
+            mergedIntervals.push(currentInterval);
+        } else if (interval.start <= currentInterval.end) {
+            currentInterval.end = Math.max(currentInterval.end, interval.end);
+        } else {
+            currentInterval = interval;
+            mergedIntervals.push(currentInterval);
+        }
+    }
+    return mergedIntervals;
+}
+
+console.log('========= Q21 =========');
+let listOfIntervals = [];
+listOfIntervals.push(new Interval(1, 3));
+listOfIntervals.push(new Interval(5, 8));
+listOfIntervals.push(new Interval(4, 10));
+listOfIntervals.push(new Interval(20, 25));
+const intervalMerged = mergedIntervals(listOfIntervals);
+console.log(`Merged intervals: ${JSON.stringify(intervalMerged)}\n`);
+
+/*
+ * Q22.
+ * Given the root of a binary tree, return a deepest node. For example, in the
+ * following tree, return d.
+ * "    a      "
+ * "   / \     "
+ * "  b   c    "
+ * " /         "
+ * "d          "
+ */
+function findDeepestNode(root) {
+    if (!root) {
+        return;
+    }
+
+    let queue = [];
+    queue.push(root);
+
+    let deepestNode = null;
+
+    while (queue.length > 0) {
+        let size = queue.length;
+
+        for (let i = 0; i < size; i++) {
+            const node = queue.shift();
+
+            deepestNode = node;
+
+            if (node.left) {
+                queue.push(node.left);
+            }
+
+            if (node.right) {
+                queue.push(node.right);
+            }
+        }
+    }
+    return deepestNode;
+}
+
+console.log('========= Q22 =========');
+const binaryRoot = new TreeNode('a');
+binaryRoot.left = new TreeNode('b');
+binaryRoot.right = new TreeNode('c');
+binaryRoot.left.left = new TreeNode('d');
+
+const deepestNode = findDeepestNode(binaryRoot);
+console.log(`Deepest node value: ${deepestNode.val}\n`);
+
+/*
+ * Q23.
+ * Given a mapping of digits to letters (as in a phone number), and a digit
+ * string, return all possible letters the number could represent. You can
+ * assume each valid number in the mapping is a single digit.
+ * For example if {“2”: [“a”, “b”, “c”], 3: [“d”, “e”, “f”], …} then “23” should
+ * return [“ad”, “ae”, “af”, “bd”, “be”, “bf”, “cd”, “ce”, “cf"].
+ */
+function letterCombinations(digits, digitToLetters) {
+    let result = [];
+    if (!digits || digits.length === 0) {
+        return result;
+    }
+
+    const temp = '';
+    backtrack(result, temp, digits, 0, digitToLetters);
+    return result;
+}
+
+function backtrack(result, temp, digits, index, digitToLetters) {
+    const copyOfTemp = temp;
+    if (copyOfTemp.length === digits.length) {
+        result.push(copyOfTemp);
+        return;
+    }
+
+    const letters = digitToLetters[`${digits[index]}`];
+    for (const letter of letters) {
+        let tempPlusLetter = copyOfTemp + letter;
+        backtrack(result, tempPlusLetter, digits, index + 1, digitToLetters);
+        tempPlusLetter.slice(0, -1);
+    }
+}
+
+console.log('========= Q23 =========');
+let digitToLetters = {};
+digitToLetters[2] = ['a', 'b', 'c'];
+digitToLetters[3] = ['d', 'e', 'f'];
+digitToLetters[4] = ['g', 'h', 'i'];
+digitToLetters[5] = ['j', 'k', 'l'];
+digitToLetters[6] = ['m', 'n', 'o'];
+digitToLetters[7] = ['p', 'q', 'r', 's'];
+digitToLetters[8] = ['t', 'u', 'v'];
+digitToLetters[9] = ['w', 'x', 'y', 'z'];
+
+const digits = '23';
+lettersForDigit = letterCombinations(digits, digitToLetters);
+console.log(`Letter combinations for ${digits}:`);
+console.log(lettersForDigit);
+console.log('\n');
+
+/*
+ * Q24.
+ * Using a read7() method that returns 7 characters from a file, implement
+ * readN(n) which reads n characters.
+ * For example, given a file with the content “Hello world”, three read7()
+ * returns “Hello w”, “orld” and then “”.
+ */
+// S24. This isn't tested
+function read7(filename) {
+    let str = '';
+    let bytesRead;
+    const reader = new FileReader();
+
+    reader.addEventListener('load', (event) => {
+        const fileContents = event.target.result;
+        console.log(fileContents);
+    });
+
+    const file = new File([''], filename);
+    const blob = file.slice(0, 7);
+    reader.readAsText(blob);
+
+    while (bytesRead !== -1) {
+        str += blob;
+    }
+    return str;
+}
+
+function readN(n) {
+    let pos = 0;
+    let buffer = '';
+    let str = '';
+
+    while (str.length < n) {
+        if (buffer.length === pos) {
+            buffer = read7('file.txt');
+            pos = 0;
+            if (buffer.length === 0) break;
+        }
+        str += buffer[pos++];
+    }
+    return str;
+}
+
+console.log('========= Q24 =========');
+console.log('\n');
+
+/*
+ * Q25.
+ * What does the below code snippet print out? How can we fix the anonymous
+ * functions to behave as we'd expect?
+ *
+ * functions = []
+ * for i in range(10):
+ * functions.append(lambda : i)
+ *
+ * for f in functions:
+ * print(f())
+ */
+// It will print '9' tem times as the lambda functions created using `lambda: i`
+// all reference the same variable 'i'
+// CORRECTION: functions.append(lambda x=i: x)
+
+/*
+ * Q26.
+ * Given a binary tree of integers, find the maximum path sum between two nodes.
+ * The path must go through at least one node, and does not need to go through
+ * the root.
+ */
+class MaxSumBinaryTree {
+    #maxSum;
+    constructor() {
+        this.#maxSum = -9999;
+    }
+
+    maxPathSum(root) {
+        this.maxSumHelper(root);
+        return this.#maxSum;
+    }
+
+    maxSumHelper(node) {
+        if (!node) {
+            return 0;
+        }
+
+        const leftSum = Math.max(this.maxSumHelper(node.left), 0);
+        const rightSum = Math.max(this.maxSumHelper(node.right), 0);
+
+        const currentSum = node.val + Math.max(leftSum, rightSum);
+        this.#maxSum = Math.max(this.#maxSum, currentSum);
+
+        return node.val + Math.max(leftSum, rightSum);
+    }
+}
+
+console.log('========= Q26 =========');
+const treeForMaxSum = new TreeNode(1);
+treeForMaxSum.left = new TreeNode(2);
+treeForMaxSum.left.left = new TreeNode(3);
+treeForMaxSum.left.right = new TreeNode(4);
+treeForMaxSum.right = new TreeNode(5);
+treeForMaxSum.right.left = new TreeNode(6);
+treeForMaxSum.right.right = new TreeNode(7);
+
+const maxSumBinaryTree = new MaxSumBinaryTree();
+const binaryTreeMaxSum = maxSumBinaryTree.maxPathSum(treeForMaxSum);
+console.log(`Binary Tree Max Sum: ${binaryTreeMaxSum}\n`);
+
+/*
+ * Q27.
+ * Given a number in the form of a list of digits, return all possible
+ * permutations.
+ * For example, given [1,2,3], return
+ * [[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]].
+ */
+class Permutation {
+    static permutations;
+    constructor() {
+        this.permutations = [];
+    }
+
+    permute(nums) {
+        if (!nums || nums.length === 0) {
+            return this.permutations;
+        }
+
+        let current = [];
+        let used = [false, false, false];
+        this.backtrack(nums, current, used);
+
+        return this.permutations;
+    }
+
+    backtrack(nums, current, used) {
+        if (current.length === nums.length) {
+            const temp = current;
+            this.permutations.push([...temp]);
+            return;
+        }
+
+        for (let i = 0; i < nums.length; i++) {
+            if (used[i]) {
+                continue;
+            }
+
+            current.push(nums[i]);
+            used[i] = true;
+            this.backtrack(nums, current, used);
+            used[i] = false;
+            current.pop();
+        }
+    }
+}
+
+console.log('========= Q27 =========');
+const list = [1, 2, 3];
+const permutation = new Permutation();
+const permutations = permutation.permute(list);
+console.log('Permutations for [1, 2, 3]: ');
+console.log(permutations);
+console.log('\n');
+
+/*
+ * Q28.
+ * Given a 2D board of characters and a word, find if the word exists in the
+ * grid.
+ * The word can be constructed from letters of sequentially adjacent cell, where
+ * "adjacent" cells are those horizontally or vertically neighboring. The same
+ * letter cell may not be used more than once.
+ * For example, given the following board:
+ * [
+ * ['A','B','C','E'],
+ * ['S','F','C','S'],
+ * ['A','D','E','E']
+ * ]
+ * exists(board, "ABCCED") returns true, exists(board, "SEE") returns true,
+ * exists(board, "ABCB") returns false.
+ */
+function exists(board, word) {
+    if (!board || board.length === 0 || (board[0].length === 0) | !word) {
+        return false;
+    }
+
+    const m = board.length;
+    const n = board[0].length;
+    let visited = Array(m)
+        .fill()
+        .map(() => Array(n).fill(false));
+
+    for (let i = 0; i < m; i++) {
+        for (let j = 0; j < n; j++) {
+            if (board[i][j] === word[0]) {
+                if (search(board, visited, word, i, j, 0)) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+function search(board, visited, word, row, col, index) {
+    if (index === word.length) {
+        return true;
+    }
+
+    if (
+        row < 0 ||
+        row >= board.length ||
+        col < 0 ||
+        col >= board[0].length ||
+        visited[row][col] ||
+        board[row][col] !== word[index]
+    ) {
+        return false;
+    }
+
+    visited[row][col] = true;
+    const found =
+        search(board, visited, word, row - 1, col, index + 1) ||
+        search(board, visited, word, row + 1, col, index + 1) ||
+        search(board, visited, word, row, col - 1, index + 1) ||
+        search(board, visited, word, row, col + 1, index + 1);
+    visited[row][col] = false;
+
+    return found;
+}
+
+console.log('========= Q28 =========');
+const characterBoard = [
+    ['A', 'B', 'C', 'D'],
+    ['S', 'F', 'C', 'S'],
+    ['A', 'D', 'E', 'E'],
+];
+const word1 = 'ABCCED';
+const word2 = 'SEE';
+const word3 = 'ABCB';
+console.log(
+    `Does ${word1} exist in the board? ${exists(characterBoard, word1)}`
+);
+console.log(
+    `Does ${word2} exist in the board? ${exists(characterBoard, word2)}`
+);
+console.log(
+    `Does ${word3} exist in the board? ${exists(characterBoard, word3)}\n`
+);
+
+/*
+ * Q29.
+ * You are in an infinite 2D grid where you can move in any of the 8 directions:
+ * (x,y) to
+ * (x+1, y),
+ * (x - 1, y),
+ * (x, y+1),
+ * (x, y-1),
+ * (x-1, y-1),
+ * (x+1,y+1),
+ * (x-1,y+1),
+ * (x+1,y-1)
+ * You are given a sequence of points and the order in which you need to cover
+ * the points. Give the minimum number of steps in which you can achieve it. You
+ * start from the first point.
+ * Example:
+ * Input: [(0, 0), (1, 1), (1, 2)]
+ * Output: 2
+ * It takes 1 step to move from (0, 0) to (1, 1). It takes one more step to move
+ * from (1, 1) to (1, 2).
+ */
+function minSteps(points) {
+    let steps = 0;
+    let current = points[0];
+    for (let i = 1; i < points.length; i++) {
+        const next = points[i];
+        steps += Math.max(
+            Math.abs(next[0] - current[0]),
+            Math.abs(next[1] - current[1])
+        );
+        current = next;
+    }
+
+    return steps;
+}
+
+console.log('========= Q29 =========');
+const points = [
+    [0, 0],
+    [1, 1],
+    [1, 2],
+];
+const minimumSteps = minSteps(points);
+console.log(`Minimum Steps: ${minimumSteps}\n`);
+
+/*
+ * Q30.
+ * Given an even number (greater than 2), return two prime numbers whose sum
+ * will be equal to the given number.
+ * A solution will always exist. See Goldbach’s conjecture.
+ * https://en.wikipedia.org/wiki/Goldbach%27s_conjecture
+ * Example:
+ * Input: 4
+ * Output: 2 + 2 = 4
+ * If there are more than one solution possible, return the lexicographically
+ * smaller solution.
+ * If [a, b] is one solution with a <= b, and [c, d] is another solution with c
+ * <= d, then
+ * [a, b] < [c, d]
+ * If a < c OR a==c AND b < d.
+ */
+function getPrimes(n) {
+    let isPrime = Array(Number(n)).fill(true);
+    isPrime[0] = false;
+    isPrime[1] = false;
+
+    for (let i = 2; i * i < n; i++) {
+        if (isPrime[i]) {
+            for (let j = i * i; j <= n; j += i) {
+                isPrime[j] = false;
+            }
+        }
+    }
+console.log(isPrime)
+    let primes = [];
+    for (let i = 2; i <= n / 2; i++) {
+        if (isPrime[i] && isPrime[n - i]) {
+            primes.push(i);
+            primes.push(n - i);
+            break;
+        }
+    }
+    console.log(primes);
+    return primes;
+}
+
+console.log('========= Q30 =========');
+import { createInterface } from 'readline';
+
+const rl = createInterface({
+    input: process.stdin,
+    output: process.stdout,
+});
+
+rl.question('Enter an even number greater than 2: ', (answer) => {
+    const primes = getPrimes(answer);
+    console.log(`${primes[0]} + ${primes[1]} = ${answer}\n`);
+    rl.close();
+});
+
