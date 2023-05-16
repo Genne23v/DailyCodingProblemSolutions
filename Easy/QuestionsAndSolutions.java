@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.PriorityQueue;
@@ -14,6 +15,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.concurrent.TimeUnit;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -926,7 +928,351 @@ public class QuestionsAndSolutions {
         return primes;
     }
 
-    public static void main(String[] args) {
+    // S31.
+    static class DoublyLinkedListNode {
+        int data;
+        DoublyLinkedListNode next;
+        DoublyLinkedListNode prev;
+
+        DoublyLinkedListNode(int data) {
+            this.data = data;
+            this.next = null;
+            this.prev = null;
+        }
+    }
+
+    static class DoublyLinkedList {
+        DoublyLinkedListNode head;
+        DoublyLinkedListNode tail;
+
+        DoublyLinkedList() {
+            this.head = null;
+            this.tail = null;
+        }
+
+        void add(int data) {
+            DoublyLinkedListNode node = new DoublyLinkedListNode(data);
+            if (head == null) {
+                head = node;
+                tail = node;
+            } else {
+                tail.next = node;
+                node.prev = tail;
+                tail = node;
+            }
+        }
+
+        boolean isPalindrome() {
+            DoublyLinkedListNode start = head;
+            DoublyLinkedListNode end = tail;
+
+            while (start != null && end != null) {
+                if (start.data != end.data) {
+                    return false;
+                }
+                start = start.next;
+                end = end.prev;
+            }
+            return true;
+        }
+    }
+
+    static class SinglyLinkedListNode {
+        int data;
+        SinglyLinkedListNode next;
+
+        SinglyLinkedListNode(int data) {
+            this.data = data;
+            this.next = null;
+        }
+    }
+
+    static class SinglyLinkedList {
+        SinglyLinkedListNode head;
+
+        SinglyLinkedList() {
+            this.head = null;
+        }
+
+        void add(int data) {
+            SinglyLinkedListNode node = new SinglyLinkedListNode(data);
+            if (head == null) {
+                head = node;
+            } else {
+                SinglyLinkedListNode temp = head;
+                while (temp.next != null) {
+                    temp = temp.next;
+                }
+                temp.next = node;
+            }
+        }
+
+        boolean isPalindrome() {
+            if (head == null || head.next == null) {
+                return true;
+            }
+
+            SinglyLinkedListNode slow = head;
+            SinglyLinkedListNode fast = head;
+
+            while (fast != null && fast.next != null) {
+                slow = slow.next;
+                fast = fast.next.next;
+            }
+
+            SinglyLinkedListNode secondHalf = reverse(slow);
+
+            SinglyLinkedListNode temp1 = head;
+            SinglyLinkedListNode temp2 = secondHalf;
+
+            while (temp2 != null) {
+                if (temp1.data != temp2.data) {
+                    reverse(secondHalf);
+                    return false;
+                }
+                temp1 = temp1.next;
+                temp2 = temp2.next;
+            }
+            reverse(secondHalf);
+            return true;
+        }
+
+        SinglyLinkedListNode reverse(SinglyLinkedListNode head) {
+            SinglyLinkedListNode prev = null;
+            SinglyLinkedListNode curr = head;
+            SinglyLinkedListNode next = null;
+
+            while (curr != null) {
+                next = curr.next;
+                curr.next = prev;
+                prev = curr;
+                curr = next;
+            }
+            head = prev;
+
+            return head;
+        }
+    }
+
+    // S32.
+    static class Debounce {
+        private Runnable runnable;
+        private long delay;
+        private long lastExecutionTime;
+
+        public Debounce(Runnable runnable, long delay) {
+            this.runnable = runnable;
+            this.delay = delay;
+        }
+
+        public void execute() {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastExecutionTime > delay) {
+                lastExecutionTime = currentTime;
+                runnable.run(); // Run when delay amount of time has passed
+            }
+        }
+    }
+
+    // S33.
+    public static <T> void printLevelOrder(TreeNode<T> root) {
+        if (root == null) {
+            return;
+        }
+
+        Queue<TreeNode<T>> queue = new LinkedList<>();
+        queue.add(root);
+
+        while (!queue.isEmpty()) {
+            TreeNode<T> node = queue.remove();
+            System.out.print(node.val + " ");
+
+            if (node.left != null) {
+                queue.add(node.left);
+            }
+
+            if (node.right != null) {
+                queue.add(node.right);
+            }
+        }
+    }
+
+    // S34.
+    public static boolean canShift(String A, String B) {
+        if (A.length() != B.length()) {
+            return false;
+        }
+        String A2 = A + A;
+        return A2.contains(B);
+    }
+
+    // S35.
+    public static int minLevelSum(TreeNode<Integer> root) {
+        if (root == null) {
+            return -1;
+        }
+
+        Queue<TreeNode<Integer>> queue = new LinkedList<>();
+        queue.offer(root);
+        int minLevel = 0;
+        int minSum = Integer.MAX_VALUE;
+        int level = 0;
+
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            int sum = 0;
+
+            for (int i = 0; i < size; i++) {
+                TreeNode<Integer> node = queue.poll();
+                sum += node.val;
+
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+
+            if (sum < minSum) {
+                minSum = sum;
+                minLevel = level;
+            }
+
+            level++;
+        }
+
+        return minLevel;
+    }
+
+    // S36.
+    public static int[] sortedSquares(int[] nums) {
+        int n = nums.length;
+        int[] result = new int[n];
+        int left = 0, right = n - 1;
+
+        for (int i = n - 1; i >= 0; i--) {
+            if (Math.abs(nums[left]) > Math.abs(nums[right])) {
+                result[i] = nums[left] * nums[left];
+                left++;
+            } else {
+                result[i] = nums[right] * nums[right];
+                right--;
+            }
+        }
+
+        return result;
+    }
+
+    // S37.
+    public static int numRounds(int n) {
+        if (n == 1) {
+            return 0;
+        } else {
+            return 1 + numRounds(n / 2);
+        }
+    }
+
+    // S38.
+    public static TreeNode<Integer>[] findTarget(TreeNode<Integer> root, int k) {
+        List<Integer> list = new ArrayList<Integer>();
+        inorder(root, list);
+        int left = 0, right = list.size() - 1;
+        while (left < right) {
+            int sum = list.get(left) + list.get(right);
+            if (sum == k) {
+                TreeNode<Integer>[] result = new TreeNode[2];
+                result[0] = findNode(root, list.get(left));
+                result[1] = findNode(root, list.get(right));
+                return result;
+            } else if (sum < k) {
+                left++;
+            } else {
+                right--;
+            }
+        }
+        return null;
+    }
+
+    private static void inorder(TreeNode<Integer> root, List<Integer> list) {
+        if (root == null) {
+            return;
+        }
+        inorder(root.left, list);
+        list.add(root.val);
+        inorder(root.right, list);
+    }
+
+    private static TreeNode<Integer> findNode(TreeNode<Integer> root, int val) {
+        if (root == null || root.val == val) {
+            return root;
+        }
+        if (val < root.val) {
+            return findNode(root.left, val);
+        } else {
+            return findNode(root.right, val);
+        }
+    }
+
+    // S39.
+    public static ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode dummy = new ListNode(0);
+        ListNode current = dummy;
+        int carry = 0;
+
+        while (l1 != null || l2 != null) {
+            int sum = carry;
+
+            if (l1 != null) {
+                sum += l1.val;
+                l1 = l1.next;
+            }
+
+            if (l2 != null) {
+                sum += l2.val;
+                l2 = l2.next;
+            }
+
+            current.next = new ListNode(sum % 10);
+            current = current.next;
+            carry = sum / 10;
+        }
+
+        if (carry > 0) {
+            current.next = new ListNode(carry);
+        }
+
+        return dummy.next;
+    }
+
+    // S40.
+    public static class HitCounter {
+        private List<Long> timestamps;
+
+        public HitCounter() {
+            timestamps = new ArrayList<>();
+        }
+
+        public void record(long timestamp) {
+            timestamps.add(timestamp);
+        }
+
+        public int total() {
+            return timestamps.size();
+        }
+
+        public int range(long lower, long upper) {
+            int count = 0;
+            for (int i = 0; i < timestamps.size(); i++) {
+                if (timestamps.get(i) >= lower && timestamps.get(i) <= upper) {
+                    count++;
+                }
+            }
+            return count;
+        }
+    }
+
+    public static void main(String[] args) throws InterruptedException {
         /*
          * Q1.
          * Given a list of numbers and a number k, return whether any two numbers from
@@ -1497,5 +1843,202 @@ public class QuestionsAndSolutions {
         int[] primes = getPrimes(num);
         System.out.printf("%d + %d = %d\n", primes[0], primes[1], num);
         sc.close();
+
+        /*
+         * Q31.
+         * Determine whether a doubly linked list is a palindrome. What if it’s singly
+         * linked?
+         * For example, 1 -> 4 -> 3 -> 4 -> 1 returns True while 1 -> 4 returns False.
+         */
+        DoublyLinkedList list1 = new DoublyLinkedList();
+        list1.add(1);
+        list1.add(4);
+        list1.add(3);
+        list1.add(4);
+        list1.add(1);
+        System.out.println(list1.isPalindrome());
+
+        DoublyLinkedList list2 = new DoublyLinkedList();
+        list2.add(1);
+        list2.add(4);
+        System.out.println(list2.isPalindrome());
+
+        SinglyLinkedList singlyLinkedList1 = new SinglyLinkedList();
+        list1.add(1);
+        list1.add(4);
+        list1.add(3);
+        list1.add(4);
+        list1.add(1);
+        System.out.println(singlyLinkedList1.isPalindrome());
+
+        SinglyLinkedList singlyLinkedList2 = new SinglyLinkedList();
+        list2.add(1);
+        list2.add(4);
+        System.out.println(singlyLinkedList2.isPalindrome());
+
+        /*
+         * Q32.
+         * Given a function f, and N return a debounced f of N milliseconds.
+         * That is, as long as the debounced f continues to be invoked, f itself will
+         * not be called for N milliseconds.
+         */
+        Debounce debounce = new Debounce(() -> System.out.println("Hello"), 1000);
+        for (int i = 0; i < 10; i++) {
+            debounce.execute();
+            TimeUnit.MILLISECONDS.sleep(500);
+        }
+
+        /*
+         * Q33.
+         * Print the nodes in a binary tree level-wise. For example, the following
+         * should print 1, 2, 3, 4, 5.
+         * "   1       "
+         * "  / \      "
+         * " 2   3     "
+         * "    / \    "
+         * "   4   5   "
+         */
+        TreeNode<Integer> binaryToPrint = new TreeNode<>(1);
+        binaryToPrint.left = new TreeNode<>(2);
+        binaryToPrint.right = new TreeNode<>(3);
+        binaryToPrint.right.left = new TreeNode<>(4);
+        binaryToPrint.right.right = new TreeNode<>(5);
+
+        printLevelOrder(root);
+
+        /*
+         * Q34.
+         * Given two strings A and B, return whether or not A can be shifted some number
+         * of times to get B.
+         * For example, if A is abcde and B is cdeab, return true. If A is abc and B is
+         * acb, return false.
+         */
+        String A = "abcde";
+        String B = "cdeab";
+        boolean shiftable1 = canShift(A, B);
+        System.out.println(shiftable1);
+
+        String C = "abc";
+        String D = "acb";
+        boolean shiftable2 = canShift(C, D);
+        System.out.println(shiftable2);
+
+        /*
+         * Q35.
+         * Given a binary tree, return the level of the tree with minimum sum.
+         */
+        TreeNode<Integer> minTreeSum = new TreeNode<>(11);
+        minTreeSum.left = new TreeNode<>(2);
+        minTreeSum.right = new TreeNode<>(3);
+
+        minTreeSum.left.left = new TreeNode<>(2);
+        minTreeSum.left.right = new TreeNode<>(2);
+        minTreeSum.right.left = new TreeNode<>(4);
+        minTreeSum.right.right = new TreeNode<>(5);
+
+        System.out.print("Minimum Sum Tree Level: ");
+        System.out.println(minLevelSum(minTreeSum));
+
+        /*
+         * Q36.
+         * Given a sorted list of integers, square the elements and give the output in
+         * sorted order.
+         * For example, given [-9, -2, 0, 2, 3], return [0, 4, 4, 9, 81].
+         */
+        int[] numArr = { -9, -2, 0, 2, 3 };
+        int[] squaredArr = sortedSquares(numArr);
+
+        System.out.print("Squared numbers in Array: ");
+        for (int i = 0; i < squaredArr.length; i++) {
+            System.out.println(squaredArr[i]);
+        }
+
+        /*
+         * Q37.
+         * You have n fair coins and you flip them all at the same time. Any that come
+         * up tails you set aside. The ones that come up heads you flip again. How many
+         * rounds do you expect to play before only one coin remains?
+         * Write a function that, given n, returns the number of rounds you'd expect to
+         * play until one coin remains.
+         */
+        int numRounds = numRounds(10);
+        System.out.print("Number of rounds until one coin remaining: ");
+        System.out.println(numRounds);
+
+        /*
+         * Q38.
+         * Given the root of a binary search tree, and a target K, return two nodes in
+         * the tree whose sum equals K.
+         * For example, given the following tree and K of 20
+         * "    10         "
+         * "   /   \       "
+         * " 5      15     "
+         * "       /  \    "
+         * "     11    15  "
+         * Return the nodes 5 and 15.
+         */
+        TreeNode<Integer> findTwoSumBinaryTree = new TreeNode<>(10);
+        findTwoSumBinaryTree.left = new TreeNode<>(5);
+        findTwoSumBinaryTree.right = new TreeNode<>(15);
+        findTwoSumBinaryTree.right.left = new TreeNode<>(11);
+        findTwoSumBinaryTree.right.right = new TreeNode<>(15);
+
+        TreeNode<Integer>[] twoNodesForK = findTarget(binaryToPrint, 20);
+        System.out.println(twoNodesForK[0].val);
+        System.out.println(twoNodesForK[1].val);
+
+        /*
+         * Q39.
+         * Let's represent an integer in a linked list format by having each node
+         * represent a digit in the number. The nodes make up the number in reversed
+         * order.
+         * For example, the following linked list:
+         * 1 -> 2 -> 3 -> 4 -> 5
+         * is the number 54321.
+         * Given two linked lists in this format, return their sum in the same linked
+         * list format.
+         * For example, given
+         * 9 -> 9
+         * 5 -> 2
+         * return 124 (99 + 25) as:
+         * 4 -> 2 -> 1
+         */
+        ListNode numList1 = new ListNode(9);
+        numList1.next = new ListNode(9);
+        ListNode numList2 = new ListNode(5);
+        numList2.next = new ListNode(2);
+
+        ListNode addNumList = addTwoNumbers(numList1, numList2);
+        while (addNumList != null) {
+            System.out.println(addNumList.val);
+            addNumList = addNumList.next;
+        }
+
+        /*
+         * Q40.
+         * Design and implement a HitCounter class that keeps track of requests (or
+         * hits). It should support the following operations:
+         * record(timestamp): records a hit that happened at timestamp
+         * total(): returns the total number of hits recorded
+         * range(lower, upper): returns the number of hits that occurred between
+         * timestamps lower and upper (inclusive)
+         * Follow-up: What if our system has limited memory?
+         */
+        HitCounter hitCounter = new HitCounter();
+        hitCounter.record(System.currentTimeMillis());
+        Thread.sleep(100);
+        long lower = System.currentTimeMillis();
+        hitCounter.record(lower);
+        Thread.sleep(100);
+        hitCounter.record(System.currentTimeMillis());
+        Thread.sleep(100);
+        long upper = System.currentTimeMillis();
+        hitCounter.record(upper);
+        Thread.sleep(100);
+        hitCounter.record(System.currentTimeMillis());
+
+        System.out.println("Total hits: " + hitCounter.total());
+        System.out.println("Hits between lower and upper: " + hitCounter.range(lower, upper));
+
     }
 }

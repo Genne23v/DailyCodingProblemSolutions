@@ -442,8 +442,8 @@ function decode(input) {
     return decoded;
 }
 
-const input = 'AAAABBBCCDAA';
-const encoded = encode(input);
+const stringToBeEncoded = 'AAAABBBCCDAA';
+const encoded = encode(stringToBeEncoded);
 const decoded = decode(encoded);
 
 console.log('========= Q8 =========');
@@ -1033,12 +1033,12 @@ head.next = new ListNode(2);
 head.next.next = new ListNode(3);
 
 let reversed = reverseList(head);
-let output = '';
+let singlyLinkedListOutput = '';
 while (reversed) {
-    output += `${reversed.val} -> `;
+    singlyLinkedListOutput += `${reversed.val} -> `;
     reversed = reversed.next;
 }
-console.log(`${output}null\n`);
+console.log(`${singlyLinkedListOutput}null\n`);
 
 /*
  * Q21.
@@ -1504,7 +1504,7 @@ function getPrimes(n) {
             }
         }
     }
-console.log(isPrime)
+
     let primes = [];
     for (let i = 2; i <= n / 2; i++) {
         if (isPrime[i] && isPrime[n - i]) {
@@ -1513,21 +1513,551 @@ console.log(isPrime)
             break;
         }
     }
-    console.log(primes);
+
     return primes;
 }
 
 console.log('========= Q30 =========');
-import { createInterface } from 'readline';
+const evenNum = 8;
+console.log(`Two primes that sum to ${evenNum}`);
+const primes = getPrimes(evenNum);
+console.log(`${primes[0]} + ${primes[1]} = ${evenNum}\n`);
 
-const rl = createInterface({
-    input: process.stdin,
-    output: process.stdout,
-});
+/*
+ * Q31.
+ * Determine whether a doubly linked list is a palindrome. What if it’s singly
+ * linked?
+ * For example, 1 -> 4 -> 3 -> 4 -> 1 returns True while 1 -> 4 returns False.
+ */
+class DoublyLinkedListNode {
+    constructor(data) {
+        this.data = data;
+        this.next = null;
+        this.prev = null;
+    }
+}
 
-rl.question('Enter an even number greater than 2: ', (answer) => {
-    const primes = getPrimes(answer);
-    console.log(`${primes[0]} + ${primes[1]} = ${answer}\n`);
-    rl.close();
-});
+class DoublyLinkedList {
+    constructor() {
+        this.head = null;
+        this.tail = null;
+    }
 
+    add(data) {
+        let node = new DoublyLinkedListNode(data);
+        if (!this.head) {
+            this.head = node;
+            this.tail = node;
+        } else {
+            this.tail.next = node;
+            node.prev = this.tail;
+            this.tail = node;
+        }
+    }
+
+    isPalindrome() {
+        let start = this.head;
+        let end = this.tail;
+
+        while (start && end) {
+            if (start.data !== end.data) {
+                return false;
+            }
+            start = start.next;
+            end = end.prev;
+        }
+        return true;
+    }
+}
+
+class SinglyLinkedListNode {
+    constructor(data) {
+        this.data = data;
+        this.next = null;
+    }
+}
+
+class SinglyLinkedList {
+    constructor() {
+        this.head = null;
+    }
+
+    add(data) {
+        let node = new SinglyLinkedListNode(data);
+        if (!this.head) {
+            this.head = node;
+        } else {
+            let temp = this.head;
+            while (temp.next) {
+                temp = temp.next;
+            }
+            temp.next = node;
+        }
+    }
+
+    isPalindrome() {
+        if (!this.head && !this.head.next) {
+            return true;
+        }
+
+        let slow = this.head;
+        let fast = this.head;
+        while (fast && fast.next) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+
+        let secondHalf = this.reverse(slow);
+
+        let temp1 = this.head;
+        let temp2 = secondHalf;
+        while (temp2) {
+            if (temp1.data !== temp2.data) {
+                this.reverse(secondHalf);
+                return false;
+            }
+            temp1 = temp1.next;
+            temp2 = temp2.next;
+        }
+
+        this.reverse(secondHalf);
+        return true;
+    }
+
+    reverse(head) {
+        let prev = null;
+        let curr = head;
+        let next = null;
+
+        while (curr) {
+            next = curr.next;
+            curr.next = prev;
+            prev = curr;
+            curr = next;
+        }
+        head = prev;
+
+        return head;
+    }
+}
+
+console.log('========= Q31 =========');
+const doublyLinkedList1 = new DoublyLinkedList();
+doublyLinkedList1.add(1);
+doublyLinkedList1.add(4);
+doublyLinkedList1.add(3);
+doublyLinkedList1.add(4);
+doublyLinkedList1.add(1);
+console.log(
+    `Is the Doubly Linked List palindrome: ${doublyLinkedList1.isPalindrome()}`
+);
+
+const doublyLinkedList2 = new DoublyLinkedList();
+doublyLinkedList2.add(1);
+doublyLinkedList2.add(4);
+console.log(
+    `Is the Doubly Linked List palindrome: ${doublyLinkedList2.isPalindrome()}`
+);
+
+const singlyLinkedList1 = new SinglyLinkedList();
+singlyLinkedList1.add(1);
+singlyLinkedList1.add(4);
+singlyLinkedList1.add(3);
+singlyLinkedList1.add(4);
+singlyLinkedList1.add(1);
+console.log(
+    `Is the Singly Linked List palindrome: ${singlyLinkedList1.isPalindrome()}`
+);
+
+const singlyLinkedList2 = new SinglyLinkedList();
+singlyLinkedList2.add(1);
+singlyLinkedList2.add(4);
+console.log(
+    `Is the Singly Linked List palindrome: ${singlyLinkedList2.isPalindrome()}`
+);
+console.log('\n');
+
+/*
+ * Q32.
+ * Given a function f, and N return a debounced f of N milliseconds.
+ * That is, as long as the debounced f continues to be invoked, f itself will
+ * not be called for N milliseconds.
+ */
+class Debounce {
+    constructor(func, delay) {
+        this.delay = delay;
+        this.func = func;
+        this.lastExecutionTime = null;
+    }
+
+    execute() {
+        const currentTime = new Date().getTime();
+        if (currentTime - this.lastExecutionTime > this.delay) {
+            this.lastExecutionTime = currentTime;
+            this.func();
+        }
+    }
+}
+
+console.log('========= Q32 =========');
+const debounce = new Debounce(() => console.log('Hello'), 1000);
+for (let i = 0; i < 10; i++) {
+    debounce.execute();
+    const currentTime = new Date().getTime();
+    while (new Date().getTime() - currentTime < 500) {}
+}
+
+/*
+ * Q33.
+ * Print the nodes in a binary tree level-wise. For example, the following
+ * should print 1, 2, 3, 4, 5.
+ * "   1       "
+ * "  / \      "
+ * " 2   3     "
+ * "    / \    "
+ * "   4   5   "
+ */
+function printLevelOrder(root) {
+    if (!root) {
+        return;
+    }
+
+    let queue = [];
+    queue.push(root);
+
+    while (queue.length > 0) {
+        let node = queue.shift();
+        console.log(node.val);
+
+        if (node.left) {
+            queue.push(node.left);
+        }
+        if (node.right) {
+            queue.push(node.right);
+        }
+    }
+}
+
+console.log('========= Q33 =========');
+const binaryToPrint = new TreeNode(1);
+binaryToPrint.left = new TreeNode(2);
+binaryToPrint.right = new TreeNode(3);
+binaryToPrint.right.left = new TreeNode(4);
+binaryToPrint.right.right = new TreeNode(5);
+
+printLevelOrder(binaryToPrint);
+console.log('\n');
+
+/*
+ * Q34.
+ * Given two strings A and B, return whether or not A can be shifted some number
+ * of times to get B.
+ * For example, if A is abcde and B is cdeab, return true. If A is abc and B is
+ * acb, return false.
+ */
+function canShift(a, b) {
+    if (a.length !== b.length) {
+        return false;
+    }
+    const a2 = a + a;
+    return a2.includes(b);
+}
+
+console.log('========= Q34 =========');
+const A = 'abcde';
+const B = 'cdeab';
+const shiftable1 = canShift(A, B);
+console.log(`Can ${A} be shifted to get ${B}: ${shiftable1}`);
+
+const C = 'abc';
+const D = 'acb';
+const shiftable2 = canShift(C, D);
+console.log(`Can ${A} be shifted to get ${B}: ${shiftable2}`);
+console.log('\n');
+
+/*
+ * Q35.
+ * Given a binary tree, return the level of the tree with minimum sum.
+ */
+function minLevelSum(root) {
+    if (!root) {
+        return -1;
+    }
+
+    let queue = [];
+    queue.push(root);
+    let minLevel = 0;
+    let minSum = Number.MAX_SAFE_INTEGER;
+    let level = 0;
+
+    while (queue.length > 0) {
+        let size = queue.length;
+        let sum = 0;
+
+        for (let i = 0; i < size; i++) {
+            const node = queue.shift();
+            sum += node.val;
+
+            if (node.left) {
+                queue.push(node.left);
+            }
+            if (node.right) {
+                queue.push(node.right);
+            }
+        }
+
+        if (sum < minSum) {
+            minSum = sum;
+            minLevel = level;
+        }
+        level++;
+    }
+    return minLevel;
+}
+
+console.log('========= Q35 =========');
+const minTreeSum = new TreeNode(11);
+minTreeSum.left = new TreeNode(2);
+minTreeSum.right = new TreeNode(3);
+minTreeSum.left.left = new TreeNode(2);
+minTreeSum.left.right = new TreeNode(2);
+minTreeSum.right.left = new TreeNode(4);
+minTreeSum.right.right = new TreeNode(5);
+
+console.log(`Minimum Sum Tree Level: ${minLevelSum(minTreeSum)}`);
+console.log('\n');
+
+/*
+ * Q36.
+ * Given a sorted list of integers, square the elements and give the output in
+ * sorted order.
+ * For example, given [-9, -2, 0, 2, 3], return [0, 4, 4, 9, 81].
+ */
+function sortedSquares(nums) {
+    const n = nums.length;
+    let result = new Array(n);
+    let left = 0;
+    let right = n - 1;
+
+    for (let i = n - 1; i >= 0; i--) {
+        if (Math.abs(nums[left]) > Math.abs(nums[right])) {
+            result[i] = nums[left] * nums[left];
+            left++;
+        } else {
+            result[i] = nums[right] * nums[right];
+            right--;
+        }
+    }
+
+    return result;
+}
+
+console.log('========= Q36 =========');
+const numArr = [-9, -2, 0, 2, 3];
+const squaredArr = sortedSquares(numArr);
+
+console.log(`Sorted Squared Array: ${squaredArr}`);
+console.log('\n');
+
+/*
+ * Q37.
+ * You have n fair coins and you flip them all at the same time. Any that come
+ * up tails you set aside. The ones that come up heads you flip again. How many
+ * rounds do you expect to play before only one coin remains?
+ * Write a function that, given n, returns the number of rounds you'd expect to
+ * play until one coin remains.
+ */
+function numRounds(n) {
+    if (n === 1) {
+        return 0;
+    } else {
+        return 1 + numRounds(Math.floor(n / 2));
+    }
+}
+
+console.log('========= Q37 =========');
+const numOfRounds = numRounds(10);
+console.log(`Number of Rounds until one coin remaining: ${numOfRounds}`);
+console.log('\n');
+
+/*
+ * Q38.
+ * Given the root of a binary search tree, and a target K, return two nodes in
+ * the tree whose sum equals K.
+ * For example, given the following tree and K of 20
+ * "    10         "
+ * "   /   \       "
+ * " 5      15     "
+ * "       /  \    "
+ * "     11    15  "
+ * Return the nodes 5 and 15.
+ */
+function findTarget(root, k) {
+    let list = [];
+    inorder(root, list);
+
+    let left = 0;
+    let right = list.length - 1;
+    while (left < right) {
+        const sum = list[left] + list[right];
+        if (sum === k) {
+            let result = [];
+            result.push(findNode(root, list[left]));
+            result.push(findNode(root, list[right]));
+            return result;
+        } else if (sum < k) {
+            left++;
+        } else {
+            right--;
+        }
+    }
+    return null;
+}
+
+function inorder(root, list) {
+    if (!root) {
+        return;
+    }
+
+    inorder(root.left, list);
+    list.push(root.val);
+    inorder(root.right, list);
+}
+
+function findNode(root, val) {
+    if (!root || root.val === val) {
+        return root;
+    }
+
+    if (val < root.val) {
+        return findNode(root.left, val);
+    } else {
+        return findNode(root.right, val);
+    }
+}
+
+console.log('========= Q38 =========');
+const findTwoSumBinaryTree = new TreeNode(10);
+findTwoSumBinaryTree.left = new TreeNode(5);
+findTwoSumBinaryTree.right = new TreeNode(15);
+findTwoSumBinaryTree.right.left = new TreeNode(11);
+findTwoSumBinaryTree.right.right = new TreeNode(15);
+
+const twoNodesForK = findTarget(findTwoSumBinaryTree, 20);
+console.log(`Two Nodes for K: ${twoNodesForK[0].val}, ${twoNodesForK[1].val}`);
+console.log('\n');
+
+/*
+ * Q39.
+ * Let's represent an integer in a linked list format by having each node
+ * represent a digit in the number. The nodes make up the number in reversed
+ * order.
+ * For example, the following linked list:
+ * 1 -> 2 -> 3 -> 4 -> 5
+ * is the number 54321.
+ * Given two linked lists in this format, return their sum in the same linked
+ * list format.
+ * For example, given
+ * 9 -> 9
+ * 5 -> 2
+ * return 124 (99 + 25) as:
+ * 4 -> 2 -> 1
+ */
+function addTwoNumbers(l1, l2) {
+    let dummy = new ListNode(0);
+    let curr = dummy;
+    let carry = 0;
+
+    while (l1 || l2) {
+        let sum = carry;
+        if (l1) {
+            sum += l1.val;
+            l1 = l1.next;
+        }
+
+        if (l2) {
+            sum += l2.val;
+            l2 = l2.next;
+        }
+
+        curr.next = new ListNode(sum % 10);
+        curr = curr.next;
+        carry = Math.floor(sum / 10);
+    }
+
+    if (carry > 0) {
+        curr.next = new ListNode(carry);
+    }
+
+    return dummy.next;
+}
+
+console.log('========= Q39 =========');
+const numList1 = new ListNode(9);
+numList1.next = new ListNode(9);
+const numList2 = new ListNode(5);
+numList2.next = new ListNode(2);
+
+let addNumList = addTwoNumbers(numList1, numList2);
+while (addNumList) {
+    console.log(`Add Two Numbers: ${addNumList.val}`);
+    addNumList = addNumList.next;
+}
+console.log('\n');
+
+/*
+ * Q40.
+ * Design and implement a HitCounter class that keeps track of requests (or
+ * hits). It should support the following operations:
+ * record(timestamp): records a hit that happened at timestamp
+ * total(): returns the total number of hits recorded
+ * range(lower, upper): returns the number of hits that occurred between
+ * timestamps lower and upper (inclusive)
+ * Follow-up: What if our system has limited memory?
+ */
+class HitCounter {
+    constructor() {
+        this.timestamps = [];
+    }
+
+    record(timestamp) {
+        this.timestamps.push(timestamp);
+    }
+
+    total() {
+        return this.timestamps.length;
+    }
+
+    range(lower, upper) {
+        console.log(this.timestamps);
+        let count = 0;
+        for (let i = 0; i < this.timestamps.length; i++) {
+            if (this.timestamps[i] >= lower && this.timestamps[i] <= upper) {
+                count++;
+            }
+        }
+        return count;
+    }
+}
+
+console.log('========= Q40 =========');
+const hitCounter = new HitCounter();
+hitCounter.record(Date.now());
+let currentTime = Date.now();
+while (Date.now() - currentTime < 100) {}
+const lower = Date.now();
+hitCounter.record(lower);
+currentTime = Date.now();
+while (Date.now() - currentTime < 100) {}
+hitCounter.record(Date.now());
+currentTime = Date.now();
+while (Date.now() - currentTime < 100) {}
+const upper = currentTime;
+hitCounter.record(upper);
+currentTime = Date.now();
+while (Date.now() - currentTime < 100) {}
+hitCounter.record(Date.now());
+
+console.log(`Total Hits: ${hitCounter.total()}`);
+console.log(lower, upper);
+console.log(`Range Hits: ${hitCounter.range(lower, upper)}`);
