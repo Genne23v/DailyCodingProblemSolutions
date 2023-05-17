@@ -2029,7 +2029,6 @@ class HitCounter {
     }
 
     range(lower, upper) {
-        console.log(this.timestamps);
         let count = 0;
         for (let i = 0; i < this.timestamps.length; i++) {
             if (this.timestamps[i] >= lower && this.timestamps[i] <= upper) {
@@ -2052,6 +2051,7 @@ while (Date.now() - currentTime < 100) {}
 hitCounter.record(Date.now());
 currentTime = Date.now();
 while (Date.now() - currentTime < 100) {}
+currentTime = Date.now();
 const upper = currentTime;
 hitCounter.record(upper);
 currentTime = Date.now();
@@ -2059,5 +2059,486 @@ while (Date.now() - currentTime < 100) {}
 hitCounter.record(Date.now());
 
 console.log(`Total Hits: ${hitCounter.total()}`);
-console.log(lower, upper);
-console.log(`Range Hits: ${hitCounter.range(lower, upper)}`);
+console.log(
+    `Range Hits between ${lower} and ${upper}: ${hitCounter.range(
+        lower,
+        upper
+    )}`
+);
+console.log('\n');
+
+/*
+ * Q41.
+ * You have a large array with most of the elements as zero.
+ * Use a more space-efficient data structure, SparseArray, that implements the
+ * same interface:
+ * init(arr, size): initialize with the original large array and size.
+ * set(i, val): updates index at i with val.
+ * get(i): gets the value at index i.
+ */
+class SparseArray {
+    constructor(arr, size) {
+        this.size = size;
+        this.map = {};
+        for (let i = 0; i < arr.length; i++) {
+            if (arr[i] !== 0) {
+                this.map[i] = arr[i];
+            }
+        }
+    }
+
+    set(i, val) {
+        if (i < 0 || i >= this.size) {
+            throw new Error('Index out of bounds');
+        }
+        if (val === 0) {
+            delete this.map[i];
+        } else {
+            this.map[i] = val;
+        }
+    }
+
+    get(i) {
+        if (i < 0 || i >= this.size) {
+            throw new Error('Index out of bounds');
+        }
+        return this.map[i] || 0;
+    }
+}
+
+console.log('========= Q41 =========');
+const sparseArr = [1, 0, 0, 0, 1, 0, 0, 1, 0, 1];
+const sparseArray = new SparseArray(sparseArr, sparseArr.length);
+sparseArray.set(0, 2);
+sparseArray.set(1, 3);
+console.log(`First Element in Sparse Array: ${sparseArray.get(0)}`);
+console.log(`Second Element in Sparse Array: ${sparseArray.get(1)}`);
+console.log('\n');
+
+/*
+ * Q42.
+ * Given a binary tree, find a minimum path sum from root to a leaf.
+ * For example, the minimum path in this tree is [10, 5, 1, -1], which has sum
+ * 15.
+ * "  10       "
+ * " /  \      "
+ * "5    5     "
+ * " \     \   "
+ * "   2    1  "
+ * "       /   "
+ * "     -1    "
+ */
+function minPathSum(root) {
+    if (!root) {
+        return 0;
+    }
+    return findMinPath(root, 0);
+}
+
+function findMinPath(node, currentSum) {
+    if (!node) {
+        return Number.MAX_SAFE_INTEGER;
+    }
+    currentSum += node.val;
+
+    if (!node.left && !node.right) {
+        return currentSum;
+    }
+
+    const leftSum = findMinPath(node.left, currentSum);
+    const rightSum = findMinPath(node.right, currentSum);
+
+    return Math.min(leftSum, rightSum);
+}
+
+console.log('========= Q42 =========');
+const binaryTreeForMinSumPath = new TreeNode(10);
+binaryTreeForMinSumPath.left = new TreeNode(5);
+binaryTreeForMinSumPath.right = new TreeNode(5);
+binaryTreeForMinSumPath.left.right = new TreeNode(2);
+binaryTreeForMinSumPath.right.right = new TreeNode(1);
+binaryTreeForMinSumPath.right.right.left = new TreeNode(-1);
+
+const minSum = minPathSum(binaryTreeForMinSumPath);
+console.log('Minimum path sum: ' + minSum);
+console.log('\n');
+
+/*
+ * Q43.
+ * Given the head of a singly linked list, swap every two nodes and return its
+ * head.
+ * For example, given 1 -> 2 -> 3 -> 4, return 2 -> 1 -> 4 -> 3.
+ */
+function swapPairs(head) {
+    let dummy = new ListNode(0);
+    dummy.next = head;
+    let prev = dummy;
+
+    while (head && head.next) {
+        let first = head;
+        let second = head.next;
+
+        prev.next = second;
+        first.next = second.next;
+        second.next = first;
+
+        prev = first;
+        head = first.next;
+    }
+
+    return dummy.next;
+}
+
+console.log('========= Q43 =========');
+const linkedListToSwapEveryTwo = new ListNode(1);
+linkedListToSwapEveryTwo.next = new ListNode(2);
+linkedListToSwapEveryTwo.next.next = new ListNode(3);
+linkedListToSwapEveryTwo.next.next.next = new ListNode(4);
+
+const swappedList = swapPairs(linkedListToSwapEveryTwo);
+
+let current = swappedList;
+while (current) {
+    console.log(current.val + ' ');
+    current = current.next;
+}
+console.log('\n');
+
+/*
+ * Q44.
+ * Implement a stack API using only a heap. A stack implements the following
+ * methods:
+ * push(item), which adds an element to the stack
+ * pop(), which removes and returns the most recently added element (or throws
+ * an error if there is nothing on the stack)
+ * Recall that a heap has the following operations:
+ * push(item), which adds a new key to the heap
+ * pop(), which removes and returns the max value of the heap
+ */
+class StackUsingHeap {
+    constructor() {
+        this.priority = 0;
+        this.heap = [];
+    }
+
+    push(item) {
+        this.heap.push(new HeapNode(item, this.priority++));
+        this.heap.sort((a, b) => b.priority - a.priority);
+    }
+
+    pop() {
+        if (this.heap.size === 0) {
+            throw new Error('Stack is empty');
+        }
+        return this.heap.shift().value;
+    }
+}
+
+class HeapNode {
+    constructor(value, priority) {
+        this.value = value;
+        this.priority = priority;
+    }
+}
+
+console.log('========= Q44 =========');
+const stackUsingHeap = new StackUsingHeap();
+
+stackUsingHeap.push(1);
+stackUsingHeap.push(2);
+stackUsingHeap.push(3);
+
+console.log(stackUsingHeap.pop()); // Output: 3
+console.log(stackUsingHeap.pop()); // Output: 2
+console.log(stackUsingHeap.pop()); // Output: 1
+console.log('\n');
+
+/*
+ * Q45.
+ * Given a string, determine whether any permutation of it is a palindrome.
+ * For example, carrace should return true, since it can be rearranged to form
+ * racecar, which is a palindrome. daily should return false, since there's no
+ * rearrangement that can form a palindrome.
+ */
+function isPermutationPalindrome(str) {
+    const map = new Map();
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charAt(i);
+        if (map.has(char)) {
+            map.delete(char);
+        } else {
+            map.set(char, true);
+        }
+    }
+    return map.size <= 1;
+}
+
+console.log('========= Q45 =========');
+const palindromeString = 'carrace';
+const nonPalindromeString = 'daily';
+
+console.log(
+    `Is ${palindromeString} palindrome? ${isPermutationPalindrome(
+        palindromeString
+    )}`
+); // Output: true
+console.log(
+    `Is ${nonPalindromeString} palindrome? ${isPermutationPalindrome(
+        nonPalindromeString
+    )}`
+); // Output: false
+console.log('\n');
+
+/*
+ * Q46.
+ * Given a string, return the first recurring character in it, or null if there
+ * is no recurring character.
+ * For example, given the string "acbbac", return "b". Given the string
+ * "abcdef", return null.
+ */
+function findFirstRecurringCharacter(str) {
+    const map = new Map();
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charAt(i);
+        if (map.has(char)) {
+            return char;
+        } else {
+            map.set(char, true);
+        }
+    }
+    return null;
+}
+
+console.log('========= Q46 =========');
+const strToFindRecurringString1 = 'acbbac';
+const strToFindRecurringString2 = 'abcdef';
+
+console.log(
+    `First recurring char in ${strToFindRecurringString1}: ${findFirstRecurringCharacter(
+        strToFindRecurringString1
+    )}`
+); // Output: b
+console.log(
+    `First recurring char in ${strToFindRecurringString2}: ${findFirstRecurringCharacter(
+        strToFindRecurringString2
+    )}`
+); // Output: null
+console.log('\n');
+
+/*
+ * Q47.
+ * Given a 32-bit integer, return the number with its bits reversed.
+ * For example, given the binary number 1111 0000 1111 0000 1111 0000 1111 0000,
+ * return 0000 1111 0000 1111 0000 1111 0000 1111.
+ */
+function reverseBinary(binary) {
+    let number = parseInt(binary, 2);
+    let reversed = 0;
+
+    for (let i = 0; i < 32; i++) {
+        reversed = reversed << 1;
+        reversed = reversed | (number & 1);
+        number = number >> 1;
+    }
+
+    return reversed.toString(2);
+}
+
+console.log('========= Q47 =========');
+const binary = '11110000111100001111000011110000';
+console.log(reverseBinary(binary)); // Output: 00001111000011110000111100001111
+console.log('\n');
+
+/*
+ * Q48.
+ * You are given a list of data entries that represent entries and exits of
+ * groups of people into a building. An entry looks like this:
+ * {"timestamp": 1526579928, count: 3, "type": "enter"}
+ * This means 3 people entered the building. An exit looks like this:
+ * {"timestamp": 1526580382, count: 2, "type": "exit"}
+ * This means that 2 people exited the building. timestamp is in Unix time.
+ * Find the busiest period in the building, that is, the time with the most
+ * people in the building. Return it as a pair of (start, end) timestamps. You
+ * can assume the building always starts off and ends up empty, i.e. with 0
+ * people inside.
+ */
+function findBusiestPeriod(data) {
+    let maxCount = 0;
+    let currentCount = 0;
+    let maxPeriod = [0, 0];
+    let maxed = false;
+
+    for (let i = 0; i < data.length; i++) {
+        const entry = data[i];
+        if (entry[2] === 1) {
+            currentCount += entry[1];
+        } else {
+            currentCount -= entry[1];
+        }
+
+        if (currentCount > maxCount) {
+            maxCount = currentCount;
+            maxPeriod = [entry[0], entry[0]];
+            maxed = true;
+        } else if (maxed && currentCount === maxCount) {
+            maxPeriod[1] = entry[0];
+            maxed = false;
+        } else if (maxed && currentCount < maxCount) {
+            maxPeriod[1] = entry[0] - 1;
+            maxed = false;
+        }
+    }
+
+    return maxPeriod;
+}
+
+console.log('========= Q48 =========');
+const data = [
+    [1526579928, 3, 1], // Entry: 3 people entered the building
+    [1526579935, 2, 1], // Entry: 2 people entered the building
+    [1526579940, 1, 0], // Exit: 1 person exited the building
+    [1526579945, 4, 1], // Entry: 4 people entered the building
+    [1526579950, 2, 0], // Exit: 2 people exited the building
+    [1526579955, 1, 0], // Exit: 1 person exited the building
+    [1526579960, 3, 0], // Exit: 3 people exited the building
+];
+
+const busiestPeriod = findBusiestPeriod(data);
+console.log(
+    'Busiest Period: [' + busiestPeriod[0] + ', ' + busiestPeriod[1] + ']'
+);
+console.log('\n');
+
+/*
+ * Q49.
+ * Write a function to flatten a nested dictionary. Namespace the keys with a
+ * period.
+ * For example, given the following dictionary:
+ * "{                      "
+ * "    "key": 3,          "
+ * "    "foo": {           "
+ * "        "a": 5,        "
+ * "        "bar": {       "
+ * "            "baz": 8   "
+ * "        }              "
+ * "    }                  "
+ * "}                      "
+ * it should become:
+ * "{                      "
+ * "    "key": 3,          "
+ * "    "foo.a": 5,        "
+ * "    "foo.bar.baz": 8   "
+ * "}                      "
+ * You can assume keys do not contain dots in them, i.e. no clobbering will
+ * occur.
+ */
+function flattenDictionary(dict) {
+    const flattenedDict = {};
+    flattenDictionaryHelper('', dict, flattenedDict);
+    return flattenedDict;
+}
+
+function flattenDictionaryHelper(prefix, dict, flattenDic) {
+    for (const key in dict) {
+        if (typeof dict[key] === 'object') {
+            flattenDictionaryHelper(prefix + key + '.', dict[key], flattenDic);
+        } else {
+            flattenDic[prefix + key] = dict[key];
+        }
+    }
+}
+
+console.log('========= Q49 =========');
+const dict = {
+    key: 3,
+    foo: {
+        a: 5,
+        bar: {
+            baz: 8,
+        },
+    },
+};
+const flattenedDict = flattenDictionary(dict);
+console.log(flattenedDict);
+console.log('\n');
+
+/*
+ * Q50.
+ * You are given a starting state start, a list of transition probabilities for
+ * a Markov chain, and a number of steps num_steps. Run the Markov chain
+ * starting from start for num_steps and compute the number of times we visited
+ * each state.
+ * For example, given the starting state a, number of steps 5000, and the
+ * following transition probabilities:
+ * "[                      "
+ * "  ('a', 'a', 0.9),     "
+ * "  ('a', 'b', 0.075),   "
+ * "  ('a', 'c', 0.025),   "
+ * "  ('b', 'a', 0.15),    "
+ * "  ('b', 'b', 0.8),     "
+ * "  ('b', 'c', 0.05),    "
+ * "  ('c', 'a', 0.25),    "
+ * "  ('c', 'b', 0.25),    "
+ * "  ('c', 'c', 0.5)      "
+ * "]                      "
+ * One instance of running this Markov chain might produce { 'a': 3012, 'b':
+ * 1656, 'c': 332 }.
+ */
+function simulateMarkovChain(start, numSteps, transitionProbabilities) {
+    const stateCount = new Map();
+    stateCount.set(start, 1);
+
+    let currentState = start;
+    for (let i = 0; i < numSteps; i++) {
+        const randomValue = Math.random();
+        let cumulativeProbability = 0.0;
+
+        for (const transition of transitionProbabilities) {
+            if (transition.fromState === currentState) {
+                cumulativeProbability += transition.probability;
+                if (randomValue <= cumulativeProbability) {
+                    currentState = transition.toState;
+                    stateCount.set(
+                        currentState,
+                        stateCount.get(currentState)
+                            ? stateCount.get(currentState) + 1
+                            : 1
+                    );
+                    break;
+                }
+            }
+        }
+    }
+
+    return stateCount;
+}
+
+class TransitionProbability {
+    constructor(fromState, toState, probability) {
+        this.fromState = fromState;
+        this.toState = toState;
+        this.probability = probability;
+    }
+}
+
+console.log('========= Q50 =========');
+const startState = 'a';
+const numSteps = 5000;
+const transitionProbabilities = [
+    new TransitionProbability('a', 'a', 0.9),
+    new TransitionProbability('a', 'b', 0.075),
+    new TransitionProbability('a', 'c', 0.025),
+    new TransitionProbability('b', 'a', 0.15),
+    new TransitionProbability('b', 'b', 0.8),
+    new TransitionProbability('b', 'c', 0.05),
+    new TransitionProbability('c', 'a', 0.25),
+    new TransitionProbability('c', 'b', 0.25),
+    new TransitionProbability('c', 'c', 0.5),
+];
+const stateCounts = simulateMarkovChain(
+    startState,
+    numSteps,
+    transitionProbabilities
+);
+console.log(`State Counts: ${JSON.stringify(Object.fromEntries(stateCounts))}`);
+console.log('\n');

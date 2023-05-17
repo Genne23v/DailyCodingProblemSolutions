@@ -1,10 +1,9 @@
-import java.util.Set;
-import java.util.HashSet;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.Date;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.PriorityQueue;
@@ -1246,7 +1245,7 @@ public class QuestionsAndSolutions {
     }
 
     // S40.
-    public static class HitCounter {
+    static class HitCounter {
         private List<Long> timestamps;
 
         public HitCounter() {
@@ -1269,6 +1268,273 @@ public class QuestionsAndSolutions {
                 }
             }
             return count;
+        }
+    }
+
+    // S41.
+    static class SparseArray {
+        private HashMap<Integer, Integer> map;
+        private int size;
+
+        public SparseArray(int[] arr, int size) {
+            this.map = new HashMap<>();
+            this.size = size;
+            for (int i = 0; i < arr.length; i++) {
+                if (arr[i] != 0) {
+                    map.put(i, arr[i]);
+                }
+            }
+        }
+
+        public void set(int i, int val) {
+            if (i < 0 || i >= size) {
+                throw new IndexOutOfBoundsException();
+            }
+            if (val == 0) {
+                map.remove(i);
+            } else {
+                map.put(i, val);
+            }
+        }
+
+        public int get(int i) {
+            if (i < 0 || i >= size) {
+                throw new IndexOutOfBoundsException();
+            }
+            return map.getOrDefault(i, 0);
+        }
+    }
+
+    // S42.
+    static class MinimumPathSum {
+        public int minPathSum(TreeNode<Integer> root) {
+            if (root == null) {
+                return 0;
+            }
+            return findMinPath(root, 0);
+        }
+
+        private int findMinPath(TreeNode<Integer> node, int currentSum) {
+            if (node == null) {
+                return Integer.MAX_VALUE;
+            }
+
+            currentSum += node.val;
+
+            if (node.left == null && node.right == null) {
+                return currentSum;
+            }
+
+            int leftSum = findMinPath(node.left, currentSum);
+            int rightSum = findMinPath(node.right, currentSum);
+
+            return Math.min(leftSum, rightSum);
+        }
+    }
+
+    // S43.
+    static class SwapNodesInPairs {
+        public ListNode swapPairs(ListNode head) {
+            ListNode dummy = new ListNode(0);
+            dummy.next = head;
+            ListNode prev = dummy;
+
+            while (head != null && head.next != null) {
+                ListNode first = head;
+                ListNode second = head.next;
+
+                prev.next = second;
+                first.next = second.next;
+                second.next = first;
+
+                prev = first;
+                head = first.next;
+            }
+
+            return dummy.next;
+        }
+    }
+
+    // S44.
+    static class StackUsingHeap {
+        private int priority;
+        private PriorityQueue<HeapNode> heap;
+
+        public StackUsingHeap() {
+            this.priority = 0;
+            this.heap = new PriorityQueue<>((a, b) -> b.priority - a.priority);
+        }
+
+        public void push(int item) {
+            heap.offer(new HeapNode(item, priority++));
+        }
+
+        public int pop() {
+            if (heap.isEmpty()) {
+                throw new IllegalStateException("Stack is empty");
+            }
+
+            return heap.poll().value;
+        }
+
+        private static class HeapNode {
+            private int value;
+            private int priority;
+
+            HeapNode(int value, int priority) {
+                this.value = value;
+                this.priority = priority;
+            }
+        }
+    }
+
+    // S45.
+    public static boolean isPermutationPalindrome(String str) {
+        Map<Character, Integer> charFrequency = new HashMap<>();
+
+        for (char c : str.toCharArray()) {
+            charFrequency.put(c, charFrequency.getOrDefault(c, 0) + 1);
+        }
+
+        int oddCount = 0;
+
+        for (int count : charFrequency.values()) {
+            if (count % 2 != 0) {
+                oddCount++;
+            }
+        }
+
+        return oddCount <= 1;
+    }
+
+    // S46.
+    public static Character findFirstRecurringCharacter(String str) {
+        Set<Character> seenChars = new HashSet<>();
+
+        for (char c : str.toCharArray()) {
+            if (seenChars.contains(c)) {
+                return c;
+            }
+            seenChars.add(c);
+        }
+        return null;
+    }
+
+    // S47.
+    public static String reverseBinary(String binary) {
+        long number = Long.parseLong(binary, 2);
+
+        Long reversed = 0L;
+
+        for (int i = 0; i < 32; i++) {
+            reversed <<= 1; // Shift the reversed bits to the left
+            reversed |= (number & 1); // Set the least significant bit of reversed to the current bit of number
+            number >>= 1; // Shift the bits of number to the right
+        }
+
+        return Long.toBinaryString(reversed); // Convert reversed integer to binary string
+    }
+
+    // S48.
+    public static int[] findBusiestPeriod(int[][] data) {
+        HashMap<Integer, Integer> countMap = new HashMap<>();
+        int maxCount = 0;
+        int currentCount = 0;
+        int startTimestamp = 0;
+        int endTimestamp = 0;
+        boolean maxed = false;
+
+        for (int[] entry : data) {
+            int timestamp = entry[0];
+            int count = entry[1];
+            String type = entry[2] == 1 ? "enter" : "exit";
+
+            if (type.equals("enter")) {
+                currentCount += count;
+            } else {
+                currentCount -= count;
+            }
+
+            countMap.put(timestamp, currentCount);
+
+            if (currentCount > maxCount) {
+                maxed = true;
+                maxCount = currentCount;
+                startTimestamp = timestamp;
+                endTimestamp = timestamp;
+            } else if (maxed && currentCount == maxCount) {
+                endTimestamp = timestamp;
+                maxed = false;
+            } else if (maxed && currentCount < maxCount) {
+                endTimestamp = timestamp - 1;
+                maxed = false;
+            }
+        }
+
+        return new int[] { startTimestamp, endTimestamp };
+    }
+
+    // S49.
+    public static Map<String, Object> flattenDictionary(Map<String, Object> dict) {
+        Map<String, Object> flattenedDict = new HashMap<>();
+        flattenDictionaryHelper("", dict, flattenedDict);
+        return flattenedDict;
+    }
+
+    private static void flattenDictionaryHelper(String prefix, Map<String, Object> dict,
+            Map<String, Object> flattenedDict) {
+        for (Map.Entry<String, Object> entry : dict.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+
+            if (value instanceof Map) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> nestedDict = (Map<String, Object>) value;
+                flattenDictionaryHelper(prefix + key + ".", nestedDict, flattenedDict);
+            } else {
+                flattenedDict.put(prefix + key, value);
+            }
+        }
+    }
+
+    // S50.
+    public static Map<Character, Integer> simulateMarkovChain(char start, int numSteps,
+            List<TransitionProbability> transitionProbabilities) {
+        Map<Character, Integer> stateCounts = new HashMap<>();
+        stateCounts.put(start, 1);
+
+        Random random = new Random();
+
+        char currentState = start;
+        for (int i = 0; i < numSteps; i++) {
+            double randomValue = random.nextDouble();
+            double cumulativeProbability = 0.0;
+
+            for (TransitionProbability transition : transitionProbabilities) {
+                if (transition.fromState == currentState) {
+                    cumulativeProbability += transition.probability;
+
+                    if (randomValue <= cumulativeProbability) {
+                        currentState = transition.toState;
+                        stateCounts.put(currentState, stateCounts.getOrDefault(currentState, 0) + 1);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return stateCounts;
+    }
+
+    static class TransitionProbability {
+        char fromState;
+        char toState;
+        double probability;
+
+        public TransitionProbability(char fromState, char toState, double probability) {
+            this.fromState = fromState;
+            this.toState = toState;
+            this.probability = probability;
         }
     }
 
@@ -2039,6 +2305,224 @@ public class QuestionsAndSolutions {
 
         System.out.println("Total hits: " + hitCounter.total());
         System.out.println("Hits between lower and upper: " + hitCounter.range(lower, upper));
+
+        /*
+         * Q41.
+         * You have a large array with most of the elements as zero.
+         * Use a more space-efficient data structure, SparseArray, that implements the
+         * same interface:
+         * init(arr, size): initialize with the original large array and size.
+         * set(i, val): updates index at i with val.
+         * get(i): gets the value at index i.
+         */
+        int[] sparseArr = { 1, 0, 0, 0, 1, 0, 0, 1, 0, 1 };
+        SparseArray sparseArray = new SparseArray(sparseArr, 10);
+        sparseArray.set(0, 2);
+        sparseArray.set(1, 3);
+        System.out.print("First Element in Sparse Array: ");
+        System.out.println(sparseArray.get(0));
+        System.out.print("Second Element in Sparse Array: ");
+        System.out.println(sparseArray.get(1));
+
+        /*
+         * Q42.
+         * Given a binary tree, find a minimum path sum from root to a leaf.
+         * For example, the minimum path in this tree is [10, 5, 1, -1], which has sum
+         * 15.
+         * "  10       "
+         * " /  \      "
+         * "5    5     "
+         * " \     \   "
+         * "   2    1  "
+         * "       /   "
+         * "     -1    "
+         */
+
+        TreeNode<Integer> binaryTreeForMinSumPath = new TreeNode<>(10);
+        binaryTreeForMinSumPath.left = new TreeNode<>(5);
+        binaryTreeForMinSumPath.right = new TreeNode<>(5);
+        binaryTreeForMinSumPath.left.right = new TreeNode<>(2);
+        binaryTreeForMinSumPath.right.right = new TreeNode<>(1);
+        binaryTreeForMinSumPath.right.right.left = new TreeNode<>(-1);
+
+        MinimumPathSum minimumPathSum = new MinimumPathSum();
+        int minSum = minimumPathSum.minPathSum(binaryTreeForMinSumPath);
+        System.out.println("Minimum path sum: " + minSum);
+
+        /*
+         * Q43.
+         * Given the head of a singly linked list, swap every two nodes and return its
+         * head.
+         * For example, given 1 -> 2 -> 3 -> 4, return 2 -> 1 -> 4 -> 3.
+         */
+        ListNode linkedListToSwapEveryTwo = new ListNode(1);
+        linkedListToSwapEveryTwo.next = new ListNode(2);
+        linkedListToSwapEveryTwo.next.next = new ListNode(3);
+        linkedListToSwapEveryTwo.next.next.next = new ListNode(4);
+
+        SwapNodesInPairs swapNodesInPairs = new SwapNodesInPairs();
+        ListNode swappedList = swapNodesInPairs.swapPairs(linkedListToSwapEveryTwo);
+
+        ListNode current = swappedList;
+        while (current != null) {
+            System.out.print(current.val + " ");
+            current = current.next;
+        }
+
+        /*
+         * Q44.
+         * Implement a stack API using only a heap. A stack implements the following
+         * methods:
+         * push(item), which adds an element to the stack
+         * pop(), which removes and returns the most recently added element (or throws
+         * an error if there is nothing on the stack)
+         * Recall that a heap has the following operations:
+         * push(item), which adds a new key to the heap
+         * pop(), which removes and returns the max value of the heap
+         */
+        StackUsingHeap stackUsingHeap = new StackUsingHeap();
+
+        stackUsingHeap.push(1);
+        stackUsingHeap.push(2);
+        stackUsingHeap.push(3);
+
+        System.out.println(stackUsingHeap.pop()); // Output: 3
+        System.out.println(stackUsingHeap.pop()); // Output: 2
+        System.out.println(stackUsingHeap.pop()); // Output: 1
+
+        /*
+         * Q45.
+         * Given a string, determine whether any permutation of it is a palindrome.
+         * For example, carrace should return true, since it can be rearranged to form
+         * racecar, which is a palindrome. daily should return false, since there's no
+         * rearrangement that can form a palindrome.
+         */
+        String palindromeString = "carrace";
+        String nonPalindromeString = "daily";
+
+        System.out.println(isPermutationPalindrome(palindromeString)); // Output: true
+        System.out.println(isPermutationPalindrome(nonPalindromeString)); // Output: false
+
+        /*
+         * Q46.
+         * Given a string, return the first recurring character in it, or null if there
+         * is no recurring character.
+         * For example, given the string "acbbac", return "b". Given the string
+         * "abcdef", return null.
+         */
+        String strToFindRecurringString1 = "acbbac";
+        String strToFindRecurringString2 = "abcdef";
+
+        System.out.println(findFirstRecurringCharacter(strToFindRecurringString1)); // Output: b
+        System.out.println(findFirstRecurringCharacter(strToFindRecurringString2)); // Output: null
+
+        /*
+         * Q47.
+         * Given a 32-bit integer, return the number with its bits reversed.
+         * For example, given the binary number 1111 0000 1111 0000 1111 0000 1111 0000,
+         * return 0000 1111 0000 1111 0000 1111 0000 1111.
+         */
+        String binary = "11110000111100001111000011110000";
+        System.out.println(reverseBinary(binary)); // Output: 00001111000011110000111100001111
+
+        /*
+         * Q48.
+         * You are given a list of data entries that represent entries and exits of
+         * groups of people into a building. An entry looks like this:
+         * {"timestamp": 1526579928, count: 3, "type": "enter"}
+         * This means 3 people entered the building. An exit looks like this:
+         * {"timestamp": 1526580382, count: 2, "type": "exit"}
+         * This means that 2 people exited the building. timestamp is in Unix time.
+         * Find the busiest period in the building, that is, the time with the most
+         * people in the building. Return it as a pair of (start, end) timestamps. You
+         * can assume the building always starts off and ends up empty, i.e. with 0
+         * people inside.
+         */
+        int[][] data = {
+                { 1526579928, 3, 1 }, // Entry: 3 people entered the building
+                { 1526579935, 2, 1 }, // Entry: 2 people entered the building
+                { 1526579940, 1, 0 }, // Exit: 1 person exited the building
+                { 1526579945, 4, 1 }, // Entry: 4 people entered the building
+                { 1526579950, 2, 0 }, // Exit: 2 people exited the building
+                { 1526579955, 1, 0 }, // Exit: 1 person exited the building
+                { 1526579960, 3, 0 } // Exit: 3 people exited the building
+        };
+
+        int[] busiestPeriod = findBusiestPeriod(data);
+        System.out.println("Busiest Period: [" + busiestPeriod[0] + ", " + busiestPeriod[1] + "]");
+
+        /*
+         * Q49.
+         * Write a function to flatten a nested dictionary. Namespace the keys with a
+         * period.
+         * For example, given the following dictionary:
+         * "{                      "
+         * "    "key": 3,          "
+         * "    "foo": {           "
+         * "        "a": 5,        "
+         * "        "bar": {       "
+         * "            "baz": 8   "
+         * "        }              "
+         * "    }                  "
+         * "}                      "
+         * it should become:
+         * "{                      "
+         * "    "key": 3,          "
+         * "    "foo.a": 5,        "
+         * "    "foo.bar.baz": 8   "
+         * "}                      "
+         * You can assume keys do not contain dots in them, i.e. no clobbering will
+         * occur.
+         */
+        Map<String, Object> dict = new HashMap<>();
+        dict.put("key", 3);
+        Map<String, Object> foo = new HashMap<>();
+        foo.put("a", 5);
+        Map<String, Object> bar = new HashMap<>();
+        bar.put("baz", 8);
+        foo.put("bar", bar);
+        dict.put("foo", foo);
+
+        Map<String, Object> flattenedDict = flattenDictionary(dict);
+        System.out.println(flattenedDict);
+
+        /*
+         * Q50.
+         * You are given a starting state start, a list of transition probabilities for
+         * a Markov chain, and a number of steps num_steps. Run the Markov chain
+         * starting from start for num_steps and compute the number of times we visited
+         * each state.
+         * For example, given the starting state a, number of steps 5000, and the
+         * following transition probabilities:
+         * "[                      "
+         * "  ('a', 'a', 0.9),     "
+         * "  ('a', 'b', 0.075),   "
+         * "  ('a', 'c', 0.025),   "
+         * "  ('b', 'a', 0.15),    "
+         * "  ('b', 'b', 0.8),     "
+         * "  ('b', 'c', 0.05),    "
+         * "  ('c', 'a', 0.25),    "
+         * "  ('c', 'b', 0.25),    "
+         * "  ('c', 'c', 0.5)      "
+         * "]                      "
+         * One instance of running this Markov chain might produce { 'a': 3012, 'b':
+         * 1656, 'c': 332 }.
+         */
+        char startState = 'a';
+        int numSteps = 5000;
+        List<TransitionProbability> transitionProbabilities = new ArrayList<>();
+        transitionProbabilities.add(new TransitionProbability('a', 'a', 0.9));
+        transitionProbabilities.add(new TransitionProbability('a', 'b', 0.075));
+        transitionProbabilities.add(new TransitionProbability('a', 'c', 0.025));
+        transitionProbabilities.add(new TransitionProbability('b', 'a', 0.15));
+        transitionProbabilities.add(new TransitionProbability('b', 'b', 0.8));
+        transitionProbabilities.add(new TransitionProbability('b', 'c', 0.05));
+        transitionProbabilities.add(new TransitionProbability('c', 'a', 0.25));
+        transitionProbabilities.add(new TransitionProbability('c', 'b', 0.25));
+        transitionProbabilities.add(new TransitionProbability('c', 'c', 0.5));
+
+        Map<Character, Integer> stateCounts = simulateMarkovChain(startState, numSteps, transitionProbabilities);
+        System.out.println(stateCounts);
 
     }
 }
