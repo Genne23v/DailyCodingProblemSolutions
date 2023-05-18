@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.math.BigInteger;
 
 public class QuestionsAndSolutions {
     // S1.
@@ -1538,6 +1539,273 @@ public class QuestionsAndSolutions {
         }
     }
 
+    // S51.
+    public static boolean isCharacterMapping(String s1, String s2) {
+        if (s1.length() != s2.length()) { // Lengths should be equal for one-to-one mapping
+            return false;
+        }
+
+        Map<Character, Character> mapping = new HashMap<>();
+
+        for (int i = 0; i < s1.length(); i++) {
+            char c1 = s1.charAt(i);
+            char c2 = s2.charAt(i);
+
+            if (mapping.containsKey(c1)) {
+                if (mapping.get(c1) != c2) {
+                    return false; // Different mapping already exists for c1
+                }
+            } else {
+                mapping.put(c1, c2); // Add new mapping
+            }
+        }
+
+        return true;
+    }
+
+    // S52.
+    public static ListNode rotateRight(ListNode head, int k) {
+        if (head == null || k == 0) {
+            return head;
+        }
+
+        int length = getLength(head);
+        k %= length;
+
+        if (k == 0) {
+            return head;
+        }
+
+        ListNode current = head;
+        for (int i = 0; i < length - k - 1; i++) {
+            current = current.next;
+        }
+
+        ListNode newHead = current.next;
+        current.next = null;
+
+        ListNode temp = newHead;
+        while (temp.next != null) {
+            temp = temp.next;
+        }
+
+        temp.next = head;
+
+        return newHead;
+    }
+
+    private static int getLength(ListNode head) {
+        int length = 0;
+        ListNode current = head;
+        while (current != null) {
+            length++;
+            current = current.next;
+        }
+        return length;
+    }
+
+    // S53.
+    public static BigInteger greatestCommonDenominator(int[] nums) {
+        BigInteger gcd = BigInteger.valueOf(nums[0]);
+
+        for (int i = 1; i < nums.length; i++) {
+            gcd = gcd(gcd, BigInteger.valueOf(nums[i]));
+        }
+
+        return gcd;
+    }
+
+    private static BigInteger gcd(BigInteger a, BigInteger b) {
+        return a.gcd(b);
+    }
+
+    // S54.
+    static class Rectangle {
+        int topLeftX;
+        int topLeftY;
+        int width;
+        int height;
+
+        public Rectangle(int topLeftX, int topLeftY, int width, int height) {
+            this.topLeftX = topLeftX;
+            this.topLeftY = topLeftY;
+            this.width = width;
+            this.height = height;
+        }
+
+        public int getIntersectionArea(Rectangle other) {
+            int left = Math.max(this.topLeftX, other.topLeftX);
+            int right = Math.min(this.topLeftX + this.width, other.topLeftX + other.width);
+            int top = Math.max(this.topLeftX, other.topLeftX);
+            int bottom = Math.min(this.topLeftY + this.height, other.topLeftY + other.height);
+
+            if (left > right || top > bottom) {
+                return 0;
+            }
+
+            int intersectionWidth = right - left;
+            int intersectionHeight = bottom - top;
+
+            return intersectionWidth * intersectionHeight;
+        }
+
+        // S55.
+        public boolean overlaps(Rectangle other) {
+            int thisRight = this.topLeftX + this.width;
+            int thisBottom = this.topLeftY + this.height;
+            int otherRight = other.topLeftX + other.width;
+            int otherBottom = other.topLeftY + other.height;
+
+            return this.topLeftX < otherRight &&
+                    thisRight > other.topLeftX &&
+                    this.topLeftY < otherBottom &&
+                    thisBottom > other.topLeftY;
+        }
+    }
+
+    // S56.
+    public static int findLongestSubarrayLength(int[] nums) {
+        int n = nums.length;
+        int maxLength = 0;
+        int left = 0;
+        int right = 0;
+        HashSet<Integer> distinctSet = new HashSet<>();
+
+        while (right < n) {
+            if (!distinctSet.contains(nums[right])) {
+                distinctSet.add(nums[right]);
+                maxLength = Math.max(maxLength, right - left + 1);
+                right++;
+            } else {
+                distinctSet.remove(nums[left]);
+                left++;
+            }
+        }
+
+        return maxLength;
+    }
+
+    // S57.
+    public static int eraseOverlapIntervals(int[][] intervals) {
+        if (intervals.length == 0) {
+            return 0;
+        }
+
+        // Sort the intervals based on their end time in ascending order
+        Arrays.sort(intervals, Comparator.comparingInt(a -> a[1]));
+
+        int nonOverlapCount = 1;
+        int end = intervals[0][1];
+
+        for (int i = 1; i < intervals.length; i++) {
+            // If the start time of the current interval is after the end time of the
+            // previous non-overlapping interval, it's non-overlapping
+            if (intervals[i][0] >= end) {
+                nonOverlapCount++;
+                end = intervals[i][1];
+            }
+        }
+
+        int minIntervalsToRemove = intervals.length - nonOverlapCount;
+
+        return minIntervalsToRemove;
+    }
+
+    // S58.
+    static class Segment {
+        int start;
+        int end;
+
+        public Segment(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+    }
+
+    public static int countIntersectingPairs(int[] p, int[] q) {
+        int count = 0;
+        int n = p.length;
+        List<Segment> segments = new ArrayList<>();
+
+        for (int i = 0; i < n; i++) {
+            Segment segment = new Segment(p[i], q[i]);
+            segments.add(segment);
+        }
+
+        Collections.sort(segments, Comparator.comparingInt(segment -> segment.start));
+
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = i + 1; j < n; j++) {
+                if (segments.get(i).end > segments.get(j).end) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
+    // S59.
+    public static int findMostFrequentSubtreeSum(TreeNode<Integer> root) {
+        if (root == null) {
+            return 0;
+        }
+
+        Map<Integer, Integer> sumFrequencies = new HashMap<>();
+        calculateSubtreeSum(root, sumFrequencies);
+
+        int maxFrequency = 0;
+        int mostFrequentSum = 0;
+
+        for (Map.Entry<Integer, Integer> entry : sumFrequencies.entrySet()) {
+            int sum = entry.getKey();
+            int frequency = entry.getValue();
+
+            if (frequency > maxFrequency) {
+                maxFrequency = frequency;
+                mostFrequentSum = sum;
+            }
+        }
+
+        return mostFrequentSum;
+    }
+
+    private static int calculateSubtreeSum(TreeNode<Integer> node, Map<Integer, Integer> sumFrequencies) {
+        if (node == null) {
+            return 0;
+        }
+
+        int leftSum = calculateSubtreeSum(node.left, sumFrequencies);
+        int rightSum = calculateSubtreeSum(node.right, sumFrequencies);
+
+        int currentSum = node.val + leftSum + rightSum;
+        sumFrequencies.put(currentSum, sumFrequencies.getOrDefault(currentSum, 0) + 1);
+
+        return currentSum;
+    }
+
+    // S60.
+    public static void rotate(int[] nums, int k) {
+        int n = nums.length;
+        k = k % n;
+
+        reverse(nums, 0, n - 1);
+        // Reverse the first k elements
+        reverse(nums, 0, k - 1);
+        // Reverse the remaining elements
+        reverse(nums, k, n - 1);
+    }
+
+    private static void reverse(int[] nums, int start, int end) {
+        while (start < end) {
+            int temp = nums[start];
+            nums[start] = nums[end];
+            nums[end] = temp;
+            start++;
+            end--;
+        }
+    }
+
     public static void main(String[] args) throws InterruptedException {
         /*
          * Q1.
@@ -1707,8 +1975,8 @@ public class QuestionsAndSolutions {
          * Given two strings, compute the edit distance between them.
          */
 
-        String s1 = "kitten";
-        String s2 = "sitting";
+        String stringOne = "kitten";
+        String stringTwo = "sitting";
         /*
          * Table for kitten and sitting
          * 0 1 2 3 4 5 6 7
@@ -1719,7 +1987,7 @@ public class QuestionsAndSolutions {
          * 5 5 4 3 2 2 3 4
          * 6 6 5 4 3 3 2 3
          */
-        int editDistanceOfTwoStrings = editDistance(s1, s2);
+        int editDistanceOfTwoStrings = editDistance(stringOne, stringTwo);
         System.out.print("Edit distance of two strings: ");
         System.out.println(editDistanceOfTwoStrings);
 
@@ -2524,5 +2792,214 @@ public class QuestionsAndSolutions {
         Map<Character, Integer> stateCounts = simulateMarkovChain(startState, numSteps, transitionProbabilities);
         System.out.println(stateCounts);
 
+        /*
+         * Q51.
+         * Determine whether there exists a one-to-one character mapping from one string
+         * s1 to another s2.
+         * For example, given s1 = abc and s2 = bcd, return true since we can map a to
+         * b, b to c, and c to d.
+         * Given s1 = foo and s2 = bar, return false since the o cannot map to two
+         * characters.
+         */
+        String s1 = "abc";
+        String s2 = "bcd";
+        System.out.println(isCharacterMapping(s1, s2)); // Output: true
+
+        s1 = "foo";
+        s2 = "bar";
+        System.out.println(isCharacterMapping(s1, s2)); // Output: false
+
+        /*
+         * Q52.
+         * Given a linked list and a positive integer k, rotate the list to the right by
+         * k places.
+         * For example, given the linked list 7 -> 7 -> 3 -> 5 and k = 2, it should
+         * become 3 -> 5 -> 7 -> 7.
+         * Given the linked list 1 -> 2 -> 3 -> 4 -> 5 and k = 3, it should become 3 ->
+         * 4 -> 5 -> 1 -> 2.
+         */
+
+        ListNode head1 = new ListNode(7);
+        head1.next = new ListNode(7);
+        head1.next.next = new ListNode(3);
+        head1.next.next.next = new ListNode(5);
+
+        int k1 = 2;
+        ListNode rotated1 = rotateRight(head1, k1);
+        printLinkedList(rotated1); // Output: 3 -> 5 -> 7 -> 7
+
+        ListNode head2 = new ListNode(1);
+        head2.next = new ListNode(2);
+        head2.next.next = new ListNode(3);
+        head2.next.next.next = new ListNode(4);
+        head2.next.next.next.next = new ListNode(5);
+
+        int k2 = 3;
+        ListNode rotated2 = rotateRight(head2, k2);
+        printLinkedList(rotated2); // Output: 3 -> 4 -> 5 -> 1 -> 2
+
+        /*
+         * Q53.
+         * Given n numbers, find the greatest common denominator between them.
+         * For example, given the numbers [42, 56, 14], return 14.
+         */
+        int[] numbers = { 42, 56, 14 };
+
+        BigInteger gcd = greatestCommonDenominator(numbers);
+        System.out.print("Greatest Common Denominator: ");
+        System.out.println(gcd);
+
+        /*
+         * Q54.
+         * Given two rectangles on a 2D graph, return the area of their intersection. If
+         * the rectangles don't intersect, return 0.
+         * For example, given the following rectangles:
+         * "{                                          "
+         * "    "top_left": (1, 4),                    "
+         * "    "dimensions": (3, 3) # width, height   "
+         * "}                                          "
+         * and
+         * "{                                          "
+         * "    "top_left": (0, 5),                    "
+         * "    "dimensions": (4, 3) # width, height   "
+         * "}                                          "
+         * return 6.
+         */
+        Rectangle rectangle1 = new Rectangle(1, 4, 3, 3);
+        Rectangle rectangle2 = new Rectangle(0, 5, 4, 3);
+
+        int intersectionArea = rectangle1.getIntersectionArea(rectangle2);
+
+        System.out.println("Intersection Area: " + intersectionArea);
+
+        /*
+         * Q55.
+         * You are given given a list of rectangles represented by min and max x- and
+         * y-coordinates. Compute whether or not a pair of rectangles overlap each
+         * other. If one rectangle completely covers another, it is considered
+         * overlapping.
+         * For example, given the following rectangles:
+         * "{                                          "
+         * "    "top_left": (1, 4),                    "
+         * "    "dimensions": (3, 3) # width, height   "
+         * "},                                         "
+         * "{                                          "
+         * "    "top_left": (-1, 3),                   "
+         * "    "dimensions": (2, 1)                   "
+         * "},                                         "
+         * "{                                          "
+         * "    "top_left": (0, 5),                    "
+         * "    "dimensions": (4, 3)                   "
+         * "}                                          "
+         * return true as the first and third rectangle overlap each other.
+         */
+        Rectangle[] rectangles = new Rectangle[] {
+                new Rectangle(1, 4, 3, 3),
+                new Rectangle(-1, 3, 2, 1),
+                new Rectangle(0, 5, 4, 3)
+        };
+
+        boolean overlapExists = checkOverlap(rectangles);
+
+        System.out.println("Overlap Exists: " + overlapExists);
+
+        /*
+         * Q56.
+         * Given an array of elements, return the length of the longest subarray where
+         * all its elements are distinct.
+         * For example, given the array [5, 1, 3, 5, 2, 3, 4, 1], return 5 as the
+         * longest subarray of distinct elements is [5, 2, 3, 4, 1].
+         */
+        int[] arrToFindLongestUniqueSubarray = { 5, 1, 3, 5, 2, 3, 4, 1 };
+        int longestSubarrayLength = findLongestSubarrayLength(arrToFindLongestUniqueSubarray);
+
+        System.out.println("Longest Subarray Length: " + longestSubarrayLength);
+
+        /*
+         * Q57.
+         * Given a collection of intervals, find the minimum number of intervals you
+         * need to remove to make the rest of the intervals non-overlapping.
+         * Intervals can "touch", such as [0, 1] and [1, 2], but they won't be
+         * considered overlapping.
+         * For example, given the intervals (7, 9), (2, 4), (5, 8), return 1 as the last
+         * interval can be removed and the first two won't overlap.
+         * The intervals are not necessarily sorted in any order.
+         */
+        int[][] collectionOfIntervals = { { 7, 9 }, { 2, 4 }, { 5, 8 } };
+        int minIntervalsToRemove = eraseOverlapIntervals(collectionOfIntervals);
+
+        System.out.println("Minimum Intervals to Remove: " + minIntervalsToRemove);
+
+        /*
+         * Q58.
+         * Suppose you are given two lists of n points, one list p1, p2, ..., pn on the
+         * line y = 0 and the other list q1, q2, ..., qn on the line y = 1. Imagine a
+         * set of n line segments connecting each point pi to qi. Write an algorithm to
+         * determine how many pairs of the line segments intersect.
+         */
+        int[] p = { 1, 2, 3, 4 };
+        int[] q = { 5, 6, 7, 8 };
+        int intersectCount = countIntersectingPairs(p, q);
+
+        System.out.println("Number of Intersecting Pairs: " + intersectCount);
+
+        /*
+         * Q59.
+         * Given the root of a binary tree, find the most frequent subtree sum. The
+         * subtree sum of a node is the sum of all values under a node, including the
+         * node itself.
+         * For example, given the following tree:
+         * "  5    "
+         * " / \   "
+         * "2  -5  "
+         * Return 2 as it occurs twice: once as the left leaf, and once as the sum of 2
+         * + 5 - 5.
+         */
+        TreeNode<Integer> mostSubtreeSum = new TreeNode<>(5);
+        mostSubtreeSum.left = new TreeNode<>(2);
+        mostSubtreeSum.right = new TreeNode<>(-5);
+
+        int mostFrequentSum = findMostFrequentSubtreeSum(mostSubtreeSum);
+        System.out.println("Most frequent subtree sum: " + mostFrequentSum);
+
+        /*
+         * Q60.
+         * Given an array and a number k that's smaller than the length of the array,
+         * rotate the array to the right k elements in-place.
+         */
+        int[] arrayToRotate = { 1, 2, 3, 4, 5 };
+        int numOfRotation = 3;
+
+        rotate(arrayToRotate, numOfRotation);
+
+        System.out.println("Rotated array:");
+        for (int numToRotate : arrayToRotate) {
+            System.out.print(numToRotate + " ");
+        }
+
+    }
+
+    private static void printLinkedList(ListNode head) {
+        ListNode current = head;
+        while (current != null) {
+            System.out.print(current.val + " -> ");
+            current = current.next;
+        }
+        System.out.println("null");
+    }
+
+    // S55.
+    public static boolean checkOverlap(Rectangle[] rectangles) {
+        int n = rectangles.length;
+
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = i + 1; j < n; j++) {
+                if (rectangles[i].overlaps(rectangles[j])) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

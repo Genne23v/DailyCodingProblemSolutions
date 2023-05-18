@@ -2542,3 +2542,481 @@ const stateCounts = simulateMarkovChain(
 );
 console.log(`State Counts: ${JSON.stringify(Object.fromEntries(stateCounts))}`);
 console.log('\n');
+
+/*
+ * Q51.
+ * Determine whether there exists a one-to-one character mapping from one string
+ * s1 to another s2.
+ * For example, given s1 = abc and s2 = bcd, return true since we can map a to
+ * b, b to c, and c to d.
+ * Given s1 = foo and s2 = bar, return false since the o cannot map to two
+ * characters.
+ */
+function isCharacterMapping(s1, s2) {
+    if (s1.length !== s2.length) {
+        return false;
+    }
+
+    const charMap = new Map();
+    for (let i = 0; i < s1.length; i++) {
+        if (charMap.has(s1[i])) {
+            if (charMap.get(s1[i]) !== s2[i]) {
+                return false;
+            }
+        } else {
+            charMap.set(s1[i], s2[i]);
+        }
+    }
+
+    return true;
+}
+
+console.log('========= Q51 =========');
+console.log(
+    `isCharacterMapping('abc', 'bcd'): ${isCharacterMapping('abc', 'bcd')}`
+);
+console.log(
+    `isCharacterMapping('foo', 'bar'): ${isCharacterMapping('foo', 'bar')}`
+);
+console.log('\n');
+
+/*
+ * Q52.
+ * Given a linked list and a positive integer k, rotate the list to the right by
+ * k places.
+ * For example, given the linked list 7 -> 7 -> 3 -> 5 and k = 2, it should
+ * become 3 -> 5 -> 7 -> 7.
+ * Given the linked list 1 -> 2 -> 3 -> 4 -> 5 and k = 3, it should become 3 ->
+ * 4 -> 5 -> 1 -> 2.
+ */
+function rotateRight(head, k) {
+    if (!head || k === 0) {
+        return head;
+    }
+
+    let length = getLength(head);
+    k = k % length;
+
+    if (k === 0) {
+        return head;
+    }
+
+    let current = head;
+    for (let i = 0; i < length - k - 1; i++) {
+        current = current.next;
+    }
+
+    newHead = current.next;
+    current.next = null;
+
+    let temp = newHead;
+    while (temp.next) {
+        temp = temp.next;
+    }
+    temp.next = head;
+
+    return newHead;
+}
+
+function getLength(head) {
+    let length = 0;
+    let current = head;
+
+    while (current) {
+        length++;
+        current = current.next;
+    }
+    return length;
+}
+
+function printLinkedList(head) {
+    let current = head;
+    let toPrint = '';
+    while (current) {
+        toPrint += `${current.val} -> `;
+        current = current.next;
+    }
+    toPrint += 'null';
+    console.log(toPrint);
+}
+
+console.log('========= Q52 =========');
+const head1 = new ListNode(7);
+head1.next = new ListNode(7);
+head1.next.next = new ListNode(3);
+head1.next.next.next = new ListNode(5);
+
+const k1 = 2;
+const rotated1 = rotateRight(head1, k1);
+console.log(`Rotated List1: `);
+printLinkedList(rotated1);
+
+const head2 = new ListNode(1);
+head2.next = new ListNode(2);
+head2.next.next = new ListNode(3);
+head2.next.next.next = new ListNode(4);
+head2.next.next.next.next = new ListNode(5);
+
+const k2 = 3;
+const rotated2 = rotateRight(head2, k2);
+console.log(`Rotated List2: `);
+printLinkedList(rotated2);
+
+console.log('\n');
+
+/*
+ * Q53.
+ * Given n numbers, find the greatest common denominator between them.
+ * For example, given the numbers [42, 56, 14], return 14.
+ */
+function gcdHelper(a, b) {
+    while (b !== 0) {
+        let temp = b;
+        b = a % b;
+        a = temp;
+    }
+    return a;
+}
+
+function findGreatestCommonDenominator(numbers) {
+    let gcd = numbers[0];
+
+    for (let i = 1; i < numbers.length; i++) {
+        gcd = gcdHelper(gcd, numbers[i]);
+    }
+
+    return gcd;
+}
+
+console.log('========= Q53 =========');
+const numbers = [42, 56, 14];
+console.log(
+    `Greatest Common Denominator: ${findGreatestCommonDenominator(numbers)}`
+);
+console.log('\n');
+
+/*
+ * Q54.
+ * Given two rectangles on a 2D graph, return the area of their intersection. If
+ * the rectangles don't intersect, return 0.
+ * For example, given the following rectangles:
+ * "{                                          "
+ * "    "top_left": (1, 4),                    "
+ * "    "dimensions": (3, 3) # width, height   "
+ * "}                                          "
+ * and
+ * "{                                          "
+ * "    "top_left": (0, 5),                    "
+ * "    "dimensions": (4, 3) # width, height   "
+ * "}                                          "
+ * return 6.
+ */
+class Rectangle {
+    constructor(topLeft, topLeftY, width, height) {
+        this.topLeft = topLeft;
+        this.topLeftY = topLeftY;
+        this.width = width;
+        this.height = height;
+    }
+
+    getIntersectionArea(other) {
+        const left = Math.max(this.topLeft, other.topLeft);
+        const right = Math.min(
+            this.topLeft + this.width,
+            other.topLeft + other.width
+        );
+        const top = Math.max(this.topLeftY, other.topLeftY);
+        const bottom = Math.min(
+            this.topLeftY + this.height,
+            other.topLeftY + other.height
+        );
+
+        if (left >= right || top >= bottom) {
+            return 0;
+        }
+
+        const intersectionWidth = right - left;
+        const intersectionHeight = bottom - top;
+
+        return intersectionWidth * intersectionHeight;
+    }
+
+    overlaps(other) {
+        const thisRight = this.topLeft + this.width;
+        const thisBottom = this.topLeftY + this.height;
+        const otherRight = other.topLeft + other.width;
+        const otherBottom = other.topLeftY + other.height;
+
+        return (
+            this.topLeft < otherRight &&
+            thisRight > other.topLeft &&
+            this.topLeftY < otherBottom &&
+            thisBottom > other.topLeftY
+        );
+    }
+}
+
+console.log('========= Q54 =========');
+const rectangle1 = new Rectangle(1, 4, 3, 3);
+const rectangle2 = new Rectangle(0, 5, 4, 3);
+console.log(`Intersection Area: ${rectangle1.getIntersectionArea(rectangle2)}`);
+console.log('\n');
+
+/*
+ * Q55.
+ * You are given given a list of rectangles represented by min and max x- and
+ * y-coordinates. Compute whether or not a pair of rectangles overlap each
+ * other. If one rectangle completely covers another, it is considered
+ * overlapping.
+ * For example, given the following rectangles:
+ * "{                                          "
+ * "    "top_left": (1, 4),                    "
+ * "    "dimensions": (3, 3) # width, height   "
+ * "},                                         "
+ * "{                                          "
+ * "    "top_left": (-1, 3),                   "
+ * "    "dimensions": (2, 1)                   "
+ * "},                                         "
+ * "{                                          "
+ * "    "top_left": (0, 5),                    "
+ * "    "dimensions": (4, 3)                   "
+ * "}                                          "
+ * return true as the first and third rectangle overlap each other.
+ */
+function checkOverlap(rectangles) {
+    for (let i = 0; i < rectangles.length; i++) {
+        for (let j = i + 1; j < rectangles.length; j++) {
+            if (rectangles[i].overlaps(rectangles[j])) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+console.log('========= Q55 =========');
+const rectangles = [
+    new Rectangle(1, 4, 3, 3),
+    new Rectangle(-1, 3, 2, 1),
+    new Rectangle(0, 5, 4, 3),
+];
+const overlapExists = checkOverlap(rectangles);
+console.log(`Overlap Exists: ${overlapExists}`);
+console.log('\n');
+
+/*
+ * Q56.
+ * Given an array of elements, return the length of the longest subarray where
+ * all its elements are distinct.
+ * For example, given the array [5, 1, 3, 5, 2, 3, 4, 1], return 5 as the
+ * longest subarray of distinct elements is [5, 2, 3, 4, 1].
+ */
+function findLongestSubarrayLength(nums) {
+    const n = nums.length;
+    let maxLength = 0;
+    let left = 0;
+    let right = 0;
+    let distinctSet = new Set();
+
+    while (right < n) {
+        if (!distinctSet.has(nums[right])) {
+            distinctSet.add(nums[right]);
+            maxLength = Math.max(maxLength, distinctSet.size);
+            right++;
+        } else {
+            distinctSet.delete(nums[left]);
+            left++;
+        }
+    }
+
+    return maxLength;
+}
+
+console.log('========= Q56 =========');
+const arrToFindLongestUniqueSubarray = [5, 1, 3, 5, 2, 3, 4, 1];
+const longestSubarrayLength = findLongestSubarrayLength(
+    arrToFindLongestUniqueSubarray
+);
+console.log(`Longest Subarray Length: ${longestSubarrayLength}`);
+console.log('\n');
+
+/*
+ * Q57.
+ * Given a collection of intervals, find the minimum number of intervals you
+ * need to remove to make the rest of the intervals non-overlapping.
+ * Intervals can "touch", such as [0, 1] and [1, 2], but they won't be
+ * considered overlapping.
+ * For example, given the intervals (7, 9), (2, 4), (5, 8), return 1 as the last
+ * interval can be removed and the first two won't overlap.
+ * The intervals are not necessarily sorted in any order.
+ */
+function eraseOverlapIntervals(intervals) {
+    if (intervals.length === 0) {
+        return 0;
+    }
+
+    intervals.sort((a, b) => a[1] - b[1]);
+
+    let nonOverlapCount = 1;
+    let end = intervals[0][1];
+
+    for (let i = 1; i < intervals.length; i++) {
+        if (intervals[i][0] >= end) {
+            nonOverlapCount++;
+            end = intervals[i][1];
+        }
+    }
+
+    const minIntervalsToRemove = intervals.length - nonOverlapCount;
+
+    return minIntervalsToRemove;
+}
+
+console.log('========= Q57 =========');
+const collectionOfIntervals = [
+    [7, 9],
+    [2, 4],
+    [5, 8],
+];
+const minIntervalsToRemove = eraseOverlapIntervals(collectionOfIntervals);
+console.log(`Min Intervals To Remove: ${minIntervalsToRemove}`);
+console.log('\n');
+
+/*
+ * Q58.
+ * Suppose you are given two lists of n points, one list p1, p2, ..., pn on the
+ * line y = 0 and the other list q1, q2, ..., qn on the line y = 1. Imagine a
+ * set of n line segments connecting each point pi to qi. Write an algorithm to
+ * determine how many pairs of the line segments intersect.
+ */
+class Segment {
+    constructor(start, end) {
+        this.start = start;
+        this.end = end;
+    }
+}
+
+function countIntersectingPairs(p, q) {
+    let count = 0;
+    const n = p.length;
+    let segments = [];
+
+    for (let i = 0; i < n; i++) {
+        segments.push(new Segment(p[i], q[i]));
+    }
+
+    segments.sort((a, b) => a.start - b.start);
+    
+    for (let i = 0; i < n - 1; i++) {
+        for (let j = i + 1; j < n; j++) {
+            if (segments[i].end > segments[j].end) {
+                count++;
+            }
+        }
+    }
+
+    return count;
+}
+
+console.log('========= Q58 =========');
+const p = [1, 2, 3, 4];
+const q = [5, 6, 7, 8];
+const intersectCount = countIntersectingPairs(p, q);
+console.log(`Number of Intersecting Pairs: ${intersectCount}`);
+console.log('\n');
+
+/*
+ * Q59.
+ * Given the root of a binary tree, find the most frequent subtree sum. The
+ * subtree sum of a node is the sum of all values under a node, including the
+ * node itself.
+ * For example, given the following tree:
+ * "  5    "
+ * " / \   "
+ * "2  -5  "
+ * Return 2 as it occurs twice: once as the left leaf, and once as the sum of 2
+ * + 5 - 5.
+ */
+function findMostFrequentSubtreeSum(root) {
+    if (!root) {
+        return 0;
+    }
+
+    let sumFrequencies = new Map();
+    calculateSubtreeSum(root, sumFrequencies);
+    
+    let maxFrequency = 0;
+    let mostFrequentSum = 0;
+
+    for (const [sum, frequency] of sumFrequencies) {
+        if (frequency > maxFrequency) {
+            maxFrequency = frequency;
+            mostFrequentSum = sum;
+        }
+    }
+
+    return mostFrequentSum;
+}
+
+function calculateSubtreeSum(node, sumFrequencies) {
+    if (!node) {
+        return 0;
+    }
+
+    const leftSum = calculateSubtreeSum(node.left, sumFrequencies);
+    const rightSum = calculateSubtreeSum(node.right, sumFrequencies);
+
+    const currentSum = node.val + leftSum + rightSum;
+    sumFrequencies.set(currentSum, sumFrequencies.get(currentSum) + 1 || 1);
+    
+    return currentSum;
+}
+
+console.log('========= Q59 =========');
+const mostSubtreeSum = new TreeNode(5);
+mostSubtreeSum.left = new TreeNode(2);
+mostSubtreeSum.right = new TreeNode(-5);
+
+const mostFrequentSum = findMostFrequentSubtreeSum(mostSubtreeSum);
+console.log(`Most Frequent Subtree Sum: ${mostFrequentSum}`);
+console.log('\n');
+
+/*
+ * Q60.
+ * Given an array and a number k that's smaller than the length of the array,
+ * rotate the array to the right k elements in-place.
+ */
+function rotate(nums, k){
+    const n = nums.length;
+    k %= n;
+    
+    reverse(nums, 0, n - 1);
+    // Reverse the first k elements
+    reverse(nums, 0, k - 1);
+    // Reverse the remaining elements
+    reverse(nums, k, n - 1);
+}
+
+function reverse(nums, start, end){
+    while (start < end) {
+        const temp = nums[start];
+        nums[start] = nums[end];
+        nums[end] = temp;
+        start++;
+        end--;
+    }
+}
+
+console.log('========= Q60 =========');
+let arrToRotate = [1, 2, 3, 4, 5 ];
+const numToRotate = 3;
+
+rotate(arrToRotate, numToRotate);
+
+console.log('Rotated array: ');
+let rotatedToPrint = ''
+for (const num of arrToRotate) {
+    rotatedToPrint += `${num} `
+}
+console.log(rotatedToPrint);
+console.log('\n');
