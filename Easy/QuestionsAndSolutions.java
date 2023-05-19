@@ -1806,6 +1806,283 @@ public class QuestionsAndSolutions {
         }
     }
 
+    // S61.
+    public static int maximumPathSum(int[][] triangle) {
+        int rows = triangle.length;
+
+        int[][] memo = new int[rows][rows];
+
+        // Initialize the bottom row of the memoization array with the values from the
+        // triangle
+        for (int i = 0; i < rows; i++) {
+            memo[rows - 1][i] = triangle[rows - 1][i];
+        }
+
+        // Calculate the maximum path sum for each row from bottom to top
+        for (int i = rows - 2; i >= 0; i--) {
+            for (int j = 0; j <= i; j++) {
+                // Compute the maximum path sum by choosing the larger adjacent value below
+                memo[i][j] = triangle[i][j] + Math.max(memo[i + 1][j], memo[i + 1][j + 1]);
+            }
+        }
+
+        return memo[0][0];
+    }
+
+    // S62.
+    public static boolean isPalindrome(int number) {
+        if (number < 0 || (number != 0 && number % 10 == 0)) {
+            return false;
+        }
+
+        int reversed = 0;
+        int original = number;
+
+        while (number != 0) {
+            int digit = number % 10;
+            reversed = reversed * 10 + digit;
+            number /= 10;
+        }
+
+        return original == reversed;
+    }
+
+    // S63.
+    public static boolean isCompleteBinaryTree(TreeNode<Integer> root) {
+        int nodeCount = countNodes(root);
+        int height = getHeight(root);
+        int maxNodeCount = (1 << height) - 1;
+
+        return nodeCount == maxNodeCount;
+    }
+
+    private static int countNodes(TreeNode<Integer> root) {
+        if (root == null) {
+            return 0;
+        }
+
+        int leftHeight = getLeftHeight(root);
+        int rightHeight = getRightHeight(root);
+
+        if (leftHeight == rightHeight) {
+            // Last level is fully filled
+            return (1 << leftHeight) - 1;
+        } else {
+            // Last level is partially filled
+            return countNodes(root.left) + countNodes(root.right) + 1;
+        }
+    }
+
+    private static int getLeftHeight(TreeNode<Integer> node) {
+        int height = 0;
+        while (node != null) {
+            height++;
+            node = node.left;
+        }
+        return height;
+    }
+
+    private static int getRightHeight(TreeNode<Integer> node) {
+        int height = 0;
+        while (node != null) {
+            height++;
+            node = node.right;
+        }
+        return height;
+    }
+
+    private static int getHeight(TreeNode<Integer> node) {
+        return getLeftHeight(node);
+    }
+
+    // S64.
+    public static int findNextPermutation(int num) {
+        int[] digits = convertToDigits(num);
+
+        // Find the first decreasing digit from right to left
+        int pivotIndex = findPivotIndex(digits);
+
+        // If no pivot is found, return the integer itself
+        if (pivotIndex == -1) {
+            return num;
+        }
+
+        // Find the smallest digit greater than pivot to the right of pivot
+        int swapIndex = findSwapIndex(digits, pivotIndex);
+
+        // Swap pivot and swap
+        swap(digits, pivotIndex, swapIndex);
+
+        // Reverse the digits to the right of pivot
+        reverseNumber(digits, pivotIndex + 1, digits.length - 1);
+
+        return convertToInt(digits);
+    }
+
+    private static int[] convertToDigits(int num) {
+        String numStr = Integer.toString(num);
+        int[] digits = new int[numStr.length()];
+        for (int i = 0; i < numStr.length(); i++) {
+            digits[i] = numStr.charAt(i) - '0';
+        }
+        return digits;
+    }
+
+    private static int findPivotIndex(int[] digits) {
+        for (int i = digits.length - 2; i >= 0; i--) {
+            if (digits[i] < digits[i + 1]) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static int findSwapIndex(int[] digits, int pivotIndex) {
+        int pivot = digits[pivotIndex];
+        for (int i = digits.length - 1; i > pivotIndex; i--) {
+            if (digits[i] > pivot) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static void swap(int[] digits, int i, int j) {
+        int temp = digits[i];
+        digits[i] = digits[j];
+        digits[j] = temp;
+    }
+
+    private static void reverseNumber(int[] digits, int start, int end) {
+        while (start < end) {
+            swap(digits, start, end);
+            start++;
+            end--;
+        }
+    }
+
+    private static int convertToInt(int[] digits) {
+        int result = 0;
+        for (int digit : digits) {
+            result = result * 10 + digit;
+        }
+        return result;
+    }
+
+    // S65.
+    public static <T> T[] applyPermutation(T[] array, int[] permutation) {
+        if (array.length != permutation.length) {
+            throw new IllegalArgumentException("Array and permutation must have the same length.");
+        }
+
+        T[] result = array.clone();
+
+        for (int i = 0; i < permutation.length; i++) {
+            result[i] = array[permutation[i]];
+        }
+
+        return result;
+    }
+
+    // S66.
+    public static int collatzSequence(int n) {
+        if (n <= 0) {
+            throw new IllegalArgumentException("Input must be a positive integer.");
+        }
+
+        if (n == 1) {
+            return 0;
+        }
+
+        if (n % 2 == 0) {
+            return 1 + collatzSequence(n / 2);
+        } else {
+            return 1 + collatzSequence(3 * n + 1);
+        }
+    }
+
+    // S67.
+    public static String getColumnID(int columnNumber) {
+        StringBuilder columnID = new StringBuilder();
+
+        while (columnNumber > 0) {
+            int remainder = (columnNumber - 1) % 26;
+            char c = (char) ('A' + remainder);
+            columnID.insert(0, c);
+
+            columnNumber = (columnNumber - 1) / 26;
+        }
+
+        return columnID.toString();
+    }
+
+    // S68.
+    public static int longestConsecutiveRun(int n) {
+        String binary = Integer.toBinaryString(n);
+        int maxLength = 0;
+        int currentLength = 0;
+
+        for (char c : binary.toCharArray()) {
+            if (c == '1') {
+                currentLength++;
+                maxLength = Math.max(maxLength, currentLength);
+            } else {
+                currentLength = 0;
+            }
+        }
+
+        return maxLength;
+    }
+
+    // S69.
+    public static int getNthSevenishNumber(int n) {
+        int[] sevenishNumbers = new int[n];
+        sevenishNumbers[0] = 1;
+        int nextPowerOf7Index = 1;
+        int powerIndex = 1;
+        int nextIndexForSum = 1;
+        int currentPowerOf7 = 7;
+        int nextPowerOf7 = 7;
+
+        for (int i = 1; i < n; i++) {
+            if (i == nextPowerOf7Index) {
+                sevenishNumbers[i] = nextPowerOf7;
+
+                nextPowerOf7Index += (int) Math.pow(2, powerIndex);
+                powerIndex++;
+
+                currentPowerOf7 = nextPowerOf7;
+                nextPowerOf7 *= 7;
+                nextIndexForSum = 0;
+            } else {
+                sevenishNumbers[i] = currentPowerOf7 + sevenishNumbers[nextIndexForSum];
+                nextIndexForSum++;
+            }
+        }
+
+        return sevenishNumbers[n - 1];
+    }
+
+    // S70.
+    public static int findSmallestPositiveInteger(int[] nums) {
+        int smallestInteger = 1;
+
+        for (int i = 0; i < nums.length; i++) {
+            if (nums[i] <= smallestInteger) {
+                // If the current number in the array is less than or equal to the smallest
+                // integer,
+                // update the smallest integer by adding the current number
+                smallestInteger += nums[i];
+            } else {
+                // If the current number in the array is greater than the smallest integer,
+                // we have found the smallest positive integer that cannot be formed by the
+                // subset sum
+                break;
+            }
+        }
+        return smallestInteger;
+    }
+
     public static void main(String[] args) throws InterruptedException {
         /*
          * Q1.
@@ -2976,6 +3253,152 @@ public class QuestionsAndSolutions {
         for (int numToRotate : arrayToRotate) {
             System.out.print(numToRotate + " ");
         }
+
+        /*
+         * Q61.
+         * You are given an array of arrays of integers, where each array corresponds to
+         * a row in a triangle of numbers. For example, [[1], [2, 3], [1, 5, 1]]
+         * represents the triangle:
+         * "  1    "
+         * " 2 3   "
+         * "1 5 1  "
+         * We define a path in the triangle to start at the top and go down one row at a
+         * time to an adjacent value, eventually ending with an entry on the bottom row.
+         * For example, 1 -> 3 -> 5. The weight of the path is the sum of the entries.
+         * Write a program that returns the weight of the maximum weight path.
+         */
+        int[][] triangle = {
+                { 1 },
+                { 2, 3 },
+                { 1, 5, 1 }
+        };
+
+        int maxPathSum = maximumPathSum(triangle);
+        System.out.println("Maximum Path Sum: " + maxPathSum);
+
+        /*
+         * Q62.
+         * Write a program that checks whether an integer is a palindrome. For example,
+         * 121 is a palindrome, as well as 888. 678 is not a palindrome. Do not convert
+         * the integer into a string.
+         */
+        int number1 = 121;
+        int number2 = 888;
+        int number3 = 678;
+
+        System.out.println(number1 + " is a palindrome: " + isPalindrome(number1));
+        System.out.println(number2 + " is a palindrome: " + isPalindrome(number2));
+        System.out.println(number3 + " is a palindrome: " + isPalindrome(number3));
+
+        /*
+         * Q63.
+         * Given a complete binary tree, count the number of nodes in faster than O(n)
+         * time. Recall that a complete binary tree has every level filled except the
+         * last, and the nodes in the last level are filled starting from the left.
+         */
+        TreeNode<Integer> completeBT = new TreeNode<>(1);
+        completeBT.left = new TreeNode<>(2);
+        completeBT.right = new TreeNode<>(3);
+        completeBT.left.left = new TreeNode<>(4);
+        completeBT.left.right = new TreeNode<>(5);
+        completeBT.right.left = new TreeNode<>(6);
+
+        System.out.print("Is this binary tree complete? (true/false): ");
+        System.out.println(isCompleteBinaryTree(completeBT));
+
+        /*
+         * Q64.
+         * Given an integer, find the next permutation of it in absolute order. For
+         * example, given 48975, the next permutation would be 49578.
+         */
+        int numToFindNextPermutation = 48975;
+        int nextPermutation = findNextPermutation(numToFindNextPermutation);
+        System.out.println("Next permutation: " + nextPermutation);
+
+        /*
+         * Q65.
+         * A permutation can be specified by an array P, where P[i] represents the
+         * location of the element at i in the permutation. For example, [2, 1, 0]
+         * represents the permutation where elements at the index 0 and 2 are swapped.
+         * Given an array and a permutation, apply the permutation to the array. For
+         * example, given the array ["a", "b", "c"] and the permutation [2, 1, 0],
+         * return ["c", "b", "a"].
+         */
+        String[] array = { "a", "b", "c" };
+        int[] permutation = { 2, 1, 0 };
+        String[] resultFromPermutation = applyPermutation(array, permutation);
+        System.out.println(Arrays.toString(resultFromPermutation));
+
+        /*
+         * Q66.
+         * A Collatz sequence in mathematics can be defined as follows. Starting with
+         * any positive integer:
+         * if n is even, the next number in the sequence is n / 2
+         * if n is odd, the next number in the sequence is 3n + 1
+         * It is conjectured that every such sequence eventually reaches the number 1.
+         * Test this conjecture.
+         * Bonus: What input n <= 1000000 gives the longest sequence?
+         */
+        int longestSequence = 0;
+        int longestSequenceNumber = 0;
+
+        for (int i = 1; i <= 1000000; i++) {
+            int sequenceLength = collatzSequence(i);
+            if (sequenceLength > longestSequence) {
+                longestSequence = sequenceLength;
+                longestSequenceNumber = i;
+            }
+        }
+
+        System.out.println("Longest sequence: " + longestSequence);
+        System.out.println("Input n: " + longestSequenceNumber);
+
+        /*
+         * Q67.
+         * Spreadsheets often use this alphabetical encoding for its columns: "A", "B",
+         * "C", ..., "AA", "AB", ..., "ZZ", "AAA", "AAB", ....
+         * Given a column number, return its alphabetical column id. For example, given
+         * 1, return "A". Given 27, return "AA".
+         */
+        int columnNumber1 = 1;
+        int columnNumber2 = 27;
+
+        String columnID1 = getColumnID(columnNumber1);
+        String columnID2 = getColumnID(columnNumber2);
+
+        System.out.println("Column ID for " + columnNumber1 + ": " + columnID1);
+        System.out.println("Column ID for " + columnNumber2 + ": " + columnID2);
+
+        /*
+         * Q68.
+         * Given an integer n, return the length of the longest consecutive run of 1s in
+         * its binary representation.
+         * For example, given 156, you should return 3.
+         */
+        int numToFindLongest1s = 156;
+        int longestRun = longestConsecutiveRun(numToFindLongest1s);
+        System.out.println("Longest consecutive run of 1s in " + n + ": " + longestRun);
+
+        /*
+         * Q69.
+         * Let's define a "sevenish" number to be one which is either a power of 7, or
+         * the sum of unique powers of 7. The first few sevenish numbers are 1, 7, 8,
+         * 49, and so on. Create an algorithm to find the nth sevenish number.
+         */
+        int nthSevenish = 5;
+        int nthSevenishNumber = getNthSevenishNumber(nthSevenish);
+        System.out.println("The " + nthSevenish + "th sevenish number is: " + nthSevenishNumber);
+
+        /*
+         * Q70.
+         * Given a sorted array, find the smallest positive integer that is not the sum
+         * of a subset of the array.
+         * For example, for the input [1, 2, 3, 10], you should return 7.
+         * Do this in O(N) time.
+         */
+        int[] numsToFindSmallestInteger = { 1, 2, 3, 10 };
+        int smallestInteger = findSmallestPositiveInteger(numsToFindSmallestInteger);
+        System.out.println("Smallest positive integer: " + smallestInteger);
 
     }
 

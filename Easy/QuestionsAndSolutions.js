@@ -2906,7 +2906,7 @@ function countIntersectingPairs(p, q) {
     }
 
     segments.sort((a, b) => a.start - b.start);
-    
+
     for (let i = 0; i < n - 1; i++) {
         for (let j = i + 1; j < n; j++) {
             if (segments[i].end > segments[j].end) {
@@ -2944,7 +2944,7 @@ function findMostFrequentSubtreeSum(root) {
 
     let sumFrequencies = new Map();
     calculateSubtreeSum(root, sumFrequencies);
-    
+
     let maxFrequency = 0;
     let mostFrequentSum = 0;
 
@@ -2968,7 +2968,7 @@ function calculateSubtreeSum(node, sumFrequencies) {
 
     const currentSum = node.val + leftSum + rightSum;
     sumFrequencies.set(currentSum, sumFrequencies.get(currentSum) + 1 || 1);
-    
+
     return currentSum;
 }
 
@@ -2986,10 +2986,10 @@ console.log('\n');
  * Given an array and a number k that's smaller than the length of the array,
  * rotate the array to the right k elements in-place.
  */
-function rotate(nums, k){
+function rotate(nums, k) {
     const n = nums.length;
     k %= n;
-    
+
     reverse(nums, 0, n - 1);
     // Reverse the first k elements
     reverse(nums, 0, k - 1);
@@ -2997,7 +2997,7 @@ function rotate(nums, k){
     reverse(nums, k, n - 1);
 }
 
-function reverse(nums, start, end){
+function reverse(nums, start, end) {
     while (start < end) {
         const temp = nums[start];
         nums[start] = nums[end];
@@ -3008,15 +3008,429 @@ function reverse(nums, start, end){
 }
 
 console.log('========= Q60 =========');
-let arrToRotate = [1, 2, 3, 4, 5 ];
+let arrToRotate = [1, 2, 3, 4, 5];
 const numToRotate = 3;
 
 rotate(arrToRotate, numToRotate);
 
 console.log('Rotated array: ');
-let rotatedToPrint = ''
+let rotatedToPrint = '';
 for (const num of arrToRotate) {
-    rotatedToPrint += `${num} `
+    rotatedToPrint += `${num} `;
 }
 console.log(rotatedToPrint);
 console.log('\n');
+
+/*
+ * Q61.
+ * You are given an array of arrays of integers, where each array corresponds to
+ * a row in a triangle of numbers. For example, [[1], [2, 3], [1, 5, 1]]
+ * represents the triangle:
+ * "  1    "
+ * " 2 3   "
+ * "1 5 1  "
+ * We define a path in the triangle to start at the top and go down one row at a
+ * time to an adjacent value, eventually ending with an entry on the bottom row.
+ * For example, 1 -> 3 -> 5. The weight of the path is the sum of the entries.
+ * Write a program that returns the weight of the maximum weight path.
+ */
+function maximumPathSum(triangle) {
+    const rows = triangle.length;
+
+    let memo = new Array(rows);
+    for (let i = 0; i < rows; i++) {
+        memo[i] = new Array(rows);
+    }
+
+    // Initialize the bottom row of the memoization array with the values from the
+    // triangle
+    for (let i = 0; i < rows; i++) {
+        memo[rows - 1][i] = triangle[rows - 1][i];
+    }
+
+    // Calculate the maximum path sum for each row from bottom to top
+    for (let i = rows - 2; i >= 0; i--) {
+        for (let j = 0; j <= i; j++) {
+            // Compute the maximum path sum by choosing the larger adjacent value below
+            memo[i][j] =
+                triangle[i][j] + Math.max(memo[i + 1][j], memo[i + 1][j + 1]);
+        }
+    }
+
+    return memo[0][0];
+}
+
+console.log('========= Q61 =========');
+const triangle = [[1], [2, 3], [1, 5, 1]];
+const maxPathSum = maximumPathSum(triangle);
+console.log(`Maximum Path Sum: ${maxPathSum}`);
+console.log('\n');
+
+/*
+ * Q62.
+ * Write a program that checks whether an integer is a palindrome. For example,
+ * 121 is a palindrome, as well as 888. 678 is not a palindrome. Do not convert
+ * the integer into a string.
+ */
+function isPalindrome(num) {
+    if (num < 0 || (num !== 0 && num % 10 === 0)) {
+        return false;
+    }
+
+    let reversed = 0;
+    let original = num;
+
+    while (num > 0) {
+        reversed = reversed * 10 + (num % 10);
+        num = Math.floor(num / 10);
+    }
+
+    return reversed === original;
+}
+
+console.log('========= Q62 =========');
+const number1 = 121;
+const number2 = 888;
+const number3 = 678;
+
+console.log(`${number1} is a palindrome: ${isPalindrome(number1)}`);
+console.log(`${number2} is a palindrome: ${isPalindrome(number2)}`);
+console.log(`${number3} is a palindrome: ${isPalindrome(number3)}`);
+console.log('\n');
+
+/*
+ * Q63.
+ * Given a complete binary tree, count the number of nodes in faster than O(n)
+ * time. Recall that a complete binary tree has every level filled except the
+ * last, and the nodes in the last level are filled starting from the left.
+ */
+function isCompleteBinaryTree(root) {
+    const nodeCount = countNodes(root);
+    const height = getHeight(root);
+    const maxNodeCount = Math.pow(2, height) - 1;
+
+    return nodeCount === maxNodeCount - 1;
+}
+
+function countNodes(node) {
+    if (!node) {
+        return 0;
+    }
+
+    const leftHeight = getLeftHeight(node);
+    const rightHeight = getRightHeight(node);
+
+    if (leftHeight === rightHeight) {
+        return Math.pow(2, leftHeight) - 1;
+    } else {
+        return 1 + countNodes(node.left) + countNodes(node.right);
+    }
+}
+
+function getHeight(node) {
+    return getLeftHeight(node);
+}
+
+function getLeftHeight(node) {
+    let height = 0;
+    while (node) {
+        height++;
+        node = node.left;
+    }
+    return height;
+}
+
+function getRightHeight(node) {
+    let height = 0;
+    while (node) {
+        height++;
+        node = node.right;
+    }
+    return height;
+}
+
+console.log('========= Q63 =========');
+const completeBinaryTree = new TreeNode(1);
+completeBinaryTree.left = new TreeNode(2);
+completeBinaryTree.right = new TreeNode(3);
+completeBinaryTree.left.left = new TreeNode(4);
+completeBinaryTree.left.right = new TreeNode(5);
+completeBinaryTree.right.left = new TreeNode(6);
+
+console.log(
+    `Is this binary tree complete? (true/false): ${isCompleteBinaryTree(
+        completeBinaryTree
+    )}`
+);
+
+/*
+ * Q64.
+ * Given an integer, find the next permutation of it in absolute order. For
+ * example, given 48975, the next permutation would be 49578.
+ */
+function findNextPermutation(num) {
+    const digits = num.toString().split('');
+
+    // Find the first decreasing digit from right to left
+    const pivotIndex = findPivotIndex(digits);
+
+    // If no pivot is found, return the integer itself
+    if (pivotIndex === -1) {
+        return num;
+    }
+
+    // Find the smallest digit greater than pivot to the right of pivot
+    const swapIndex = findSwapIndex(digits, pivotIndex);
+
+    // Swap pivot and swap
+    swap(digits, pivotIndex, swapIndex);
+
+    // Reverse the digits to the right of pivot
+    reverseNumber(digits, pivotIndex + 1, digits.length - 1);
+
+    return convertToInt(digits);
+}
+
+function findPivotIndex(digits) {
+    for (let i = digits.length - 2; i >= 0; i--) {
+        if (digits[i] < digits[i + 1]) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+function findSwapIndex(digits, pivotIndex) {
+    for (let i = digits.length - 1; i > pivotIndex; i--) {
+        if (digits[i] > digits[pivotIndex]) {
+            return i;
+        }
+    }
+}
+
+function swap(digits, i, j) {
+    const temp = digits[i];
+    digits[i] = digits[j];
+    digits[j] = temp;
+}
+
+function reverseNumber(digits, start, end) {
+    while (start < end) {
+        swap(digits, start, end);
+        start++;
+        end--;
+    }
+}
+
+function convertToInt(digits) {
+    return parseInt(digits.join(''));
+}
+
+console.log('========= Q64 =========');
+const numToFindNextPermutation = 48975;
+const nextPermutation = findNextPermutation(numToFindNextPermutation);
+console.log(
+    `Next permutation of ${numToFindNextPermutation}: ${nextPermutation}`
+);
+console.log('\n');
+
+/*
+ * Q65.
+ * A permutation can be specified by an array P, where P[i] represents the
+ * location of the element at i in the permutation. For example, [2, 1, 0]
+ * represents the permutation where elements at the index 0 and 2 are swapped.
+ * Given an array and a permutation, apply the permutation to the array. For
+ * example, given the array ["a", "b", "c"] and the permutation [2, 1, 0],
+ * return ["c", "b", "a"].
+ */
+function applyPermutation(array, permutation) {
+    if (array.length !== permutation.length) {
+        throw new Error('Array and permutation must be of the same length');
+    }
+
+    let result = new Array(array.length);
+
+    for (let i = 0; i < array.length; i++) {
+        result[permutation[i]] = array[i];
+    }
+
+    return result;
+}
+
+console.log('========= Q65 =========');
+const arrayToPermute = ['a', 'b', 'c'];
+const permutationRule = [2, 1, 0];
+const resultFromPermutation = applyPermutation(arrayToPermute, permutationRule);
+console.log(`Permutation result: ${resultFromPermutation}`);
+console.log('\n');
+
+/*
+ * Q66.
+ * A Collatz sequence in mathematics can be defined as follows. Starting with
+ * any positive integer:
+ * if n is even, the next number in the sequence is n / 2
+ * if n is odd, the next number in the sequence is 3n + 1
+ * It is conjectured that every such sequence eventually reaches the number 1.
+ * Test this conjecture.
+ * Bonus: What input n <= 1000000 gives the longest sequence?
+ */
+function collatzSequence(n) {
+    if (n <= 0) {
+        throw new Error('n must be a positive integer');
+    }
+
+    if (n === 1) {
+        return 0;
+    }
+
+    if (n % 2 === 0) {
+        return 1 + collatzSequence(n / 2);
+    } else {
+        return 1 + collatzSequence(3 * n + 1);
+    }
+}
+
+let longestSequence = 0;
+let longestSequenceNumber = 0;
+
+for (let i = 1; i <= 1000000; i++) {
+    const sequenceLength = collatzSequence(i);
+    if (sequenceLength > longestSequence) {
+        longestSequence = sequenceLength;
+        longestSequenceNumber = i;
+    }
+}
+
+console.log('========= Q66 =========');
+console.log(`Longest sequence: ${longestSequence}`);
+console.log(`Input n: ${longestSequenceNumber}`);
+console.log('\n');
+
+/*
+ * Q67.
+ * Spreadsheets often use this alphabetical encoding for its columns: "A", "B",
+ * "C", ..., "AA", "AB", ..., "ZZ", "AAA", "AAB", ....
+ * Given a column number, return its alphabetical column id. For example, given
+ * 1, return "A". Given 27, return "AA".
+ */
+function getColumnID(columnNumber) {
+    let columnID = '';
+
+    while (columnNumber > 0) {
+        const remainder = (columnNumber - 1) % 26;
+        const ch = String.fromCharCode(65 + remainder);
+        columnID += ch;
+        columnNumber = Math.floor(columnNumber / 26);
+    }
+
+    return columnID;
+}
+
+console.log('========= Q67 =========');
+const columnNumber1 = 1;
+const columnNumber2 = 27;
+
+const columnID1 = getColumnID(columnNumber1);
+const columnID2 = getColumnID(columnNumber2);
+
+console.log(`Column ID for ${columnNumber1}: ${columnID1}`);
+console.log(`Column ID for ${columnNumber2}: ${columnID2}`);
+console.log('\n');
+
+/*
+ * Q68.
+ * Given an integer n, return the length of the longest consecutive run of 1s in
+ * its binary representation.
+ * For example, given 156, you should return 3.
+ */
+function longestConsecutiveRun(n) {
+    const binary = n.toString(2);
+    let maxLength = 0;
+    let currentLength = 0;
+
+    for (let i = 0; i < binary.length; i++) {
+        if (binary[i] === '1') {
+            currentLength++;
+        } else {
+            maxLength = Math.max(maxLength, currentLength);
+            currentLength = 0;
+        }
+    }
+
+    return maxLength;
+}
+
+console.log('========= Q68 =========');
+const numToFindLongest1s = 156;
+const longestRun = longestConsecutiveRun(numToFindLongest1s);
+console.log(`Longest run of 1s in ${numToFindLongest1s}: ${longestRun}`);
+console.log('\n');
+
+/*
+ * Q69.
+ * Let's define a "sevenish" number to be one which is either a power of 7, or
+ * the sum of unique powers of 7. The first few sevenish numbers are 1, 7, 8,
+ * 49, and so on. Create an algorithm to find the nth sevenish number.
+ */
+function getNthSevenishNumber(n) {
+    let sevenishNumbers = new Array(n);
+    sevenishNumbers[0] = 1;
+
+    let nextPowerOf7Index = 1;
+    let powerIndex = 1;
+    let nextIndexForSum = 1;
+    let currentPowerOf7 = 7;
+    let nextPowerOf7 = 7;
+
+    for (let i = 1; i < n; i++) {
+        if (i === nextPowerOf7Index) {
+            sevenishNumbers[i] = nextPowerOf7;
+
+            nextPowerOf7Index += Math.pow(2, powerIndex);
+            powerIndex++;
+
+            currentPowerOf7 = nextPowerOf7;
+            nextPowerOf7 *= 7;
+            nextIndexForSum = 0;
+        } else {
+            sevenishNumbers[i] =
+                sevenishNumbers[nextIndexForSum] + currentPowerOf7;
+            nextIndexForSum++;
+        }
+    }
+
+    return sevenishNumbers[n - 1];
+}
+
+console.log('========= Q69 =========');
+const nthSevenish = 5;
+const nthSevenishNumber = getNthSevenishNumber(nthSevenish);
+console.log(`The ${nthSevenish}th sevenish number: ${nthSevenishNumber}`);
+console.log('\n');
+
+/*
+ * Q70.
+ * Given a sorted array, find the smallest positive integer that is not the sum
+ * of a subset of the array.
+ * For example, for the input [1, 2, 3, 10], you should return 7.
+ * Do this in O(N) time.
+ */
+function findSmallestPositiveInteger(nums) {
+    let smallestPositiveInteger = 1;
+
+    for (let i = 0; i < nums.length; i++) {
+        if (nums[i] > smallestPositiveInteger) {
+            break;
+        }
+        smallestPositiveInteger += nums[i];
+    }
+
+    return smallestPositiveInteger;
+}
+
+console.log('========= Q70 =========');
+const numsToFindSmallestInteger = [1, 2, 3, 10];
+const smallestInteger = findSmallestPositiveInteger(numsToFindSmallestInteger);
+console.log(`Smallest positive integer: ${smallestInteger}`);
+console.log('\n');
+
