@@ -2,6 +2,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.ArrayList;
@@ -2083,6 +2084,403 @@ public class QuestionsAndSolutions {
         return smallestInteger;
     }
 
+    // S71.
+    public static int findLastPrisoner(int N, int k) {
+        if (k == 2) {
+            // O(log N) solution for k = 2
+            int highestPowerOf2 = highestPowerOf2(N);
+            return 2 * (N - highestPowerOf2) + 1;
+        }
+
+        List<Integer> prisoners = new ArrayList<>();
+        for (int i = 1; i <= N; i++) {
+            prisoners.add(i);
+        }
+
+        int index = 0;
+        while (prisoners.size() > 1) {
+            // Compute the next index to remove
+            index = (index + k - 1) % prisoners.size();
+
+            // Remove the prisoner at the computed index
+            prisoners.remove(index);
+        }
+
+        return prisoners.get(0);
+    }
+
+    private static int highestPowerOf2(int N) {
+        int powerOf2 = 1;
+        while (powerOf2 * 2 <= N) {
+            powerOf2 *= 2;
+        }
+        return powerOf2;
+    }
+
+    // S72.
+    static class TrieNode {
+        private static final int ALPHABET_SIZE = 26;
+        TrieNode[] children;
+        boolean isEndOfWord;
+
+        TrieNode() {
+            children = new TrieNode[ALPHABET_SIZE];
+            isEndOfWord = false;
+        }
+    }
+
+    static class Trie {
+        private TrieNode root;
+
+        Trie() {
+            root = new TrieNode();
+        }
+
+        void insert(String word) {
+            TrieNode current = root;
+            for (int i = 0; i < word.length(); i++) {
+                int index = word.charAt(i) - 'A';
+                if (current.children[index] == null) {
+                    current.children[index] = new TrieNode();
+                }
+                current = current.children[index];
+            }
+            current.isEndOfWord = true;
+        }
+
+        boolean search(String word) {
+            TrieNode current = root;
+            for (int i = 0; i < word.length(); i++) {
+                int index = word.charAt(i) - 'A';
+                if (current.children[index] == null) {
+                    return false;
+                }
+                current = current.children[index];
+            }
+            return current != null && current.isEndOfWord;
+        }
+    }
+
+    public static Set<String> findWords(char[][] board, String[] dictionary) {
+        Trie trie = new Trie();
+        for (String word : dictionary) {
+            trie.insert(word);
+        }
+
+        Set<String> foundWords = new HashSet<>();
+        int rows = board.length;
+        int columns = board[0].length;
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                boolean[][] visited = new boolean[rows][columns];
+                StringBuilder currentWord = new StringBuilder();
+                dfs(board, visited, i, j, currentWord, trie, foundWords);
+            }
+        }
+
+        return foundWords;
+    }
+
+    private static void dfs(char[][] board, boolean[][] visited, int row, int col, StringBuilder currentWord,
+            Trie trie, Set<String> foundWords) {
+        int rows = board.length;
+        int columns = board[0].length;
+
+        if (row < 0 || row >= rows || col < 0 || col >= columns || visited[row][col]) {
+            return;
+        }
+
+        currentWord.append(board[row][col]);
+        String word = currentWord.toString();
+
+        if (trie.search(word)) {
+            foundWords.add(word);
+        }
+
+        visited[row][col] = true;
+        dfs(board, visited, row - 1, col, currentWord, trie, foundWords); // Up
+        dfs(board, visited, row + 1, col, currentWord, trie, foundWords); // Down
+        dfs(board, visited, row, col - 1, currentWord, trie, foundWords); // Left
+        dfs(board, visited, row, col + 1, currentWord, trie, foundWords); // Right
+        dfs(board, visited, row - 1, col - 1, currentWord, trie, foundWords); // Up-Left
+        dfs(board, visited, row - 1, col + 1, currentWord, trie, foundWords); // Up-Right
+        dfs(board, visited, row + 1, col - 1, currentWord, trie, foundWords); // Down-Left
+        dfs(board, visited, row + 1, col + 1, currentWord, trie, foundWords); // Down-Right
+
+        // Backtrack by removing the current letter from the current word and marking
+        // the current cell as unvisited
+        currentWord.deleteCharAt(currentWord.length() - 1);
+        visited[row][col] = false;
+    }
+
+    // S73.
+    public static String rearrangeString(String input) {
+        Map<Character, Integer> charFrequency = new HashMap<>();
+        for (char c : input.toCharArray()) {
+            charFrequency.put(c, charFrequency.getOrDefault(c, 0) + 1);
+        }
+
+        PriorityQueue<Character> priorityQueue = new PriorityQueue<>(
+                (a, b) -> charFrequency.get(b) - charFrequency.get(a));
+        priorityQueue.addAll(charFrequency.keySet());
+
+        StringBuilder rearrangedString = new StringBuilder();
+        while (!priorityQueue.isEmpty()) {
+            char currentChar = priorityQueue.remove();
+
+            if (rearrangedString.length() >= 1
+                    && rearrangedString.charAt(rearrangedString.length() - 1) == currentChar) {
+                if (priorityQueue.isEmpty()) {
+                    return "None";
+                }
+                char nextChar = priorityQueue.remove();
+                rearrangedString.append(nextChar);
+
+                int frequency = charFrequency.get(nextChar);
+                frequency--;
+                if (frequency > 0) {
+                    charFrequency.put(nextChar, frequency);
+                    priorityQueue.add(nextChar);
+                }
+
+                priorityQueue.add(currentChar);
+            } else {
+                rearrangedString.append(currentChar);
+
+                int frequency = charFrequency.get(currentChar);
+                frequency--;
+                if (frequency > 0) {
+                    charFrequency.put(currentChar, frequency);
+                    priorityQueue.add(currentChar);
+                }
+            }
+        }
+
+        return rearrangedString.toString();
+    }
+
+    // S74.
+    static class PrefixMapSum {
+        private Map<String, Integer> map;
+
+        public PrefixMapSum() {
+            map = new HashMap<>();
+        }
+
+        public void insert(String key, int value) {
+            map.put(key, value);
+        }
+
+        public int sum(String prefix) {
+            int sum = 0;
+            for (String key : map.keySet()) {
+                if (key.startsWith(prefix)) {
+                    sum += map.get(key);
+                }
+            }
+            return sum;
+        }
+    }
+
+    // S75.
+    public static int fib(int n) {
+        if (n <= 1) {
+            return n;
+        }
+
+        int prevPrev = 0;
+        int prev = 1;
+        int current = 0;
+
+        for (int i = 2; i <= n; i++) {
+            current = prevPrev + prev;
+            prevPrev = prev;
+            prev = current;
+        }
+
+        return current;
+    }
+
+    // S76.
+    static class NonBinaryTreeNode {
+        int val;
+        List<NonBinaryTreeNode> children;
+
+        NonBinaryTreeNode(int val) {
+            this.val = val;
+            children = new ArrayList<>();
+        }
+    }
+
+    public static boolean isSymmetric(NonBinaryTreeNode root) {
+        if (root == null) {
+            return true;
+        }
+
+        return isMirror(root, root);
+    }
+
+    private static boolean isMirror(NonBinaryTreeNode node1, NonBinaryTreeNode node2) {
+        if (node1 == null && node2 == null) {
+            return true;
+        }
+
+        if (node1 == null || node2 == null) {
+            return false;
+        }
+
+        if (node1.val != node2.val) {
+            return false;
+        }
+
+        if (node1.children.size() != node2.children.size()) {
+            return false;
+        }
+
+        int size = node1.children.size();
+        for (int i = 0; i < size; i++) {
+            if (!isMirror(node1.children.get(i), node2.children.get(size - i - 1))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // S77.
+    public static int calculateHIndex(int[] citations) {
+        Arrays.sort(citations);
+
+        int hIndex = 0;
+        int n = citations.length;
+
+        for (int i = 0; i < n; i++) {
+            int smallerCount = Math.min(citations[i], n - i); // Number of papers with at least citations[i] citations
+            hIndex = Math.max(hIndex, smallerCount);
+        }
+
+        return hIndex;
+    }
+
+    // S78.
+    public static List<Integer> generatePrimes(int n) {
+        boolean[] isComposite = new boolean[n + 1];
+        List<Integer> primes = new ArrayList<>();
+
+        for (int i = 2; i <= n; i++) {
+            if (!isComposite[i]) {
+                primes.add(i);
+                for (int j = i * i; j <= n; j += i) {
+                    isComposite[j] = true;
+                }
+            }
+        }
+
+        return primes;
+    }
+
+    static class PrimeGenerator implements Iterable<Integer> {
+        private static List<Integer> primes;
+
+        public PrimeGenerator() {
+            primes = new ArrayList<>();
+            primes.add(2);
+        }
+
+        @Override
+        public Iterator<Integer> iterator() {
+            return new PrimeIterator();
+        }
+
+        private static class PrimeIterator implements Iterator<Integer> {
+            private int currentIndex = 0;
+
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public Integer next() {
+                if (currentIndex < primes.size()) {
+                    return primes.get(currentIndex++);
+                }
+
+                int currentNumber = primes.get(primes.size() - 1) + 1;
+                while (true) {
+                    boolean isPrime = true;
+                    int sqrt = (int) Math.sqrt(currentNumber);
+
+                    for (int prime : primes) {
+                        if (prime > sqrt) {
+                            break;
+                        }
+                        if (currentNumber % prime == 0) {
+                            isPrime = false;
+                            break;
+                        }
+                    }
+
+                    if (isPrime) {
+                        primes.add(currentNumber);
+                        currentIndex++;
+                        return currentNumber;
+                    }
+
+                    currentNumber++;
+                }
+            }
+        }
+    }
+
+    // S79.
+    static class BalancedBinaryTree {
+        public boolean isBalanced(TreeNode<Integer> root) {
+            if (root == null) {
+                return true;
+            }
+
+            int leftHeight = getHeight(root.left);
+            int rightHeight = getHeight(root.right);
+
+            if (Math.abs(leftHeight - rightHeight) > 1) {
+                return false;
+            }
+
+            return isBalanced(root.left) && isBalanced(root.right);
+        }
+
+        private int getHeight(TreeNode<Integer> node) {
+            if (node == null) {
+                return 0;
+            }
+
+            int leftHeight = getHeight(node.left);
+            int rightHeight = getHeight(node.right);
+
+            return Math.max(leftHeight, rightHeight) + 1;
+        }
+    }
+
+    // S80.
+    public static List<String> convertToEgyptianFraction(int numerator, int denominator) {
+        List<String> egyptianFractions = new ArrayList<>();
+
+        while (numerator != 0) {
+            // Calculate the largest unit fraction that is less than or equal to the target
+            // fraction
+            int unitDenominator = (denominator + numerator - 1) / numerator;
+
+            egyptianFractions.add("1/" + unitDenominator);
+
+            numerator = (numerator * unitDenominator) - denominator;
+            denominator *= unitDenominator;
+        }
+
+        return egyptianFractions;
+    }
+
     public static void main(String[] args) throws InterruptedException {
         /*
          * Q1.
@@ -3399,6 +3797,189 @@ public class QuestionsAndSolutions {
         int[] numsToFindSmallestInteger = { 1, 2, 3, 10 };
         int smallestInteger = findSmallestPositiveInteger(numsToFindSmallestInteger);
         System.out.println("Smallest positive integer: " + smallestInteger);
+
+        /*
+         * Q71.
+         * There are N prisoners standing in a circle, waiting to be executed. The
+         * executions are carried out starting with the kth person, and removing every
+         * successive kth person going clockwise until there is no one left.
+         * Given N and k, write an algorithm to determine where a prisoner should stand
+         * in order to be the last survivor.
+         * For example, if N = 5 and k = 2, the order of executions would be [2, 4, 1,
+         * 5, 3], so you should return 3.
+         * Bonus: Find an O(log N) solution if k = 2.
+         */
+        int N = 5;
+        int kthPrisoner = 2;
+        int lastSurvivor = findLastPrisoner(N, kthPrisoner);
+        System.out.println("The last survivor's position is: " + lastSurvivor);
+
+        /*
+         * Q72.
+         * Boggle is a game played on a 4 x 4 grid of letters. The goal is to find as
+         * many words as possible that can be formed by a sequence of adjacent letters
+         * in the grid, using each cell at most once. Given a game board and a
+         * dictionary of valid words, implement a Boggle solver.
+         */
+        char[][] boggleBoard = {
+                { 'A', 'B', 'C', 'D' },
+                { 'E', 'F', 'G', 'H' },
+                { 'I', 'J', 'K', 'L' },
+                { 'M', 'N', 'O', 'P' }
+        };
+        String[] dictionary = { "ABEF", "BFJ", "CDEG", "PONM", "PONMLKJIHGFEDCBA" };
+        Set<String> foundWords = findWords(boggleBoard, dictionary);
+        System.out.println("Found words: " + foundWords);
+
+        /*
+         * Q73.
+         * Given a string with repeated characters, rearrange the string so that no two
+         * adjacent characters are the same. If this is not possible, return None.
+         * For example, given "aaabbc", you could return "ababac". Given "aaab", return
+         * None.
+         */
+        String input1 = "aaabbc";
+        String rearranged1 = rearrangeString(input1);
+        System.out.println("Rearranged string for " + input1 + ": " + rearranged1);
+
+        String input2 = "aaab";
+        String rearranged2 = rearrangeString(input2);
+        System.out.println("Rearranged string for " + input2 + ": " + rearranged2);
+
+        /*
+         * Q74.
+         * Implement a PrefixMapSum class with the following methods:
+         * insert(key: str, value: int): Set a given key's value in the map. If the key
+         * already exists, overwrite the value.
+         * sum(prefix: str): Return the sum of all values of keys that begin with a
+         * given prefix.
+         * For example, you should be able to run the following code:
+         * mapsum.insert("columnar", 3)
+         * assert mapsum.sum("col") == 3
+         * 
+         * mapsum.insert("column", 2)
+         * assert mapsum.sum("col") == 5
+         */
+        PrefixMapSum mapsum = new PrefixMapSum();
+
+        mapsum.insert("columnar", 3);
+        System.out.println(mapsum.sum("col") == 3);
+
+        mapsum.insert("column", 2);
+        System.out.println(mapsum.sum("col") == 5);
+
+        /*
+         * Q75.
+         * Implement the function fib(n), which returns the nth number in the Fibonacci
+         * sequence, using only O(1) space.
+         */
+        int nthFib = 6;
+        int nthFibonacciNumber = fib(n);
+        System.out.println("Fibonacci number at index " + nthFib + ": " + nthFibonacciNumber);
+
+        /*
+         * Q76.
+         * A tree is symmetric if its data and shape remain unchanged when it is
+         * reflected about the root node. The following tree is an example:
+         * "        4          "
+         * "      / | \        "
+         * "    3   5   3      "
+         * "  /           \    "
+         * "9              9   "
+         * Given a k-ary tree, determine whether it is symmetric.
+         */
+        NonBinaryTreeNode symmetricTree = new NonBinaryTreeNode(4);
+        NonBinaryTreeNode node1 = new NonBinaryTreeNode(3);
+        NonBinaryTreeNode node2 = new NonBinaryTreeNode(5);
+        NonBinaryTreeNode node3 = new NonBinaryTreeNode(3);
+        NonBinaryTreeNode node4 = new NonBinaryTreeNode(9);
+        NonBinaryTreeNode node5 = new NonBinaryTreeNode(9);
+
+        symmetricTree.children.add(node1);
+        symmetricTree.children.add(node2);
+        symmetricTree.children.add(node3);
+        node1.children.add(node4);
+        node3.children.add(node5);
+
+        boolean isSymmetric = isSymmetric(symmetricTree);
+        System.out.println("Is the tree symmetric? " + isSymmetric);
+
+        /*
+         * Q77.
+         * In academia, the h-index is a metric used to calculate the impact of a
+         * researcher's papers. It is calculated as follows:
+         * A researcher has index h if at least h of her N papers have h citations each.
+         * If there are multiple h satisfying this formula, the maximum is chosen.
+         * For example, suppose N = 5, and the respective citations of each paper are
+         * [4, 3, 0, 1, 5]. Then the h-index would be 3, since the researcher has 3
+         * papers with at least 3 citations.
+         * Given a list of paper citations of a researcher, calculate their h-index.
+         */
+        int[] citations = { 4, 3, 0, 1, 5 };
+        int hIndex = calculateHIndex(citations);
+        System.out.println("The h-index is: " + hIndex);
+
+        /*
+         * Q78.
+         * The Sieve of Eratosthenes is an algorithm used to generate all prime numbers
+         * smaller than N. The method is to take increasingly larger prime numbers, and
+         * mark their multiples as composite.
+         * For example, to find all primes less than 100, we would first mark [4, 6, 8,
+         * ...] (multiples of two), then [6, 9, 12, ...] (multiples of three), and so
+         * on. Once we have done this for all primes less than N, the unmarked numbers
+         * that remain will be prime.
+         * Implement this algorithm.
+         * Bonus: Create a generator that produces primes indefinitely (that is, without
+         * taking N as an input).
+         */
+        int nPrime = 100;
+        List<Integer> primeNums = generatePrimes(nPrime);
+        System.out.println("Prime numbers less than " + nPrime + ": " + primeNums);
+
+        PrimeGenerator primeGenerator = new PrimeGenerator();
+
+        Iterator<Integer> iterator = primeGenerator.iterator();
+        for (int i = 0; i < nPrime; i++) {
+            System.out.println(iterator.next());
+        }
+
+        /*
+         * Q79.
+         * Given a binary tree, determine whether or not it is height-balanced. A
+         * height-balanced binary tree can be defined as one in which the heights of the
+         * two subtrees of any node never differ by more than one.
+         */
+        TreeNode<Integer> balancedBinaryTree = new TreeNode<>(1);
+        balancedBinaryTree.left = new TreeNode<>(2);
+        balancedBinaryTree.right = new TreeNode<>(3);
+        balancedBinaryTree.left.left = new TreeNode<>(4);
+        balancedBinaryTree.left.right = new TreeNode<>(5);
+        balancedBinaryTree.left.left.left = new TreeNode<>(6);
+
+        BalancedBinaryTree bbt = new BalancedBinaryTree();
+        boolean isBalanced = bbt.isBalanced(balancedBinaryTree);
+        System.out.println("Is the binary tree balanced? " + isBalanced);
+
+        /*
+         * Q80.
+         * The ancient Egyptians used to express fractions as a sum of several terms
+         * where each numerator is one. For example, 4 / 13 can be represented as 1 / 4
+         * + 1 / 18 + 1 / 468.
+         * Create an algorithm to turn an ordinary fraction a / b, where a < b, into an
+         * Egyptian fraction.
+         */
+        int numerator = 4;
+        int denominator = 13;
+
+        List<String> egyptianFractions = convertToEgyptianFraction(numerator, denominator);
+
+        System.out.printf("Egyptian Fraction representation of %d/%d: ", numerator, denominator);
+        for (int i = 0; i < egyptianFractions.size(); i++) {
+            System.out.print(egyptianFractions.get(i));
+            if (i < egyptianFractions.size() - 1) {
+                System.out.print(" + ");
+            }
+        }
 
     }
 

@@ -3434,3 +3434,526 @@ const smallestInteger = findSmallestPositiveInteger(numsToFindSmallestInteger);
 console.log(`Smallest positive integer: ${smallestInteger}`);
 console.log('\n');
 
+/*
+ * Q71.
+ * There are N prisoners standing in a circle, waiting to be executed. The
+ * executions are carried out starting with the kth person, and removing every
+ * successive kth person going clockwise until there is no one left.
+ * Given N and k, write an algorithm to determine where a prisoner should stand
+ * in order to be the last survivor.
+ * For example, if N = 5 and k = 2, the order of executions would be [2, 4, 1,
+ * 5, 3], so you should return 3.
+ * Bonus: Find an O(log N) solution if k = 2.
+ */
+function findLastPrisoner(N, k) {
+    if (k === 2) {
+        // O(log N) solution for k = 2
+        const highestPowerOfTwo = highestPowerOf2(N);
+        return 2 * (N - highestPowerOfTwo) + 1;
+    }
+
+    let prisoners = [];
+    for (let i = 1; i <= N; i++) {
+        prisoners.push(i);
+    }
+
+    let index = 0;
+    while (prisoners.length > 1) {
+        // Compute the next index to remove
+        index = (index + k - 1) % prisoners.length;
+
+        // Remove the prisoner at the computed index
+        prisoners.splice(index, 1);
+    }
+
+    return prisoners[0];
+}
+
+function highestPowerOf2(N) {
+    let powerOf2 = 1;
+    while (powerOf2 * 2 <= N) {
+        powerOf2 *= 2;
+    }
+    return powerOf2;
+}
+
+console.log('========= Q71 =========');
+const N = 5;
+const kthPrisoner = 2;
+const lastSurvivor = findLastPrisoner(N, kthPrisoner);
+console.log(`The last survivor's position is: ${lastSurvivor}`);
+console.log('\n');
+
+/*
+ * Q72.
+ * Boggle is a game played on a 4 x 4 grid of letters. The goal is to find as
+ * many words as possible that can be formed by a sequence of adjacent letters
+ * in the grid, using each cell at most once. Given a game board and a
+ * dictionary of valid words, implement a Boggle solver.
+ */
+class TrieNode {
+    static #ALPHABET_SIZE = 26;
+
+    constructor() {
+        this.children = Array(TrieNode.#ALPHABET_SIZE).fill(null);
+        this.isEndOfWord = false;
+    }
+}
+
+class Trie {
+    constructor() {
+        this.root = new TrieNode();
+    }
+
+    insert(word) {
+        let current = this.root;
+
+        for (let i = 0; i < word.length; i++) {
+            const index = word.charCodeAt(i) - 'A'.charCodeAt(0);
+
+            if (!current.children[index]) {
+                current.children[index] = new TrieNode();
+            }
+            current = current.children[index];
+        }
+
+        current.isEndOfWord = true;
+    }
+
+    search(word) {
+        let current = this.root;
+
+        for (let i = 0; i < word.length; i++) {
+            const index = word.charCodeAt(i) - 'A'.charCodeAt(0);
+
+            if (!current.children[index]) {
+                return false;
+            }
+            current = current.children[index];
+        }
+        return current.isEndOfWord;
+    }
+}
+
+function findWords(board, dictionary) {
+    let trie = new Trie();
+    for (const word of dictionary) {
+        trie.insert(word);
+    }
+
+    let foundWords = new Set();
+    const rows = board.length;
+    const columns = board[0].length;
+
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < columns; j++) {
+            let visited = new Array(rows)
+                .fill(false)
+                .map(() => new Array(columns).fill(false));
+            let currentWord = '';
+            dfs(board, visited, i, j, currentWord, trie, foundWords);
+        }
+    }
+
+    return foundWords;
+}
+
+function dfs(board, visited, row, col, currentWord, trie, foundWords) {
+    const rows = board.length;
+    const columns = board[0].length;
+
+    if (
+        row < 0 ||
+        row >= rows ||
+        col < 0 ||
+        col >= columns ||
+        visited[row][col]
+    ) {
+        return;
+    }
+
+    currentWord += board[row][col];
+
+    if (trie.search(currentWord)) {
+        foundWords.add(currentWord);
+    }
+
+    visited[row][col] = true;
+    dfs(board, visited, row - 1, col, currentWord, trie, foundWords);
+    dfs(board, visited, row + 1, col, currentWord, trie, foundWords);
+    dfs(board, visited, row, col - 1, currentWord, trie, foundWords);
+    dfs(board, visited, row, col + 1, currentWord, trie, foundWords);
+    dfs(board, visited, row - 1, col - 1, currentWord, trie, foundWords);
+    dfs(board, visited, row - 1, col + 1, currentWord, trie, foundWords);
+    dfs(board, visited, row + 1, col - 1, currentWord, trie, foundWords);
+    dfs(board, visited, row + 1, col + 1, currentWord, trie, foundWords);
+
+    currentWord = currentWord.substring(0, currentWord.length - 1);
+    visited[row][col] = false;
+}
+
+console.log('========= Q72 =========');
+const boggleBoard = [
+    ['A', 'B', 'C', 'D'],
+    ['E', 'F', 'G', 'H'],
+    ['I', 'J', 'K', 'L'],
+    ['M', 'N', 'O', 'P'],
+];
+const dictionary = ['ABEF', 'BFJ', 'CDEG', 'PONM', 'PONMLKJIHGFEDCBA'];
+let foundWords = findWords(boggleBoard, dictionary);
+console.log(`Found words: ${JSON.stringify(Array.from(foundWords))}`);
+console.log('\n');
+
+/*
+ * Q73.
+ * Given a string with repeated characters, rearrange the string so that no two
+ * adjacent characters are the same. If this is not possible, return None.
+ * For example, given "aaabbc", you could return "ababac". Given "aaab", return
+ * None.
+ */
+function rearrangeString(input) {
+    let charFrequency = new Map();
+    for (const char of input) {
+        charFrequency.set(char, charFrequency.get(char) + 1 || 1);
+    }
+
+    let priorityQueue = Array.from(charFrequency.keys());
+    priorityQueue.sort();
+
+    let rearrangedString = '';
+    while (priorityQueue.length > 0) {
+        const currentChar = priorityQueue.shift();
+
+        if (
+            rearrangedString.length >= 1 &&
+            rearrangedString.charAt(rearrangedString.length - 1) === currentChar
+        ) {
+            if (priorityQueue.length === 0) {
+                return null;
+            }
+
+            const nextChar = priorityQueue.shift();
+            rearrangedString += nextChar;
+
+            let frequency = charFrequency.get(nextChar);
+            frequency--;
+            if (frequency > 0) {
+                charFrequency.set(nextChar, frequency);
+                priorityQueue.push(nextChar);
+            }
+
+            priorityQueue.push(currentChar);
+        } else {
+            rearrangedString += currentChar;
+
+            let frequency = charFrequency.get(currentChar);
+            frequency--;
+            if (frequency > 0) {
+                charFrequency.set(currentChar, frequency);
+                priorityQueue.push(currentChar);
+            }
+        }
+        priorityQueue.sort();
+    }
+
+    return rearrangedString;
+}
+
+console.log('========= Q73 =========');
+const input1 = 'aaabbc';
+const rearranged1 = rearrangeString(input1);
+console.log(`Rearranged string for ${input1}: ${rearranged1}`);
+
+const input2 = 'aaab';
+const rearranged2 = rearrangeString(input2);
+console.log(`Rearranged string for ${input2}: ${rearranged2}`);
+console.log('\n');
+
+/*
+ * Q74.
+ * Implement a PrefixMapSum class with the following methods:
+ * insert(key: str, value: int): Set a given key's value in the map. If the key
+ * already exists, overwrite the value.
+ * sum(prefix: str): Return the sum of all values of keys that begin with a
+ * given prefix.
+ * For example, you should be able to run the following code:
+ * mapsum.insert("columnar", 3)
+ * assert mapsum.sum("col") == 3
+ *
+ * mapsum.insert("column", 2)
+ * assert mapsum.sum("col") == 5
+ */
+class PrefixMapSum {
+    constructor() {
+        this.map = new Map();
+    }
+
+    insert(key, value) {
+        this.map.set(key, value);
+    }
+
+    sum(prefix) {
+        let sum = 0;
+        for (const [key, value] of this.map) {
+            if (key.startsWith(prefix)) {
+                sum += value;
+            }
+        }
+        return sum;
+    }
+}
+
+console.log('========= Q74 =========');
+let mapsum = new PrefixMapSum();
+mapsum.insert('columnar', 3);
+console.log(`Sum of 'col': ${mapsum.sum('col')}`);
+
+mapsum.insert('column', 2);
+console.log(`Sum of 'col': ${mapsum.sum('col')}`);
+console.log('\n');
+
+/*
+ * Q75.
+ * Implement the function fib(n), which returns the nth number in the Fibonacci
+ * sequence, using only O(1) space.
+ */
+function fib(n) {
+    if (n <= 1) {
+        return n;
+    }
+
+    let prevPrev = 0;
+    let prev = 1;
+    let current = 0;
+
+    for (let i = 2; i <= n; i++) {
+        current = prev + prevPrev;
+        prevPrev = prev;
+        prev = current;
+    }
+
+    return current;
+}
+
+console.log('========= Q75 =========');
+const nthFib = 6;
+console.log(`Fibonacci of ${nthFib}: ${fib(nthFib)}`);
+console.log('\n');
+
+/*
+ * Q76.
+ * A tree is symmetric if its data and shape remain unchanged when it is
+ * reflected about the root node. The following tree is an example:
+ * "        4          "
+ * "      / | \        "
+ * "    3   5   3      "
+ * "  /           \    "
+ * "9              9   "
+ * Given a k-ary tree, determine whether it is symmetric.
+ */
+class NonBinaryTreeNode {
+    constructor(value) {
+        this.value = value;
+        this.children = [];
+    }
+}
+
+function isSymmetric(root) {
+    if (!root) {
+        return true;
+    }
+
+    return isMirror(root, root);
+}
+
+function isMirror(node1, node2) {
+    if (!node1 && !node2) {
+        return true;
+    }
+
+    if (!node1 || !node2) {
+        return false;
+    }
+
+    if (node1.value !== node2.value) {
+        return false;
+    }
+
+    if (node1.children.length !== node2.children.length) {
+        return false;
+    }
+
+    const size = node1.children.length;
+    for (let i = 0; i < size; i++) {
+        if (!isMirror(node1.children[i], node2.children[size - 1 - i])) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+console.log('========= Q76 =========');
+const symmetricTree = new NonBinaryTreeNode(4);
+const node1 = new NonBinaryTreeNode(3);
+const node2 = new NonBinaryTreeNode(5);
+const node3 = new NonBinaryTreeNode(3);
+const node4 = new NonBinaryTreeNode(9);
+const node5 = new NonBinaryTreeNode(9);
+
+symmetricTree.children.push(node1);
+symmetricTree.children.push(node2);
+symmetricTree.children.push(node3);
+node1.children.push(node4);
+node3.children.push(node5);
+
+console.log(`Is the tree symmetric? ${isSymmetric(symmetricTree)}`);
+console.log('\n');
+
+/*
+ * Q77.
+ * In academia, the h-index is a metric used to calculate the impact of a
+ * researcher's papers. It is calculated as follows:
+ * A researcher has index h if at least h of her N papers have h citations each.
+ * If there are multiple h satisfying this formula, the maximum is chosen.
+ * For example, suppose N = 5, and the respective citations of each paper are
+ * [4, 3, 0, 1, 5]. Then the h-index would be 3, since the researcher has 3
+ * papers with at least 3 citations.
+ * Given a list of paper citations of a researcher, calculate their h-index.
+ */
+function calculateHIndex(citations) {
+    citations.sort((a, b) => a - b);
+
+    let hIndex = 0;
+    const n = citations.length;
+    for (let i = 0; i < n; i++) {
+        const smallerCount = Math.min(citations[i], n - i);
+        hIndex = Math.max(hIndex, smallerCount);
+    }
+
+    return hIndex;
+}
+
+console.log('========= Q77 =========');
+const citations = [4, 3, 0, 1, 5];
+console.log(`H-index of ${citations}: ${calculateHIndex(citations)}`);
+console.log('\n');
+
+/*
+ * Q78.
+ * The Sieve of Eratosthenes is an algorithm used to generate all prime numbers
+ * smaller than N. The method is to take increasingly larger prime numbers, and
+ * mark their multiples as composite.
+ * For example, to find all primes less than 100, we would first mark [4, 6, 8,
+ * ...] (multiples of two), then [6, 9, 12, ...] (multiples of three), and so
+ * on. Once we have done this for all primes less than N, the unmarked numbers
+ * that remain will be prime.
+ * Implement this algorithm.
+ * Bonus: Create a generator that produces primes indefinitely (that is, without
+ * taking N as an input).
+ */
+function generatePrimes(n) {
+    let isComposite = new Array(n + 1).fill(false);
+    let primes = [];
+
+    for (let i = 2; i <= n; i++) {
+        if (!isComposite[i]) {
+            primes.push(i);
+
+            for (let j = i * i; j <= n; j += i) {
+                isComposite[j] = true;
+            }
+        }
+    }
+
+    return primes;
+}
+
+console.log('========= Q78 =========');
+const nPrime = 100;
+const primeNums = generatePrimes(nPrime);
+console.log(`Prime numbers less than ${nPrime}: ${primeNums}`);
+console.log('\n');
+
+/*
+ * Q79.
+ * Given a binary tree, determine whether or not it is height-balanced. A
+ * height-balanced binary tree can be defined as one in which the heights of the
+ * two subtrees of any node never differ by more than one.
+ */
+class BalancedBinaryTree {
+    isBalanced(root) {
+        if (!root) {
+            return true;
+        }
+
+        const leftHeight = this.getHeight(root.left);
+        const rightHeight = this.getHeight(root.right);
+
+        if (Math.abs(leftHeight - rightHeight) > 1) {
+            return false;
+        }
+
+        return isBalanced(root.left) && isBalanced(root.right);
+    }
+
+    getHeight(node) {
+        if (!node) {
+            return 0;
+        }
+
+        return (
+            Math.max(this.getHeight(node.left), this.getHeight(node.right)) + 1
+        );
+    }
+}
+
+console.log('========= Q79 =========');
+const balancedTreeRoot = new TreeNode(1);
+balancedTreeRoot.left = new TreeNode(2);
+balancedTreeRoot.right = new TreeNode(3);
+balancedTreeRoot.left.left = new TreeNode(4);
+balancedTreeRoot.left.right = new TreeNode(5);
+balancedTreeRoot.left.left.left = new TreeNode(6);
+
+const balancedTree = new BalancedBinaryTree();
+console.log(
+    `Is the binary tree balanced? ${balancedTree.isBalanced(balancedTreeRoot)}`
+);
+
+/*
+ * Q80.
+ * The ancient Egyptians used to express fractions as a sum of several terms
+ * where each numerator is one. For example, 4 / 13 can be represented as 1 / 4
+ * + 1 / 18 + 1 / 468.
+ * Create an algorithm to turn an ordinary fraction a / b, where a < b, into an
+ * Egyptian fraction.
+ */
+function convertToEgyptianFraction(numerator, denominator) {
+    let egyptianFractions = [];
+
+    while (numerator !== 0) {
+        // Calculate the largest unit fraction that is less than or equal to the target
+        // fraction
+        let unitDenominator = Math.floor(
+            (denominator + numerator - 1) / numerator
+        );
+        egyptianFractions.push(`1/${unitDenominator} `);
+
+        numerator = numerator * unitDenominator - denominator;
+        denominator *= unitDenominator;
+    }
+
+    return egyptianFractions;
+}
+
+console.log('========= Q80 =========');
+const numerator = 4;
+const denominator = 13;
+console.log(
+    `Egyptian fraction of ${numerator}/${denominator}: ${convertToEgyptianFraction(
+        numerator,
+        denominator
+    )}`
+);
+console.log(`\n`);
