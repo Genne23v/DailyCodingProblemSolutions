@@ -2481,6 +2481,303 @@ public class QuestionsAndSolutions {
         return egyptianFractions;
     }
 
+    // S81.
+    public static int[][] findTransitiveClosure(int[][] graph) {
+        int n = graph.length;
+        int[][] closure = new int[n][n];
+
+        for (int i = 0; i < n; i++) {
+            closure[i][i] = 1; // Each vertex is reachable from itself
+            for (int j : graph[i]) {
+                closure[i][j] = 1; // Mark the adjacent vertices as reachable
+            }
+        }
+
+        // Apply the Warshall's algorithm to compute transitive closure
+        for (int k = 0; k < n; k++) {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    closure[i][j] = closure[i][j] | (closure[i][k] & closure[k][j]);
+                }
+            }
+        }
+
+        return closure;
+    }
+
+    // S82.
+    public static int[] findBounds(int[] arr) {
+        int left = 0;
+        int right = arr.length - 1;
+
+        while (left < arr.length - 1 && arr[left] <= arr[left + 1]) {
+            left++;
+        }
+
+        if (left == arr.length - 1) {
+            return new int[] { -1, -1 };
+        }
+
+        while (right > 0 && arr[right] >= arr[right - 1]) {
+            right--;
+        }
+
+        // Find the minimum and maximum elements within the subarray
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
+        for (int i = left; i <= right; i++) {
+            min = Math.min(min, arr[i]);
+            max = Math.max(max, arr[i]);
+        }
+
+        // Expand the bounds to include any elements that need to be sorted
+        while (left > 0 && arr[left - 1] > min) {
+            left--;
+        }
+
+        while (right < arr.length - 1 && arr[right + 1] < max) {
+            right++;
+        }
+
+        return new int[] { left, right };
+    }
+
+    // S83.
+    public static void printBoustrophedon(TreeNode<Integer> root) {
+        if (root == null) {
+            return;
+        }
+
+        Queue<TreeNode<Integer>> queue = new LinkedList<>();
+        queue.add(root);
+        boolean leftToRight = true;
+
+        while (!queue.isEmpty()) {
+            List<Integer> levelNodes = new ArrayList<>();
+            int levelSize = queue.size();
+
+            for (int i = 0; i < levelSize; i++) {
+                TreeNode<Integer> node = queue.poll();
+
+                levelNodes.add(node.val);
+
+                if (node.left != null) {
+                    queue.add(node.left);
+                }
+                if (node.right != null) {
+                    queue.add(node.right);
+                }
+            }
+
+            if (!leftToRight) {
+                Collections.reverse(levelNodes);
+            }
+
+            for (int val : levelNodes) {
+                System.out.print(val + " ");
+            }
+
+            leftToRight = !leftToRight;
+        }
+    }
+
+    // S84.
+    public static String buildHuffmanTree(TreeNode<Character> root) {
+        StringBuilder result = new StringBuilder();
+        traverseHuffmanTree(root, "", result);
+        return result.toString();
+    }
+
+    private static void traverseHuffmanTree(TreeNode<Character> node, String currentCode, StringBuilder result) {
+        if (node == null) {
+            return;
+        }
+
+        if (node.left == null && node.right == null) {
+            result.append(currentCode);
+            return;
+        }
+
+        traverseHuffmanTree(node.left, currentCode + "0", result);
+        traverseHuffmanTree(node.right, currentCode + "1", result);
+    }
+
+    // S85.
+    public static int[] calculateBonuses(int[] linesOfCode) {
+        int n = linesOfCode.length;
+        int[] bonuses = new int[n];
+
+        for (int i = 0; i < n; i++) {
+            bonuses[i] = 1;
+        }
+
+        for (int i = 1; i < n; i++) {
+            if (linesOfCode[i] > linesOfCode[i - 1]) {
+                // If current employee has more lines of code than the previous one, increase
+                // their bonus
+                bonuses[i] = bonuses[i - 1] + 1;
+            }
+        }
+
+        // Check the lines of code in reverse order to handle cases where an employee
+        // has fewer lines of code than their next neighbor
+        for (int i = n - 2; i >= 0; i--) {
+            if (linesOfCode[i] > linesOfCode[i + 1] && bonuses[i] <= bonuses[i + 1]) {
+                // If current employee has more lines of code than the next one, and their bonus
+                // is less or equal, increase their bonus
+                bonuses[i] = bonuses[i + 1] + 1;
+            }
+        }
+
+        return bonuses;
+    }
+
+    // S86.
+    public static boolean areAnagrams(String word1, String word2) {
+        char[] chars1 = word1.toCharArray();
+        char[] chars2 = word2.toCharArray();
+        Arrays.sort(chars1);
+        Arrays.sort(chars2);
+        return Arrays.equals(chars1, chars2);
+    }
+
+    public static List<String> findStepWords(String inputWord, List<String> dictionary) {
+        List<String> stepWords = new ArrayList<>();
+        for (String word : dictionary) {
+            for (char c = 'A'; c <= 'Z'; c++) {
+                String newWord = inputWord + c;
+                if (areAnagrams(newWord, word)) {
+                    stepWords.add(word);
+                    break;
+                }
+            }
+        }
+        return stepWords;
+    }
+
+    // S87.
+    public static String orientDominos(String dominoes) {
+        char[] orientations = dominoes.toCharArray();
+        int n = orientations.length;
+        int[] forces = new int[n]; // Represents the cumulative force acting on each domino
+
+        int force = 0; // Cumulative force
+        for (int i = 0; i < n; i++) {
+            if (orientations[i] == 'R') {
+                force = n; // Max force if pushed from the right
+            } else if (orientations[i] == 'L') {
+                force = 0; // Reset force if pushed from the left
+            } else {
+                force = Math.max(force - 1, 0); // Decrease force gradually
+            }
+            forces[i] += force;
+        }
+
+        force = 0; // Reset force
+        for (int i = n - 1; i >= 0; i--) {
+            if (orientations[i] == 'L') {
+                force = n; // Max force if pushed from the left
+            } else if (orientations[i] == 'R') {
+                force = 0; // Reset force if pushed from the right
+            } else {
+                force = Math.max(force - 1, 0); // Decrease force gradually
+            }
+            forces[i] -= force;
+        }
+
+        StringBuilder result = new StringBuilder();
+        for (int forceValue : forces) {
+            if (forceValue > 0) {
+                result.append('R');
+            } else if (forceValue < 0) {
+                result.append('L');
+            } else {
+                result.append('.');
+            }
+        }
+
+        return result.toString();
+    }
+
+    // S88.
+    public static int findFixedPoint(int[] nums) {
+        int left = 0;
+        int right = nums.length - 1;
+
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+
+            if (nums[mid] == mid) {
+                return mid;
+            } else if (nums[mid] < mid) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+
+        return -1;
+    }
+
+    // S89.
+    public static boolean validUtf8(int[] data) {
+        int remainingBytes = 0;
+
+        for (int num : data) {
+            if (remainingBytes == 0) {
+                if ((num >> 5) == 0b110) {
+                    remainingBytes = 1;
+                } else if ((num >> 4) == 0b1110) {
+                    remainingBytes = 2;
+                } else if ((num >> 3) == 0b11110) {
+                    remainingBytes = 3;
+                } else if ((num >> 7) != 0) {
+                    return false;
+                }
+            } else {
+                if ((num >> 6) != 0b10) {
+                    return false;
+                }
+                remainingBytes--;
+            }
+        }
+
+        return remainingBytes == 0;
+    }
+
+    // S90.
+    public static List<TreeNode<Integer>> generateBSTs(int n) {
+        return generateTrees(1, n);
+    }
+
+    private static List<TreeNode<Integer>> generateTrees(int start, int end) {
+        List<TreeNode<Integer>> trees = new ArrayList<>();
+
+        // Base case: if start > end, return null to represent an empty subtree
+        if (start > end) {
+            trees.add(null);
+            return trees;
+        }
+
+        // Generate all possible combinations of left and right subtrees
+        for (int i = start; i <= end; i++) {
+            List<TreeNode<Integer>> leftSubtrees = generateTrees(start, i - 1);
+            List<TreeNode<Integer>> rightSubtrees = generateTrees(i + 1, end);
+
+            // Create all possible combinations of left and right subtrees
+            for (TreeNode<Integer> left : leftSubtrees) {
+                for (TreeNode<Integer> right : rightSubtrees) {
+                    TreeNode<Integer> root = new TreeNode<>(i);
+                    root.left = left;
+                    root.right = right;
+                    trees.add(root);
+                }
+            }
+        }
+
+        return trees;
+    }
+
     public static void main(String[] args) throws InterruptedException {
         /*
          * Q1.
@@ -3981,6 +4278,217 @@ public class QuestionsAndSolutions {
             }
         }
 
+        /*
+         * Q81.
+         * The transitive closure of a graph is a measure of which vertices are
+         * reachable from other vertices. It can be represented as a matrix M, where
+         * M[i][j] == 1 if there is a path between vertices i and j, and otherwise 0.
+         * For example, suppose we are given the following graph in adjacency list form:
+         * graph = [
+         * [0, 1, 3],
+         * [1, 2],
+         * [2],
+         * [3]
+         * ]
+         * The transitive closure of this graph would be:
+         * [1, 1, 1, 1]
+         * [0, 1, 1, 0]
+         * [0, 0, 1, 0]
+         * [0, 0, 0, 1]
+         * Given a graph, find its transitive closure.
+         */
+        int[][] graph = {
+                { 0, 1, 3 },
+                { 1, 2 },
+                { 2 },
+                { 3 }
+        };
+
+        int[][] closure = findTransitiveClosure(graph);
+
+        System.out.println("Transitive Closure:");
+        for (int i = 0; i < closure.length; i++) {
+            System.out.println(Arrays.toString(closure[i]));
+        }
+
+        /*
+         * Q82.
+         * Given an array of integers out of order, determine the bounds of the smallest
+         * window that must be sorted in order for the entire array to be sorted. For
+         * example, given [3, 7, 5, 6, 9], you should return (1, 3).
+         */
+        int[] arr = { 3, 7, 5, 6, 9 };
+        int[] bounds = findBounds(arr);
+        System.out.println(Arrays.toString(bounds)); // Output: [1, 3]
+
+        /*
+         * Q83.
+         * In Ancient Greece, it was common to write text with the first line going left
+         * to right, the second line going right to left, and continuing to go back and
+         * forth. This style was called "boustrophedon".
+         * Given a binary tree, write an algorithm to print the nodes in boustrophedon
+         * order.
+         * For example, given the following tree:
+         * "       1           "
+         * "    /     \        "
+         * "  2         3      "
+         * " / \       / \     "
+         * "4   5     6   7    "
+         * You should return [1, 3, 2, 4, 5, 6, 7].
+         */
+        TreeNode<Integer> boustrophedonTree = new TreeNode<>(1);
+        boustrophedonTree.left = new TreeNode<>(2);
+        boustrophedonTree.right = new TreeNode<>(3);
+        boustrophedonTree.left.left = new TreeNode<>(4);
+        boustrophedonTree.left.right = new TreeNode<>(5);
+        boustrophedonTree.right.left = new TreeNode<>(6);
+        boustrophedonTree.right.right = new TreeNode<>(7);
+
+        printBoustrophedon(boustrophedonTree);
+
+        /*
+         * Q84.
+         * Huffman coding is a method of encoding characters based on their frequency.
+         * Each letter is assigned a variable-length binary string, such as 0101 or
+         * 111110, where shorter lengths correspond to more common letters. To
+         * accomplish this, a binary tree is built such that the path from the root to
+         * any leaf uniquely maps to a character. When traversing the path, descending
+         * to a left child corresponds to a 0 in the prefix, while descending right
+         * corresponds to 1.
+         * Here is an example tree (note that only the leaf nodes have letters):
+         * 
+         * "        *          "
+         * "      /   \        "
+         * "    *       *      "
+         * "   / \     / \     "
+         * "  *   a   t   *    "
+         * " /             \   "
+         * "c               s  "
+         * With this encoding, cats would be represented as 0000110111.
+         * Given a dictionary of character frequencies, build a Huffman tree, and use it
+         * to determine a mapping between characters and their encoded binary strings.
+         */
+        TreeNode<Character> huffmanTreeRoot = new TreeNode<>('*');
+        huffmanTreeRoot.left = new TreeNode<>('*');
+        huffmanTreeRoot.right = new TreeNode<>('*');
+        huffmanTreeRoot.left.left = new TreeNode<>('*');
+        huffmanTreeRoot.left.right = new TreeNode<>('a');
+        huffmanTreeRoot.right.left = new TreeNode<>('t');
+        huffmanTreeRoot.right.right = new TreeNode<>('*');
+        huffmanTreeRoot.left.left.left = new TreeNode<>('c');
+        huffmanTreeRoot.right.right.right = new TreeNode<>('s');
+
+        String huffmanCoding = buildHuffmanTree(huffmanTreeRoot);
+        System.out.println(huffmanCoding); // Output: 0000110111
+
+        /*
+         * Q85.
+         * MegaCorp wants to give bonuses to its employees based on how many lines of
+         * codes they have written. They would like to give the smallest positive amount
+         * to each worker consistent with the constraint that if a developer has written
+         * more lines of code than their neighbor, they should receive more money.
+         * Given an array representing a line of seats of employees at MegaCorp,
+         * determine how much each one should get paid.
+         * For example, given [10, 40, 200, 1000, 60, 30], you should return [1, 2, 3,
+         * 4, 2, 1].
+         */
+        int[] linesOfCode = { 10, 40, 200, 1000, 60, 30 };
+        int[] bonuses = calculateBonuses(linesOfCode);
+
+        // Print the calculated bonuses
+        for (int bonus : bonuses) {
+            System.out.print(bonus + " ");
+        }
+
+        /*
+         * Q86.
+         * A step word is formed by taking a given word, adding a letter, and
+         * anagramming the result. For example, starting with the word "APPLE", you can
+         * add an "A" and anagram to get "APPEAL".
+         * Given a dictionary of words and an input word, create a function that returns
+         * all valid step words.
+         */
+        String inputWord = "APPLE";
+        List<String> dictionaryForAnagram = Arrays.asList("APPEAL", "PEAR", "PLEA", "LEAP");
+        List<String> stepWords = findStepWords(inputWord, dictionaryForAnagram);
+        System.out.println(stepWords);
+
+        /*
+         * Q87.
+         * You are given an string representing the initial conditions of some dominoes.
+         * Each element can take one of three values:
+         * L, meaning the domino has just been pushed to the left,
+         * R, meaning the domino has just been pushed to the right, or
+         * ., meaning the domino is standing still.
+         * Determine the orientation of each tile when the dominoes stop falling. Note
+         * that if a domino receives a force from the left and right side
+         * simultaneously, it will remain upright.
+         * For example, given the string .L.R....L, you should return LL.RRRLLL.
+         * Given the string ..R...L.L, you should return ..RR.LLLL.
+         */
+        String dominoes1 = ".L.R....L";
+        String dominoes2 = "..R...L.L";
+
+        String oriented1 = orientDominos(dominoes1);
+        String oriented2 = orientDominos(dominoes2);
+
+        System.out.println(oriented1); // Output: LL.RRRLLL
+        System.out.println(oriented2); // Output: ..RR.LLLL
+
+        /*
+         * Q88.
+         * A fixed point in an array is an element whose value is equal to its index.
+         * Given a sorted array of distinct elements, return a fixed point, if one
+         * exists. Otherwise, return False.
+         * For example, given [-6, 0, 2, 40], you should return 2. Given [1, 5, 7, 8],
+         * you should return False.
+         */
+        int[] nums1 = { -6, 0, 2, 40 };
+        int[] nums2 = { 1, 5, 7, 8 };
+
+        int fixedPoint1 = findFixedPoint(nums1);
+        int fixedPoint2 = findFixedPoint(nums2);
+
+        System.out.println(fixedPoint1); // Output: 2
+        System.out.println(fixedPoint2); // Output: -1 (False)
+
+        /*
+         * Q89.
+         * UTF-8 is a character encoding that maps each symbol to one, two, three, or
+         * four bytes.
+         * For example, the Euro sign, €, corresponds to the three bytes 11100010
+         * 10000010 10101100. The rules for mapping characters are as follows:
+         * For a single-byte character, the first bit must be zero.
+         * For an n-byte character, the first byte starts with n ones and a zero. The
+         * other n - 1 bytes all start with 10.
+         * Visually, this can be represented as follows.
+         * Bytes | Byte format
+         * -----------------------------------------------
+         * 1 | 0xxxxxxx
+         * 2 | 110xxxxx 10xxxxxx
+         * 3 | 1110xxxx 10xxxxxx 10xxxxxx
+         * 4 | 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+         * Write a program that takes in an array of integers representing byte values,
+         * and returns whether it is a valid UTF-8 encoding.
+         */
+        int[] data1 = { 197, 130, 1 }; // Valid UTF-8 encoding
+        int[] data2 = { 235, 140, 4 }; // Invalid UTF-8 encoding
+
+        System.out.println(validUtf8(data1)); // Output: true
+        System.out.println(validUtf8(data2)); // Output: false
+
+        /*
+         * Q90.
+         * Given an integer N, construct all possible binary search trees with N nodes.
+         */
+        int nForBinarySearchTree = 3;
+        List<TreeNode<Integer>> possibleBSTs = generateBSTs(nForBinarySearchTree);
+
+        for (TreeNode<Integer> tree : possibleBSTs) {
+            printTree(tree);
+            System.out.println();
+        }
+
     }
 
     private static void printLinkedList(ListNode head) {
@@ -3990,6 +4498,16 @@ public class QuestionsAndSolutions {
             current = current.next;
         }
         System.out.println("null");
+    }
+
+    private static void printTree(TreeNode node) {
+        if (node == null) {
+            return;
+        }
+
+        System.out.print(node.val + " ");
+        printTree(node.left);
+        printTree(node.right);
     }
 
     // S55.
