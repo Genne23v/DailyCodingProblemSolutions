@@ -4488,3 +4488,533 @@ possibleBSTs.forEach((bst) => {
     console.log(bst);
 });
 console.log(`\n`);
+
+/*
+ * Q91.
+ * A classroom consists of N students, whose friendships can be represented in
+ * an adjacency list. For example, the following describes a situation where 0 is
+ * friends with 1 and 2, 3 is friends with 6, and so on.
+ * {0: [1, 2],
+ * 1: [0, 5],
+ * 2: [0],
+ * 3: [6],
+ * 4: [],
+ * 5: [1],
+ * 6: [3]}
+ * Each student can be placed in a friend group, which can be defined as the
+ * transitive closure of that student's friendship relations. In other words,
+ * this is the smallest set such that no student in the group has any friends
+ * outside this group. For the example above, the friend groups would be {0, 1,
+ * 2, 5}, {3, 6}, {4}.
+ * Given a friendship list such as the one above, determine the number of friend
+ * groups in the class.
+ */
+function countFriendGroups(adjacencyList) {
+    const n = adjacencyList.length;
+    let visited = new Array(n).fill(false);
+    let count = 0;
+
+    for (let i = 0; i < n; i++) {
+        if (!visited[i]) {
+            dfsToFindFriendGroup(adjacencyList, i, visited);
+            count++;
+        }
+    }
+
+    return count;
+}
+
+function dfsToFindFriendGroup(adjacencyList, node, visited) {
+    visited[node] = true;
+
+    for (let neighbor of adjacencyList[node]) {
+        if (!visited[neighbor]) {
+            dfsToFindFriendGroup(adjacencyList, neighbor, visited);
+        }
+    }
+}
+
+console.log('========= Q91 =========');
+const adjacencyList = [[1, 2], [0, 5], [0], [6], [], [1], [3]];
+console.log(`Number of friend groups: ${countFriendGroups(adjacencyList)}`); // Output: 3
+console.log(`\n`);
+
+/*
+ * Q92.
+ * Given an undirected graph, determine if it contains a cycle.
+ */
+class Graph {
+    constructor(vertices) {
+        this.vertices = vertices;
+        this.adjacencyList = Array(vertices)
+            .fill(null)
+            .map(() => []);
+    }
+
+    addEdge(src, dest) {
+        this.adjacencyList[src].push(dest);
+        this.adjacencyList[dest].push(src);
+    }
+
+    containCycle() {
+        let visited = new Array(this.vertices).fill(false);
+
+        for (let i = 0; i < this.vertices; i++) {
+            if (!visited[i] && this.hasCycle(i, visited, -1)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    hasCycle(vertex, visited, parent) {
+        visited[vertex] = true;
+
+        for (let neighbor of this.adjacencyList[vertex]) {
+            if (!visited[neighbor]) {
+                if (this.hasCycle(neighbor, visited, vertex)) {
+                    return true;
+                }
+            } else if (neighbor !== parent) {
+                // If the neighbor is already visited and not the parent of the current vertex,
+                // a cycle is found.
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
+console.log('========= Q92 =========');
+const graphWithCycle = new Graph(5);
+graphWithCycle.addEdge(0, 1);
+graphWithCycle.addEdge(1, 2);
+graphWithCycle.addEdge(2, 3);
+graphWithCycle.addEdge(3, 4);
+graphWithCycle.addEdge(4, 1);
+console.log(graphWithCycle.adjacencyList);
+console.log(`Does this graph contain cycle: ${graphWithCycle.containCycle()}`); // Output: true
+console.log(`\n`);
+
+/*
+ * Q93.
+ * Given an array of integers, determine whether it contains a Pythagorean
+ * triplet. Recall that a Pythagorean triplet (a, b, c) is defined by the
+ * equation a2+ b2= c2.
+ */
+function containsPythagoreanTriplet(nums) {
+    const n = nums.length;
+
+    for (let i = 0; i < n; i++) {
+        nums[i] = nums[i] * nums[i];
+    }
+
+    nums.sort((a, b) => a - b);
+
+    for (let i = 0; i < n - 2; i++) {
+        for (let j = i + 1; j < n - 1; j++) {
+            const squareSum = nums[i] + nums[j];
+            if (binarySearch(nums, squareSum, j + 1, n - 1)) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+function binarySearch(nums, target, left, right) {
+    while (left <= right) {
+        const mid = Math.floor((left + right) / 2);
+        if (nums[mid] === target) {
+            return true;
+        } else if (nums[mid] < target) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+
+    return false;
+}
+
+console.log('========= Q93 =========');
+const numsForPythagorean = [3, 1, 4, 6, 5];
+console.log(
+    `Array contain a Pythagorean triplet: ${containsPythagoreanTriplet(
+        numsForPythagorean
+    )}`
+); // Output: true
+console.log(`\n`);
+
+/*
+ * Q94.
+ * A regular number in mathematics is defined as one which evenly divides some
+ * power of 60. Equivalently, we can say that a regular number is one whose only
+ * prime divisors are 2, 3, and 5.
+ * These numbers have had many applications, from helping ancient Babylonians
+ * keep time to tuning instruments according to the diatonic scale.
+ * Given an integer N, write a program that returns, in order, the first N
+ * regular numbers.
+ */
+function getRegularNumbers(n) {
+    let regularNumbers = [];
+    regularNumbers.push(1);
+    let i2 = 0,
+        i3 = 0,
+        i5 = 0;
+
+    while (regularNumbers.length < n) {
+        let nextMultipleOf2 = regularNumbers[i2] * 2;
+        let nextMultipleOf3 = regularNumbers[i3] * 3;
+        let nextMultipleOf5 = regularNumbers[i5] * 5;
+
+        let nextRegularNumber = Math.min(
+            nextMultipleOf2,
+            nextMultipleOf3,
+            nextMultipleOf5
+        );
+        regularNumbers.push(nextRegularNumber);
+
+        if (nextRegularNumber === nextMultipleOf2) {
+            i2++;
+        }
+        if (nextRegularNumber === nextMultipleOf3) {
+            i3++;
+        }
+        if (nextRegularNumber === nextMultipleOf5) {
+            i5++;
+        }
+    }
+
+    return regularNumbers;
+}
+
+console.log('========= Q94 =========');
+console.log(`First 10 regular numbers: ${getRegularNumbers(10)}`); // Output: [1, 2, 3, 4, 5, 6, 8, 9, 10, 12]
+console.log(`\n`);
+
+/*
+ * Q95.
+ * On a mysterious island there are creatures known as Quxes which come in three
+ * colors: red, green, and blue. One power of the Qux is that if two of them are
+ * standing next to each other, they can transform into a single creature of the
+ * third color.
+ * Given N Quxes standing in a line, determine the smallest number of them
+ * remaining after any possible sequence of such transformations.
+ * For example, given the input ['R', 'G', 'B', 'G', 'B'], it is possible to end
+ * up with a single Qux through the following steps:
+ * "        Arrangement       |   Change    "
+ * "----------------------------------------"
+ * "['R', 'G', 'B', 'G', 'B'] | (R, G) -> B "
+ * "['B', 'B', 'G', 'B']      | (B, G) -> R "
+ * "['B', 'R', 'B']           | (R, B) -> G "
+ * "['B', 'G']                | (B, G) -> R "
+ * "['R']                     |             "
+ */
+function getRemainingQuxes(quxes) {
+    let stack = [];
+
+    for (const qux of quxes) {
+        if (stack.length > 0 && stack[stack.length - 1] !== qux) {
+            stack.pop(); // Quxes transform into the third color
+        } else {
+            stack.push(qux);
+        }
+    }
+    return stack.length;
+}
+
+console.log('========= Q95 =========');
+const quxes = ['R', 'G', 'B', 'G', 'B'];
+console.log(`Remaining quxes: ${getRemainingQuxes(quxes)}`); // Output: 1
+console.log(`\n`);
+
+/*
+ * Q96.
+ * A girl is walking along an apple orchard with a bag in each hand. She likes
+ * to pick apples from each tree as she goes along, but is meticulous about not
+ * putting different kinds of apples in the same bag.
+ * Given an input describing the types of apples she will pass on her path, in
+ * order, determine the length of the longest portion of her path that consists
+ * of just two types of apple trees.
+ * For example, given the input [2, 1, 2, 3, 3, 1, 3, 5], the longest portion
+ * will involve types 1 and 3, with a length of four.
+ */
+function longestTwoAppleTrees(trees) {
+    const n = trees.length;
+
+    if (n < 3) {
+        return n;
+    }
+
+    let maxLen = 0;
+    let treeCounts = new Map();
+    let left = 0;
+    let right = 0;
+
+    while (right < n) {
+        treeCounts.set(trees[right], (treeCounts.get(trees[right]) || 0) + 1);
+
+        while (treeCounts.size > 2) {
+            treeCounts.set(trees[left], treeCounts.get(trees[left]) - 1);
+            if (treeCounts.get(trees[left]) === 0) {
+                treeCounts.delete(trees[left]);
+            }
+            left++;
+        }
+
+        maxLen = Math.max(maxLen, right - left + 1);
+        right++;
+    }
+
+    return maxLen;
+}
+
+console.log('========= Q96 =========');
+const appleTrees = [2, 1, 2, 3, 3, 1, 3, 5];
+console.log(`Longest portion of path: ${longestTwoAppleTrees(appleTrees)}`); // Output: 4
+console.log(`\n`);
+
+/*
+ * Q97.
+ * On election day, a voting machine writes data in the form (voter_id,
+ * candidate_id) to a text file. Write a program that reads this file as a
+ * stream and returns the top 3 candidates at any given time. If you find a
+ * voter voting more than once, report this as fraud.
+ */
+//NOT tested
+class Candidate {
+    constructor(id, count) {
+        this.id = id;
+        this.count = count;
+    }
+
+    getId() {
+        return this.id;
+    }
+
+    getCount() {
+        return this.count;
+    }
+}
+
+console.log('========= Q97 =========');
+const fs = require('fs');
+const filePath = 'voting_data.txt';
+let voteCounts = new Map();
+let topCandidates = [];
+
+try {
+    const data = fs.readFileSync(filePath, 'utf8');
+    const lines = data.split('\n');
+
+    for (const line of lines) {
+        const [voterId, candidateId] = line.split(',');
+
+        if (voteCounts.has(voterId)) {
+            console.log(
+                `Voter fraud detected: Voter ${voterId} voted more than once`
+            );
+            continue;
+        }
+
+        voteCounts.set(voterId, candidateId);
+        let count = voteCounts.get(candidateId)++ || 1;
+        voteCounts.set(candidateId, count);
+
+        let candidate = new Candidate(candidateId, count);
+        topCandidates.push(candidate);
+        topCandidates.sort((a, b) => b.count -a.count );
+
+        if (topCandidates.length > 3) {
+            topCandidates.pop();
+        }
+
+        console.log(`Top 3 candidates:`);
+        for (let i = 0; i < 3; i++) {
+            console.log(
+                `Candidate ${topCandidates[i].getId()}: ${topCandidates[
+                    i
+                ].getCount() } votes`
+            );
+        }
+    }
+} catch (err) {
+    console.error(err);
+}
+console.log(`\n`);
+
+/*
+ * Q98.
+ * Given a clock time in hh:mm format, determine, to the nearest degree, the
+ * angle between the hour and the minute hands.
+ * Bonus: When, during the course of a day, will the angle be zero?
+ */
+function calculateAngle(time) {
+    const parts = time.split(':');
+    const hour = parseInt(parts[0]);
+    const minute = parseInt(parts[1]);
+
+    const hourAngle = (hour % 12) * 30 + minute * 0.5;
+    const minuteAngle = minute * 6;
+    const angle = Math.abs(hourAngle - minuteAngle);
+
+    return Math.min(angle, 360 - angle);
+}
+
+console.log('========= Q98 =========');
+const time = '10:45';
+console.log(
+    `Angle between hour and minute hands: ${calculateAngle(time)} degrees`
+); // Output: 52.5
+
+// Bonus: Find when the angle is zero
+let count = 0;
+for (let hour = 0; hour < 12; hour++) {
+    for (let minute = 0; minute < 60; minute++) {
+        const currAngle = calculateAngle(`${hour}:${minute}`);
+        if (currAngle === 0) {
+            count++;
+        }
+    }
+}
+console.log(`Total instances where angle is zero: ${count}`);
+console.log(`\n`);
+
+/*
+ * Q99.
+ * Given a linked list, remove all consecutive nodes that sum to zero. Print out
+ * the remaining nodes.
+ * For example, suppose you are given the input 3 -> 4 -> -7 -> 5 -> -6 -> 6. In
+ * this case, you should first remove 3 -> 4 -> -7, then -6 -> 6, leaving only
+ * 5.
+ */
+function removeZeroSumSublists(head) {
+    let dummy = new ListNode(0);
+    dummy.next = head;
+
+    // Create a prefix sum map to track cumulative sums and their corresponding
+    // nodes
+    let prefixSumMap = new Map();
+    let prefixSum = 0;
+    let curr = dummy;
+
+    while (curr) {
+        prefixSum += curr.val;
+
+        if (prefixSumMap.has(prefixSum)) {
+            // Remove the nodes between the previous occurrence of the prefix sum and the
+            // current node
+            let prev = prefixSumMap.get(prefixSum).next;
+            let sum = prefixSum + prev.val;
+
+            while (prev !== curr) {
+                prefixSumMap.delete(sum);
+                prev = prev.next;
+                sum += prev.val;
+            }
+
+            prefixSumMap.get(prefixSum).next = curr.next;
+        } else {
+            prefixSumMap.set(prefixSum, curr);
+        }
+
+        curr = curr.next;
+    }
+
+    return dummy.next;
+}
+
+console.log('========= Q99 =========');
+let headToRemoveConsecutiveSumZero = new ListNode(3);
+headToRemoveConsecutiveSumZero.next = new ListNode(4);
+headToRemoveConsecutiveSumZero.next.next = new ListNode(-7);
+headToRemoveConsecutiveSumZero.next.next.next = new ListNode(5);
+headToRemoveConsecutiveSumZero.next.next.next.next = new ListNode(-6);
+headToRemoveConsecutiveSumZero.next.next.next.next.next = new ListNode(6);
+
+console.log(`Original Linked List:`);
+printLinkedList(headToRemoveConsecutiveSumZero);
+
+const updatedHead = removeZeroSumSublists(headToRemoveConsecutiveSumZero);
+console.log(`Updated Linked List:`);
+printLinkedList(updatedHead);
+console.log(`\n`);
+
+/*
+ * Q100.
+ * Given a binary search tree, find the floor and ceiling of a given integer.
+ * The floor is the highest element in the tree less than or equal to an
+ * integer, while the ceiling is the lowest element in the tree greater than or
+ * equal to an integer.
+ * If either value does not exist, return None.
+ */
+function insert(root, val) {
+    if (!root) {
+        return new TreeNode(val);
+    }
+
+    if (val < root.val) {
+        root.left = insert(root.left, val);
+    } else {
+        root.right = insert(root.right, val);
+    }
+
+    return root;
+}
+
+function findFloor(root, target) {
+    if (!root) {
+        return null;
+    }
+
+    if (root.val === target) {
+        return root.val;
+    }
+
+    if (root.val > target) {
+        return findFloor(root.left, target);
+    }
+
+    const floor = findFloor(root.right, target);
+    return floor && floor <= target ? floor : root.val;
+}
+
+function findCeiling(root, target) {
+    if (!root) {
+        return null;
+    }
+
+    if (root.val === target) {
+        return root.val;
+    }
+
+    if (root.val < target) {
+        return findCeiling(root.right, target);
+    }
+
+    const ceiling = findCeiling(root.left, target);
+    return ceiling && ceiling >= target ? ceiling : root.val;
+}
+
+console.log('========= Q100 =========');
+let treeToFindFloorOrCeiling;
+treeToFindFloorOrCeiling = insert(treeToFindFloorOrCeiling, 8);
+treeToFindFloorOrCeiling = insert(treeToFindFloorOrCeiling, 4);
+treeToFindFloorOrCeiling = insert(treeToFindFloorOrCeiling, 12);
+treeToFindFloorOrCeiling = insert(treeToFindFloorOrCeiling, 2);
+treeToFindFloorOrCeiling = insert(treeToFindFloorOrCeiling, 6);
+treeToFindFloorOrCeiling = insert(treeToFindFloorOrCeiling, 10);
+treeToFindFloorOrCeiling = insert(treeToFindFloorOrCeiling, 14);
+
+const targetForFloorAndCeiling = 7;
+const floor = findFloor(treeToFindFloorOrCeiling, targetForFloorAndCeiling);
+const ceiling = findCeiling(treeToFindFloorOrCeiling, targetForFloorAndCeiling);
+
+console.log(`Target: ${targetForFloorAndCeiling}`);
+console.log(`Floor: ${floor ? floor : 'None'}`);
+console.log(`Ceiling: ${ceiling ? ceiling : 'None'}`);
+console.log(`\n`);

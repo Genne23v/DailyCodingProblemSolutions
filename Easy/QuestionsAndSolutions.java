@@ -1,6 +1,8 @@
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
@@ -761,7 +763,7 @@ public class QuestionsAndSolutions {
     }
 
     // S24.
-    class FileReader {
+    class FileByteReader {
         private int pos = 0;
         private String buffer = "";
 
@@ -2659,7 +2661,7 @@ public class QuestionsAndSolutions {
     public static String orientDominos(String dominoes) {
         char[] orientations = dominoes.toCharArray();
         int n = orientations.length;
-        int[] forces = new int[n]; // Represents the cumulative force acting on each domino
+        int[] forces = new int[n];
 
         int force = 0; // Cumulative force
         for (int i = 0; i < n; i++) {
@@ -2778,7 +2780,315 @@ public class QuestionsAndSolutions {
         return trees;
     }
 
-    public static void main(String[] args) throws InterruptedException {
+    // S91.
+    public static int countFriendGroups(int[][] adjacencyList) {
+        int n = adjacencyList.length;
+        boolean[] visited = new boolean[n];
+        int count = 0;
+
+        for (int i = 0; i < n; i++) {
+            if (!visited[i]) {
+                dfs(adjacencyList, i, visited);
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private static void dfs(int[][] adjacencyList, int node, boolean[] visited) {
+        visited[node] = true;
+
+        for (int neighbor : adjacencyList[node]) {
+            if (!visited[neighbor]) {
+                dfs(adjacencyList, neighbor, visited);
+            }
+        }
+    }
+
+    // S92.
+    static class Graph {
+        private int vertices;
+        private List<List<Integer>> adjList;
+
+        public Graph(int vertices) {
+            this.vertices = vertices;
+            adjList = new ArrayList<>(vertices);
+            for (int i = 0; i < vertices; i++) {
+                adjList.add(new ArrayList<>());
+            }
+        }
+
+        public void addEdge(int src, int dest) {
+            adjList.get(src).add(dest);
+            adjList.get(dest).add(src);
+        }
+
+        public boolean containsCycle() {
+            boolean[] visited = new boolean[vertices];
+
+            for (int i = 0; i < vertices; i++) {
+                if (!visited[i] && hasCycle(i, visited, -1)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private boolean hasCycle(int vertex, boolean[] visited, int parent) {
+            visited[vertex] = true;
+
+            for (int neighbor : adjList.get(vertex)) {
+                if (!visited[neighbor]) {
+                    if (hasCycle(neighbor, visited, vertex)) {
+                        return true;
+                    }
+                } else if (neighbor != parent) {
+                    // If the neighbor is already visited and not the parent of the current vertex,
+                    // a cycle is found.
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    // S93.
+    public static boolean containsPythagoreanTriplet(int[] nums) {
+        int n = nums.length;
+
+        for (int i = 0; i < n; i++) {
+            nums[i] = nums[i] * nums[i];
+        }
+
+        Arrays.sort(nums);
+
+        // Fix one element as a
+        for (int i = 0; i < n - 2; i++) {
+            // Fix the second element as b and b
+            for (int j = i + 1; j < n - 1; j++) {
+                int c = nums[i] + nums[j];
+
+                if (binarySearch(nums, c, j + 1, n - 1)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean binarySearch(int[] nums, int target, int left, int right) {
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            if (nums[mid] == target) {
+                return true;
+            } else if (nums[mid] < target) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+        return false;
+    }
+
+    // S94.
+    public static List<Long> getRegularNumbers(int n) {
+        List<Long> regularNumbers = new ArrayList<>();
+        regularNumbers.add(1L);
+        int i2 = 0, i3 = 0, i5 = 0;
+
+        while (regularNumbers.size() < n) {
+            long nextRegularNumber = Math.min(regularNumbers.get(i2) * 2,
+                    Math.min(regularNumbers.get(i3) * 3, regularNumbers.get(i5) * 5));
+            regularNumbers.add(nextRegularNumber);
+
+            if (nextRegularNumber == regularNumbers.get(i2) * 2) {
+                i2++;
+            }
+            if (nextRegularNumber == regularNumbers.get(i3) * 3) {
+                i3++;
+            }
+            if (nextRegularNumber == regularNumbers.get(i5) * 5) {
+                i5++;
+            }
+        }
+
+        return regularNumbers;
+    }
+
+    // S95.
+    public static int getRemainingQuxes(char[] quxes) {
+        Stack<Character> stack = new Stack<>();
+
+        for (char qux : quxes) {
+            if (!stack.isEmpty() && stack.peek() != qux) {
+                stack.pop(); // Quxes transform into the third color
+            } else {
+                stack.push(qux);
+            }
+        }
+
+        return stack.size();
+    }
+
+    // S96.
+    public static int longestTwoAppleTrees(int[] trees) {
+        int n = trees.length;
+        if (n < 3) {
+            return n; // Not enough trees to form a portion
+        }
+
+        int maxLen = 0;
+        Map<Integer, Integer> treeCounts = new HashMap<>();
+        int left = 0;
+        int right = 0;
+
+        while (right < n) {
+            treeCounts.put(trees[right], treeCounts.getOrDefault(trees[right], 0) + 1);
+
+            while (treeCounts.size() > 2) {
+                treeCounts.put(trees[left], treeCounts.get(trees[left]) - 1);
+                if (treeCounts.get(trees[left]) == 0) {
+                    treeCounts.remove(trees[left]);
+                }
+                left++;
+            }
+
+            maxLen = Math.max(maxLen, right - left + 1);
+            right++;
+        }
+
+        return maxLen;
+    }
+
+    // S97.
+    private static class Candidate implements Comparable<Candidate> {
+        private final int id;
+        private final int count;
+
+        public Candidate(int id, int count) {
+            this.id = id;
+            this.count = count;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public int getCount() {
+            return count;
+        }
+
+        @Override
+        public int compareTo(Candidate other) {
+            return Integer.compare(this.count, other.count);
+        }
+    }
+
+    // S98.
+    public static double calculateAngle(String time) {
+        String[] parts = time.split(":");
+        int hour = Integer.parseInt(parts[0]);
+        int minute = Integer.parseInt(parts[1]);
+
+        double hourAngle = (hour % 12 + minute / 60.0) * 30;
+        double minuteAngle = minute * 6;
+
+        double angle = Math.abs(hourAngle - minuteAngle);
+
+        return Math.min(angle, 360 - angle);
+    }
+
+    // S99.
+    public static ListNode removeZeroSumSublists(ListNode head) {
+        ListNode dummy = new ListNode(0);
+        dummy.next = head;
+
+        // Create a prefix sum map to track cumulative sums and their corresponding
+        // nodes
+        Map<Integer, ListNode> prefixSumMap = new HashMap<>();
+        int prefixSum = 0;
+        ListNode curr = dummy;
+
+        while (curr != null) {
+            prefixSum += curr.val;
+
+            if (prefixSumMap.containsKey(prefixSum)) {
+                // Remove the nodes between the previous occurrence of the prefix sum and the
+                // current node
+                ListNode prev = prefixSumMap.get(prefixSum).next;
+                int sum = prefixSum + prev.val;
+
+                while (prev != curr) {
+                    prefixSumMap.remove(sum);
+                    prev = prev.next;
+                    sum += prev.val;
+                }
+
+                prefixSumMap.get(prefixSum).next = curr.next;
+            } else {
+                prefixSumMap.put(prefixSum, curr);
+            }
+
+            curr = curr.next;
+        }
+
+        return dummy.next;
+    }
+
+    // S100.
+    private static TreeNode<Integer> insert(TreeNode<Integer> root, int val) {
+        if (root == null) {
+            return new TreeNode<>(val);
+        }
+
+        if (val < root.val) {
+            root.left = insert(root.left, val);
+        } else {
+            root.right = insert(root.right, val);
+        }
+
+        return root;
+    }
+
+    public static Integer findFloor(TreeNode<Integer> root, int target) {
+        if (root == null) {
+            return null;
+        }
+
+        if (root.val == target) {
+            return root.val;
+        }
+
+        if (root.val > target) {
+            return findFloor(root.left, target);
+        }
+
+        Integer floor = findFloor(root.right, target);
+        return (floor != null && floor <= target) ? floor : root.val;
+    }
+
+    public static Integer findCeiling(TreeNode<Integer> root, int target) {
+        if (root == null) {
+            return null;
+        }
+
+        if (root.val == target) {
+            return root.val;
+        }
+
+        if (root.val < target) {
+            return findCeiling(root.right, target);
+        }
+
+        Integer ceiling = findCeiling(root.left, target);
+        return (ceiling != null && ceiling >= target) ? ceiling : root.val;
+    }
+
+    public static void main(String[] args) {
         /*
          * Q1.
          * Given a list of numbers and a number k, return whether any two numbers from
@@ -4489,6 +4799,236 @@ public class QuestionsAndSolutions {
             System.out.println();
         }
 
+        /*
+         * Q91.
+         * A classroom consists of N students, whose friendships can be represented in
+         * an adjacency list. For example, the following describes a situation where 0
+         * is friends with 1 and 2, 3 is friends with 6, and so on.
+         * {0: [1, 2],
+         * 1: [0, 5],
+         * 2: [0],
+         * 3: [6],
+         * 4: [],
+         * 5: [1],
+         * 6: [3]}
+         * Each student can be placed in a friend group, which can be defined as the
+         * transitive closure of that student's friendship relations. In other words,
+         * this is the smallest set such that no student in the group has any friends
+         * outside this group. For the example above, the friend groups would be {0, 1,
+         * 2, 5}, {3, 6}, {4}.
+         * Given a friendship list such as the one above, determine the number of friend
+         * groups in the class.
+         */
+        int[][] adjacencyList = {
+                { 1, 2 },
+                { 0, 5 },
+                { 0 },
+                { 6 },
+                {},
+                { 1 },
+                { 3 }
+        };
+
+        int friendGroups = countFriendGroups(adjacencyList);
+        System.out.println("Number of Friend Groups: " + friendGroups);
+
+        /*
+         * Q92.
+         * Given an undirected graph, determine if it contains a cycle.
+         */
+        int vertices = 5;
+        Graph graphWithCycle = new Graph(vertices);
+        graphWithCycle.addEdge(0, 1);
+        graphWithCycle.addEdge(1, 2);
+        graphWithCycle.addEdge(2, 3);
+        graphWithCycle.addEdge(3, 4);
+        graphWithCycle.addEdge(4, 1);
+
+        boolean hasCycle = graphWithCycle.containsCycle();
+        System.out.println("Graph contains a cycle: " + hasCycle);
+
+        /*
+         * Q93.
+         * Given an array of integers, determine whether it contains a Pythagorean
+         * triplet. Recall that a Pythagorean triplet (a, b, c) is defined by the
+         * equation a2+ b2= c2.
+         */
+        int[] numsForPythagorean = { 3, 1, 4, 6, 5 };
+
+        boolean hasPythagoreanTriplet = containsPythagoreanTriplet(numsForPythagorean);
+        System.out.println("Array contains a Pythagorean triplet: " + hasPythagoreanTriplet);
+
+        /*
+         * Q94.
+         * A regular number in mathematics is defined as one which evenly divides some
+         * power of 60. Equivalently, we can say that a regular number is one whose only
+         * prime divisors are 2, 3, and 5.
+         * These numbers have had many applications, from helping ancient Babylonians
+         * keep time to tuning instruments according to the diatonic scale.
+         * Given an integer N, write a program that returns, in order, the first N
+         * regular numbers.
+         */
+        int nForRegularNums = 10;
+
+        List<Long> regularNumbers = getRegularNumbers(nForRegularNums);
+        System.out.println("First " + n + " regular numbers:");
+        for (long regularNum : regularNumbers) {
+            System.out.print(regularNum + " ");
+        }
+
+        /*
+         * Q95.
+         * On a mysterious island there are creatures known as Quxes which come in three
+         * colors: red, green, and blue. One power of the Qux is that if two of them are
+         * standing next to each other, they can transform into a single creature of the
+         * third color.
+         * Given N Quxes standing in a line, determine the smallest number of them
+         * remaining after any possible sequence of such transformations.
+         * For example, given the input ['R', 'G', 'B', 'G', 'B'], it is possible to end
+         * up with a single Qux through the following steps:
+         * "        Arrangement       |   Change    "
+         * "----------------------------------------"
+         * "['R', 'G', 'B', 'G', 'B'] | (R, G) -> B "
+         * "['B', 'B', 'G', 'B']      | (B, G) -> R "
+         * "['B', 'R', 'B']           | (R, B) -> G "
+         * "['B', 'G']                | (B, G) -> R "
+         * "['R']                     |             "
+         */
+        char[] quxes = { 'R', 'G', 'B', 'G', 'B' };
+        int remainingQuxes = getRemainingQuxes(quxes);
+        System.out.println("Smallest number of remaining Quxes: " + remainingQuxes);
+
+        /*
+         * Q96.
+         * A girl is walking along an apple orchard with a bag in each hand. She likes
+         * to pick apples from each tree as she goes along, but is meticulous about not
+         * putting different kinds of apples in the same bag.
+         * Given an input describing the types of apples she will pass on her path, in
+         * order, determine the length of the longest portion of her path that consists
+         * of just two types of apple trees.
+         * For example, given the input [2, 1, 2, 3, 3, 1, 3, 5], the longest portion
+         * will involve types 1 and 3, with a length of four.
+         */
+        int[] trees = { 2, 1, 2, 3, 3, 1, 3, 5 };
+        int longestPortion = longestTwoAppleTrees(trees);
+        System.out.println("Length of the longest portion with two types of apple trees: " + longestPortion);
+
+        /*
+         * Q97.
+         * On election day, a voting machine writes data in the form (voter_id,
+         * candidate_id) to a text file. Write a program that reads this file as a
+         * stream and returns the top 3 candidates at any given time. If you find a
+         * voter voting more than once, report this as fraud.
+         */
+        // NOT tested
+        String filePath = "voting_data.txt"; // Path to the voting data file
+        Map<Integer, Integer> voteCounts = new HashMap<>();
+        PriorityQueue<Candidate> topCandidates = new PriorityQueue<>();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] voteData = line.split(",");
+                int voterId = Integer.parseInt(voteData[0]);
+                int candidateId = Integer.parseInt(voteData[1]);
+
+                if (voteCounts.containsKey(voterId)) {
+                    System.out.println("Voter fraud detected: Voter " + voterId + " voted more than once.");
+                    continue;
+                }
+
+                voteCounts.put(voterId, candidateId);
+                int count = voteCounts.getOrDefault(candidateId, 0) + 1;
+                voteCounts.put(candidateId, count);
+
+                Candidate candidate = new Candidate(candidateId, count);
+                topCandidates.offer(candidate);
+
+                if (topCandidates.size() > 3) {
+                    topCandidates.poll();
+                }
+
+                System.out.println("Top 3 candidates:");
+                for (Candidate c : topCandidates) {
+                    System.out.println("Candidate " + c.getId() + ": " + c.getCount() + " votes");
+                }
+                System.out.println();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        /*
+         * Q98.
+         * Given a clock time in hh:mm format, determine, to the nearest degree, the
+         * angle between the hour and the minute hands.
+         * Bonus: When, during the course of a day, will the angle be zero?
+         */
+        String time = "10:45";
+        double angle = calculateAngle(time);
+        System.out.println("Angle between the hour and minute hands: " + angle + " degrees");
+
+        // Bonus: Find when the angle is zero
+        int count = 0;
+        for (int hour = 0; hour < 12; hour++) {
+            for (int minute = 0; minute < 60; minute++) {
+                double currAngle = calculateAngle(hour + ":" + minute);
+                if (currAngle == 0) {
+                    System.out.println("Angle is zero at " + hour + ":" + minute);
+                    count++;
+                }
+            }
+        }
+        System.out.println("Total instances where angle is zero: " + count);
+
+        /*
+         * Q99.
+         * Given a linked list, remove all consecutive nodes that sum to zero. Print out
+         * the remaining nodes.
+         * For example, suppose you are given the input 3 -> 4 -> -7 -> 5 -> -6 -> 6. In
+         * this case, you should first remove 3 -> 4 -> -7, then -6 -> 6, leaving only
+         * 5.
+         */
+        ListNode headToRemoveConsecutiveSumZero = new ListNode(3);
+        headToRemoveConsecutiveSumZero.next = new ListNode(4);
+        headToRemoveConsecutiveSumZero.next.next = new ListNode(-7);
+        headToRemoveConsecutiveSumZero.next.next.next = new ListNode(5);
+        headToRemoveConsecutiveSumZero.next.next.next.next = new ListNode(-6);
+        headToRemoveConsecutiveSumZero.next.next.next.next.next = new ListNode(6);
+
+        System.out.print("Original Linked List: ");
+        printLinkedList(headToRemoveConsecutiveSumZero);
+
+        ListNode updatedHead = removeZeroSumSublists(headToRemoveConsecutiveSumZero);
+
+        System.out.print("Updated Linked List: ");
+        printLinkedList(updatedHead);
+
+        /*
+         * Q100.
+         * Given a binary search tree, find the floor and ceiling of a given integer.
+         * The floor is the highest element in the tree less than or equal to an
+         * integer, while the ceiling is the lowest element in the tree greater than or
+         * equal to an integer.
+         * If either value does not exist, return None.
+         */
+        TreeNode<Integer> treeToFindFloorOrCeiling = null;
+        treeToFindFloorOrCeiling = insert(treeToFindFloorOrCeiling, 8);
+        insert(treeToFindFloorOrCeiling, 4);
+        insert(treeToFindFloorOrCeiling, 12);
+        insert(treeToFindFloorOrCeiling, 2);
+        insert(treeToFindFloorOrCeiling, 6);
+        insert(treeToFindFloorOrCeiling, 10);
+        insert(treeToFindFloorOrCeiling, 14);
+
+        int targetForFloorOrCeiling = 7;
+        Integer floor = findFloor(treeToFindFloorOrCeiling, targetForFloorOrCeiling);
+        Integer ceiling = findCeiling(treeToFindFloorOrCeiling, targetForFloorOrCeiling);
+
+        System.out.println("Target: " + targetForFloorOrCeiling);
+        System.out.println("Floor: " + (floor != null ? floor : "None"));
+        System.out.println("Ceiling: " + (ceiling != null ? ceiling : "None"));
+
     }
 
     private static void printLinkedList(ListNode head) {
@@ -4500,7 +5040,7 @@ public class QuestionsAndSolutions {
         System.out.println("null");
     }
 
-    private static void printTree(TreeNode node) {
+    private static void printTree(TreeNode<Character> node) {
         if (node == null) {
             return;
         }
