@@ -1988,8 +1988,9 @@ public class QuestionsAndSolutions {
     }
 
     // S66.
-    public static int collatzSequence(int n) {
+    public static long collatzSequence(long n) {
         if (n <= 0) {
+            System.out.println(n);
             throw new IllegalArgumentException("Input must be a positive integer.");
         }
 
@@ -3088,7 +3089,281 @@ public class QuestionsAndSolutions {
         return (ceiling != null && ceiling >= target) ? ceiling : root.val;
     }
 
-    public static void main(String[] args) {
+    // S101.
+    public static int countSetBits(int N) {
+        int count = 0;
+
+        for (int i = 1; i <= N; i++) {
+            count += countSetBitsUtil(i);
+        }
+
+        return count;
+    }
+
+    public static int countSetBitsUtil(int num) {
+        int count = 0;
+
+        while (num > 0) {
+            if ((num & 1) == 1) {
+                count++;
+            }
+
+            num >>= 1;
+        }
+
+        return count;
+    }
+
+    // S102.
+    public static int findPeakElement(int[] nums) {
+        int left = 0;
+        int right = nums.length - 1;
+
+        while (left < right) {
+            int mid = left + (right - left) / 2;
+
+            if (nums[mid] > nums[right]) {
+                left = mid + 1;
+            } else {
+                right = mid;
+            }
+        }
+
+        return left - 1;
+    }
+
+    // S103.
+    public static int countWaysToCoverBoard(int N) {
+        if (N == 0) {
+            return 1;
+        }
+
+        int[] dp = new int[N + 1];
+        dp[0] = 1;
+        dp[1] = 1;
+
+        for (int i = 2; i <= N; i++) {
+            // dp[i-1]: the number of ways to cover the board by extending the previous
+            // width by a 2x1 domino
+            // dp[i-2]: the number of ways to cover the board by extending the previous
+            // width by a 2x2 tromino
+            // 2*dp[i-2]: the number of ways to cover the board by placing two 1x2 trominoes
+            // vertically
+            dp[i] = dp[i - 1] + dp[i - 2] + 2 * dp[i - 2];
+        }
+
+        return dp[N]; // 1 1 4 7 19 by increasing N by 1
+    }
+
+    // S104.
+    public static boolean isToeplitzMatrix(int[][] matrix) {
+        int rows = matrix.length;
+        int columns = matrix[0].length;
+
+        for (int i = 1; i < rows; i++) {
+            for (int j = 1; j < columns; j++) {
+                if (matrix[i][j] != matrix[i - 1][j - 1]) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    // S105.
+    public static int minimizeSteps(int[] mice, int[] holes) {
+        Arrays.sort(mice);
+        Arrays.sort(holes);
+
+        int maxSteps = 0;
+
+        for (int i = 0; i < mice.length; i++) {
+            int steps = Math.abs(mice[i] - holes[i]);
+            maxSteps = Math.max(maxSteps, steps);
+        }
+
+        return maxSteps;
+    }
+
+    // S106.
+    static class UnitConverter {
+        private Map<String, Map<String, Double>> conversionGraph;
+
+        public UnitConverter() {
+            this.conversionGraph = new HashMap<>();
+        }
+
+        public void addUnitConversion(String fromUnit, String toUnit, double conversionRate) {
+            conversionGraph.putIfAbsent(fromUnit, new HashMap<>());
+            conversionGraph.putIfAbsent(toUnit, new HashMap<>());
+
+            conversionGraph.get(fromUnit).put(toUnit, conversionRate);
+            conversionGraph.get(toUnit).put(fromUnit, 1.0 / conversionRate);
+        }
+
+        public double convert(double quantity, String fromUnit, String toUnit) {
+            if (fromUnit.equals(toUnit)) {
+                return quantity;
+            }
+
+            if (!conversionGraph.containsKey(fromUnit) || !conversionGraph.containsKey(toUnit)) {
+                throw new IllegalArgumentException("Conversion not defined between " + fromUnit + " and " + toUnit);
+            }
+
+            Map<String, Double> distances = new HashMap<>();
+            distances.put(fromUnit, 1.0);
+
+            Queue<String> queue = new LinkedList<>();
+            queue.offer(fromUnit);
+
+            while (!queue.isEmpty()) {
+                String currentUnit = queue.poll();
+                double currentDistance = distances.get(currentUnit);
+
+                if (currentUnit.equals(toUnit)) {
+                    return quantity * currentDistance;
+                }
+
+                Map<String, Double> neighbors = conversionGraph.get(currentUnit);
+
+                for (String neighbor : neighbors.keySet()) {
+                    if (!distances.containsKey(neighbor)) {
+                        double neighborDistance = currentDistance * neighbors.get(neighbor);
+                        distances.put(neighbor, neighborDistance);
+                        queue.offer(neighbor);
+                    }
+                }
+            }
+
+            throw new IllegalArgumentException("Conversion not possible from " + fromUnit + " to " + toUnit);
+        }
+    }
+
+    // S107.
+    static public TreeNode<Integer> mergeTrees(TreeNode<Integer> t1, TreeNode<Integer> t2) {
+        if (t1 == null && t2 == null) {
+            return null;
+        }
+
+        int val1 = (t1 != null) ? t1.val : 0;
+        int val2 = (t2 != null) ? t2.val : 0;
+
+        TreeNode<Integer> newNode = new TreeNode<>(val1 + val2);
+        newNode.left = mergeTrees((t1 != null) ? t1.left : null, (t2 != null) ? t2.left : null);
+        newNode.right = mergeTrees((t1 != null) ? t1.right : null, (t2 != null) ? t2.right : null);
+
+        return newNode;
+    }
+
+    // S108.
+    public static int countPairs(int M, int N) {
+        int count = 0;
+
+        for (int a = 1; a <= M / 2; a++) {
+            int b = M - a;
+            if ((a ^ b) == N) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    // S109.
+    public static boolean canReach24(int[] nums) {
+        return canReachTarget(nums, 24);
+    }
+
+    private static boolean canReachTarget(int[] nums, int target) {
+        if (nums.length == 1) {
+            return nums[0] == target;
+        }
+
+        for (int i = 0; i < nums.length; i++) {
+            for (int j = 0; j < nums.length; j++) {
+                if (i != j) {
+                    int[] remaining = getRemainingArray(nums, i, j);
+
+                    if (canReachTarget(applyOperators(nums[i], nums[j], remaining), target)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static int[] applyOperators(int a, int b, int[] remaining) {
+        int[] result = new int[remaining.length + 1];
+
+        for (int i = 0; i < remaining.length; i++) {
+            result[i] = remaining[i];
+        }
+
+        result[result.length - 1] = a + b;
+
+        if (canReachTarget(result, 24)) {
+            return result;
+        }
+
+        result[result.length - 1] = a - b;
+
+        if (canReachTarget(result, 24)) {
+            return result;
+        }
+
+        result[result.length - 1] = a * b;
+
+        if (canReachTarget(result, 24)) {
+            return result;
+        }
+
+        if (b != 0 && a % b == 0) {
+            result[result.length - 1] = a / b;
+
+            if (canReachTarget(result, 24)) {
+                return result;
+            }
+        }
+
+        return remaining;
+    }
+
+    private static int[] getRemainingArray(int[] nums, int i, int j) {
+        int[] remaining = new int[nums.length - 2];
+        int index = 0;
+
+        for (int k = 0; k < nums.length; k++) {
+            if (k != i && k != j) {
+                remaining[index++] = nums[k];
+            }
+        }
+
+        return remaining;
+    }
+
+    // S110.
+    public static boolean hasThreeSum(int[] nums, int k) {
+        HashSet<Integer> set = new HashSet<>();
+
+        for (int i = 0; i < nums.length - 2; i++) {
+            int target = k - nums[i];
+            set.clear();
+
+            for (int j = i + 1; j < nums.length; j++) {
+                if (set.contains(target - nums[j])) {
+                    return true;
+                }
+                set.add(nums[j]);
+            }
+        }
+
+        return false;
+    }
+
+    public static void main(String[] args) throws InterruptedException {
         /*
          * Q1.
          * Given a list of numbers and a number k, return whether any two numbers from
@@ -3097,6 +3372,7 @@ public class QuestionsAndSolutions {
          * 17.
          * Bonus: Can you do this in one pass?
          */
+        System.out.println("========= Q1 =========");
         int[] nums = { 10, 15, 3, 7 };
         int k = 17;
         boolean result = doesTwoSumHaveK(nums, k);
@@ -3117,6 +3393,7 @@ public class QuestionsAndSolutions {
          * "    / \      "
          * "   1   1     "
          */
+        System.out.println("========= Q2 =========");
         TreeNode<Integer> root = new TreeNode<Integer>(0);
         root.left = new TreeNode<Integer>(1);
         root.right = new TreeNode<Integer>(0);
@@ -3140,6 +3417,7 @@ public class QuestionsAndSolutions {
          * Do this in O(M + N) time (where M and N are the lengths of the lists) and
          * constant space.
          */
+        System.out.println("========= Q3 =========");
         ListNode a = new ListNode(3);
         a.next = new ListNode(7);
         a.next.next = new ListNode(8);
@@ -3161,6 +3439,7 @@ public class QuestionsAndSolutions {
          * (possibly overlapping), find the minimum number of rooms required.
          * For example, given [(30, 75), (0, 50), (60, 150)], you should return 2.
          */
+        System.out.println("========= Q4 =========");
         int[][] intervals = { { 30, 75 }, { 0, 50 }, { 60, 150 } };
 
         MinimumRooms minimumRooms = new MinimumRooms();
@@ -3187,6 +3466,7 @@ public class QuestionsAndSolutions {
          * number of steps required to reach the end is 7, since we would need to go
          * through (1, 2) because there is a wall everywhere else on the second row.
          */
+        System.out.println("========= Q5 =========");
         boolean[][] board = { { false, false, false, false },
                 { true, true, false, true },
                 { false, false, false, false },
@@ -3211,7 +3491,7 @@ public class QuestionsAndSolutions {
          * smaller than or equal to N.
          * You should be as efficient with time and space as possible.
          */
-
+        System.out.println("========= Q6 =========");
         // Solution implemented in S6 OrderLog class
 
         /*
@@ -3221,6 +3501,7 @@ public class QuestionsAndSolutions {
          * For example, given the string "([])[]({})", you should return true.
          * Given the string "([)]" or "((()", you should return false.
          */
+        System.out.println("========= Q7 =========");
         String str1 = "([])[]({})";
         String str2 = "([)]";
         String str3 = "((()";
@@ -3240,6 +3521,7 @@ public class QuestionsAndSolutions {
          * encoded have no digits and consists solely of alphabetic characters. You can
          * assume the string to be decoded is valid.
          */
+        System.out.println("========= Q8 =========");
         String input = "AAAABBBCCDAA";
         RunLengthEncoderDecoder runLengthEncoderDecoder = new RunLengthEncoderDecoder();
         String encoded = runLengthEncoderDecoder.encode(input);
@@ -3256,7 +3538,7 @@ public class QuestionsAndSolutions {
          * and append a “g”.
          * Given two strings, compute the edit distance between them.
          */
-
+        System.out.println("========= Q9 =========");
         String stringOne = "kitten";
         String stringTwo = "sitting";
         /*
@@ -3289,6 +3571,7 @@ public class QuestionsAndSolutions {
          * 2
          * 2
          */
+        System.out.println("========= Q10 =========");
         RunningMedian rm = new RunningMedian();
         rm.addNumber(2);
         System.out.println(rm.getMedian());
@@ -3313,6 +3596,7 @@ public class QuestionsAndSolutions {
          * {1, 2}, {1, 3}, {2, 3}, {1, 2, 3}}.
          * You may also use a list or array to represent a set.
          */
+        System.out.println("========= Q11 =========");
         Set<Integer> set = new HashSet<>(Arrays.asList(1, 2, 3));
         Set<Set<Integer>> powerSet = PowerSet.generatePowerSet(set);
         System.out.println(powerSet);
@@ -3327,6 +3611,7 @@ public class QuestionsAndSolutions {
          * no elements in the stack, then it should throw an error or return null.
          * Each method should run in constant time.
          */
+        System.out.println("========= Q12 =========");
         MaxStack stack = new MaxStack();
         stack.push(3);
         stack.push(1);
@@ -3344,6 +3629,7 @@ public class QuestionsAndSolutions {
          * For example, given [9, 11, 8, 5, 7, 10], you should return 5, since you could
          * buy the stock at 5 dollars and sell it at 10 dollars.
          */
+        System.out.println("========= Q13 =========");
         int[] stockHistory = { 9, 11, 8, 5, 7, 10 };
         int maxProfit = maxProfit(stockHistory);
         System.out.print("Max profit: ");
@@ -3362,6 +3648,7 @@ public class QuestionsAndSolutions {
          * "3  2  4  5 "
          * You should return 45, as it is (3 + 2) * (4 + 5).
          */
+        System.out.println("========= Q14 =========");
         TreeNode<Character> arithmeticExpTree = new TreeNode<Character>('*');
         arithmeticExpTree.left = new TreeNode<Character>('+');
         arithmeticExpTree.right = new TreeNode<Character>('+');
@@ -3381,6 +3668,7 @@ public class QuestionsAndSolutions {
          * no such shortened string exists, return null.
          * Hint: What if we enter the same URL twice?
          */
+        System.out.println("========= Q15 =========");
         String url = "user/create-order";
         UrlShortener urlShortener = new UrlShortener();
         String shortenedUrl = urlShortener.shorten(url);
@@ -3402,6 +3690,7 @@ public class QuestionsAndSolutions {
          * column. Similarly, given the target word 'MASS', you should return true,
          * since it's the last row.
          */
+        System.out.println("========= Q16 =========");
         char[][] matrix = { { 'F', 'A', 'C', 'I' }, { 'O', 'B', 'Q', 'P' }, { 'A', 'N', 'O', 'B' },
                 { 'M', 'A', 'S', 'S' } };
         String target = "FOAM";
@@ -3442,6 +3731,7 @@ public class QuestionsAndSolutions {
          * 13
          * 12
          */
+        System.out.println("========= Q17 =========");
         int[][] matrixForSpiralPrint = { { 1, 2, 3, 4, 5 }, { 6, 7, 8, 9, 10 }, { 11, 12, 13, 14, 15 },
                 { 16, 17, 18, 19, 20 } };
         printMatrixInSpiralOrder(matrixForSpiralPrint);
@@ -3454,6 +3744,7 @@ public class QuestionsAndSolutions {
          * that's -10 * -10 * 5.
          * You can assume the list has at least three integers.
          */
+        System.out.println("========= Q18 =========");
         int[] listOfIntegers = { -10, -10, 5, 2 };
         int largestProduct = largestProductOfThree(listOfIntegers);
         System.out.println(largestProduct);
@@ -3464,6 +3755,7 @@ public class QuestionsAndSolutions {
          * Given a positive integer n, return the n-th perfect number.
          * For example, given 1, you should return 19. Given 2, you should return 28.
          */
+        System.out.println("========= Q19 =========");
         int n = 1;
         int nthPerfectNumber = nthPerfectNumber(n);
         System.out.println(nthPerfectNumber);
@@ -3472,6 +3764,7 @@ public class QuestionsAndSolutions {
          * Q20.
          * Given the head of a singly linked list, reverse it in-place.
          */
+        System.out.println("========= Q20 =========");
         ListNode head = new ListNode(1);
         head.next = new ListNode(2);
         head.next.next = new ListNode(3);
@@ -3492,6 +3785,7 @@ public class QuestionsAndSolutions {
          * For example, given [(1, 3), (5, 8), (4, 10), (20, 25)], you should return
          * [(1, 3), (4, 10), (20, 25)].
          */
+        System.out.println("========= Q21 =========");
         List<Interval> listOfIntervals = new ArrayList<>();
         listOfIntervals.add(new Interval(1, 3));
         listOfIntervals.add(new Interval(5, 8));
@@ -3511,6 +3805,7 @@ public class QuestionsAndSolutions {
          * " /         "
          * "d          "
          */
+        System.out.println("========= Q22 =========");
         TreeNode<Character> binaryRoot = new TreeNode<Character>('a');
         binaryRoot.left = new TreeNode<Character>('b');
         binaryRoot.right = new TreeNode<Character>('c');
@@ -3527,6 +3822,7 @@ public class QuestionsAndSolutions {
          * For example if {“2”: [“a”, “b”, “c”], 3: [“d”, “e”, “f”], …} then “23” should
          * return [“ad”, “ae”, “af”, “bd”, “be”, “bf”, “cd”, “ce”, “cf"].
          */
+        System.out.println("========= Q23 =========");
         Map<Character, char[]> digitToLetters = new HashMap<>();
         digitToLetters.put('2', new char[] { 'a', 'b', 'c' });
         digitToLetters.put('3', new char[] { 'd', 'e', 'f' });
@@ -3550,6 +3846,7 @@ public class QuestionsAndSolutions {
          * returns “Hello w”, “orld” and then “”.
          */
         // Solution implemented in S24 (NOT tested)
+        System.out.println("========= Q24 =========");
 
         /*
          * Q25.
@@ -3563,6 +3860,7 @@ public class QuestionsAndSolutions {
          * for f in functions:
          * print(f())
          */
+        System.out.println("========= Q25 =========");
         // It will print '9' tem times as the lambda functions created using `lambda: i`
         // all reference the same variable 'i'
         // CORRECTION: functions.append(lambda x=i: x)
@@ -3573,6 +3871,7 @@ public class QuestionsAndSolutions {
          * The path must go through at least one node, and does not need to go through
          * the root.
          */
+        System.out.println("========= Q26 =========");
         // Solution implemented in S26 (NOT tested)
 
         /*
@@ -3582,6 +3881,7 @@ public class QuestionsAndSolutions {
          * For example, given [1,2,3], return
          * [[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]].
          */
+        System.out.println("========= Q27 =========");
         int[] list = { 1, 2, 3 };
         List<List<Integer>> permutations = permute(list);
         System.out.print("Permutations for [1, 2, 3]: ");
@@ -3603,6 +3903,7 @@ public class QuestionsAndSolutions {
          * exists(board, "ABCCED") returns true, exists(board, "SEE") returns true,
          * exists(board, "ABCB") returns false.
          */
+        System.out.println("========= Q28 =========");
         char[][] characterBoard = { { 'A', 'B', 'C', 'D' }, { 'S', 'F', 'C', 'S' }, { 'A', 'D', 'E', 'E' } };
         String word1 = "ABCCED";
         String word2 = "SEE";
@@ -3633,6 +3934,7 @@ public class QuestionsAndSolutions {
          * It takes 1 step to move from (0, 0) to (1, 1). It takes one more step to move
          * from (1, 1) to (1, 2).
          */
+        System.out.println("========= Q29 =========");
         int[][] points = { { 0, 0 }, { 1, 1 }, { 1, 2 } };
         int minSteps = minSteps(points);
         System.out.println(minSteps);
@@ -3653,6 +3955,7 @@ public class QuestionsAndSolutions {
          * [a, b] < [c, d]
          * If a < c OR a==c AND b < d.
          */
+        System.out.println("========= Q30 =========");
         Scanner sc = new Scanner(System.in);
         System.out.print("Enter an even number greater than 2: ");
         int num = sc.nextInt();
@@ -3666,6 +3969,7 @@ public class QuestionsAndSolutions {
          * linked?
          * For example, 1 -> 4 -> 3 -> 4 -> 1 returns True while 1 -> 4 returns False.
          */
+        System.out.println("========= Q31 =========");
         DoublyLinkedList list1 = new DoublyLinkedList();
         list1.add(1);
         list1.add(4);
@@ -3698,6 +4002,7 @@ public class QuestionsAndSolutions {
          * That is, as long as the debounced f continues to be invoked, f itself will
          * not be called for N milliseconds.
          */
+        System.out.println("========= Q32 =========");
         Debounce debounce = new Debounce(() -> System.out.println("Hello"), 1000);
         for (int i = 0; i < 10; i++) {
             debounce.execute();
@@ -3714,6 +4019,7 @@ public class QuestionsAndSolutions {
          * "    / \    "
          * "   4   5   "
          */
+        System.out.println("========= Q33 =========");
         TreeNode<Integer> binaryToPrint = new TreeNode<>(1);
         binaryToPrint.left = new TreeNode<>(2);
         binaryToPrint.right = new TreeNode<>(3);
@@ -3729,6 +4035,7 @@ public class QuestionsAndSolutions {
          * For example, if A is abcde and B is cdeab, return true. If A is abc and B is
          * acb, return false.
          */
+        System.out.println("========= Q34 =========");
         String A = "abcde";
         String B = "cdeab";
         boolean shiftable1 = canShift(A, B);
@@ -3743,6 +4050,7 @@ public class QuestionsAndSolutions {
          * Q35.
          * Given a binary tree, return the level of the tree with minimum sum.
          */
+        System.out.println("========= Q35 =========");
         TreeNode<Integer> minTreeSum = new TreeNode<>(11);
         minTreeSum.left = new TreeNode<>(2);
         minTreeSum.right = new TreeNode<>(3);
@@ -3761,6 +4069,7 @@ public class QuestionsAndSolutions {
          * sorted order.
          * For example, given [-9, -2, 0, 2, 3], return [0, 4, 4, 9, 81].
          */
+        System.out.println("========= Q36 =========");
         int[] numArr = { -9, -2, 0, 2, 3 };
         int[] squaredArr = sortedSquares(numArr);
 
@@ -3777,6 +4086,7 @@ public class QuestionsAndSolutions {
          * Write a function that, given n, returns the number of rounds you'd expect to
          * play until one coin remains.
          */
+        System.out.println("========= Q37 =========");
         int numRounds = numRounds(10);
         System.out.print("Number of rounds until one coin remaining: ");
         System.out.println(numRounds);
@@ -3793,13 +4103,14 @@ public class QuestionsAndSolutions {
          * "     11    15  "
          * Return the nodes 5 and 15.
          */
+        System.out.println("========= Q38 =========");
         TreeNode<Integer> findTwoSumBinaryTree = new TreeNode<>(10);
         findTwoSumBinaryTree.left = new TreeNode<>(5);
         findTwoSumBinaryTree.right = new TreeNode<>(15);
         findTwoSumBinaryTree.right.left = new TreeNode<>(11);
         findTwoSumBinaryTree.right.right = new TreeNode<>(15);
 
-        TreeNode<Integer>[] twoNodesForK = findTarget(binaryToPrint, 20);
+        TreeNode<Integer>[] twoNodesForK = findTarget(findTwoSumBinaryTree, 20);
         System.out.println(twoNodesForK[0].val);
         System.out.println(twoNodesForK[1].val);
 
@@ -3819,6 +4130,7 @@ public class QuestionsAndSolutions {
          * return 124 (99 + 25) as:
          * 4 -> 2 -> 1
          */
+        System.out.println("========= Q39 =========");
         ListNode numList1 = new ListNode(9);
         numList1.next = new ListNode(9);
         ListNode numList2 = new ListNode(5);
@@ -3840,6 +4152,7 @@ public class QuestionsAndSolutions {
          * timestamps lower and upper (inclusive)
          * Follow-up: What if our system has limited memory?
          */
+        System.out.println("========= Q40 =========");
         HitCounter hitCounter = new HitCounter();
         hitCounter.record(System.currentTimeMillis());
         Thread.sleep(100);
@@ -3865,6 +4178,7 @@ public class QuestionsAndSolutions {
          * set(i, val): updates index at i with val.
          * get(i): gets the value at index i.
          */
+        System.out.println("========= Q41 =========");
         int[] sparseArr = { 1, 0, 0, 0, 1, 0, 0, 1, 0, 1 };
         SparseArray sparseArray = new SparseArray(sparseArr, 10);
         sparseArray.set(0, 2);
@@ -3887,7 +4201,7 @@ public class QuestionsAndSolutions {
          * "       /   "
          * "     -1    "
          */
-
+        System.out.println("========= Q42 =========");
         TreeNode<Integer> binaryTreeForMinSumPath = new TreeNode<>(10);
         binaryTreeForMinSumPath.left = new TreeNode<>(5);
         binaryTreeForMinSumPath.right = new TreeNode<>(5);
@@ -3905,6 +4219,7 @@ public class QuestionsAndSolutions {
          * head.
          * For example, given 1 -> 2 -> 3 -> 4, return 2 -> 1 -> 4 -> 3.
          */
+        System.out.println("========= Q43 =========");
         ListNode linkedListToSwapEveryTwo = new ListNode(1);
         linkedListToSwapEveryTwo.next = new ListNode(2);
         linkedListToSwapEveryTwo.next.next = new ListNode(3);
@@ -3930,6 +4245,7 @@ public class QuestionsAndSolutions {
          * push(item), which adds a new key to the heap
          * pop(), which removes and returns the max value of the heap
          */
+        System.out.println("========= Q44 =========");
         StackUsingHeap stackUsingHeap = new StackUsingHeap();
 
         stackUsingHeap.push(1);
@@ -3947,6 +4263,7 @@ public class QuestionsAndSolutions {
          * racecar, which is a palindrome. daily should return false, since there's no
          * rearrangement that can form a palindrome.
          */
+        System.out.println("========= Q45 =========");
         String palindromeString = "carrace";
         String nonPalindromeString = "daily";
 
@@ -3960,6 +4277,7 @@ public class QuestionsAndSolutions {
          * For example, given the string "acbbac", return "b". Given the string
          * "abcdef", return null.
          */
+        System.out.println("========= Q46 =========");
         String strToFindRecurringString1 = "acbbac";
         String strToFindRecurringString2 = "abcdef";
 
@@ -3972,6 +4290,7 @@ public class QuestionsAndSolutions {
          * For example, given the binary number 1111 0000 1111 0000 1111 0000 1111 0000,
          * return 0000 1111 0000 1111 0000 1111 0000 1111.
          */
+        System.out.println("========= Q47 =========");
         String binary = "11110000111100001111000011110000";
         System.out.println(reverseBinary(binary)); // Output: 00001111000011110000111100001111
 
@@ -3988,6 +4307,7 @@ public class QuestionsAndSolutions {
          * can assume the building always starts off and ends up empty, i.e. with 0
          * people inside.
          */
+        System.out.println("========= Q48 =========");
         int[][] data = {
                 { 1526579928, 3, 1 }, // Entry: 3 people entered the building
                 { 1526579935, 2, 1 }, // Entry: 2 people entered the building
@@ -4024,6 +4344,7 @@ public class QuestionsAndSolutions {
          * You can assume keys do not contain dots in them, i.e. no clobbering will
          * occur.
          */
+        System.out.println("========= Q49 =========");
         Map<String, Object> dict = new HashMap<>();
         dict.put("key", 3);
         Map<String, Object> foo = new HashMap<>();
@@ -4058,6 +4379,7 @@ public class QuestionsAndSolutions {
          * One instance of running this Markov chain might produce { 'a': 3012, 'b':
          * 1656, 'c': 332 }.
          */
+        System.out.println("========= Q50 =========");
         char startState = 'a';
         int numSteps = 5000;
         List<TransitionProbability> transitionProbabilities = new ArrayList<>();
@@ -4083,6 +4405,7 @@ public class QuestionsAndSolutions {
          * Given s1 = foo and s2 = bar, return false since the o cannot map to two
          * characters.
          */
+        System.out.println("========= Q51 =========");
         String s1 = "abc";
         String s2 = "bcd";
         System.out.println(isCharacterMapping(s1, s2)); // Output: true
@@ -4100,7 +4423,7 @@ public class QuestionsAndSolutions {
          * Given the linked list 1 -> 2 -> 3 -> 4 -> 5 and k = 3, it should become 3 ->
          * 4 -> 5 -> 1 -> 2.
          */
-
+        System.out.println("========= Q52 =========");
         ListNode head1 = new ListNode(7);
         head1.next = new ListNode(7);
         head1.next.next = new ListNode(3);
@@ -4125,6 +4448,7 @@ public class QuestionsAndSolutions {
          * Given n numbers, find the greatest common denominator between them.
          * For example, given the numbers [42, 56, 14], return 14.
          */
+        System.out.println("========= Q53 =========");
         int[] numbers = { 42, 56, 14 };
 
         BigInteger gcd = greatestCommonDenominator(numbers);
@@ -4147,6 +4471,7 @@ public class QuestionsAndSolutions {
          * "}                                          "
          * return 6.
          */
+        System.out.println("========= Q54 =========");
         Rectangle rectangle1 = new Rectangle(1, 4, 3, 3);
         Rectangle rectangle2 = new Rectangle(0, 5, 4, 3);
 
@@ -4175,6 +4500,7 @@ public class QuestionsAndSolutions {
          * "}                                          "
          * return true as the first and third rectangle overlap each other.
          */
+        System.out.println("========= Q55 =========");
         Rectangle[] rectangles = new Rectangle[] {
                 new Rectangle(1, 4, 3, 3),
                 new Rectangle(-1, 3, 2, 1),
@@ -4192,6 +4518,7 @@ public class QuestionsAndSolutions {
          * For example, given the array [5, 1, 3, 5, 2, 3, 4, 1], return 5 as the
          * longest subarray of distinct elements is [5, 2, 3, 4, 1].
          */
+        System.out.println("========= Q56 =========");
         int[] arrToFindLongestUniqueSubarray = { 5, 1, 3, 5, 2, 3, 4, 1 };
         int longestSubarrayLength = findLongestSubarrayLength(arrToFindLongestUniqueSubarray);
 
@@ -4207,6 +4534,7 @@ public class QuestionsAndSolutions {
          * interval can be removed and the first two won't overlap.
          * The intervals are not necessarily sorted in any order.
          */
+        System.out.println("========= Q57 =========");
         int[][] collectionOfIntervals = { { 7, 9 }, { 2, 4 }, { 5, 8 } };
         int minIntervalsToRemove = eraseOverlapIntervals(collectionOfIntervals);
 
@@ -4219,6 +4547,7 @@ public class QuestionsAndSolutions {
          * set of n line segments connecting each point pi to qi. Write an algorithm to
          * determine how many pairs of the line segments intersect.
          */
+        System.out.println("========= Q58 =========");
         int[] p = { 1, 2, 3, 4 };
         int[] q = { 5, 6, 7, 8 };
         int intersectCount = countIntersectingPairs(p, q);
@@ -4237,6 +4566,7 @@ public class QuestionsAndSolutions {
          * Return 2 as it occurs twice: once as the left leaf, and once as the sum of 2
          * + 5 - 5.
          */
+        System.out.println("========= Q59 =========");
         TreeNode<Integer> mostSubtreeSum = new TreeNode<>(5);
         mostSubtreeSum.left = new TreeNode<>(2);
         mostSubtreeSum.right = new TreeNode<>(-5);
@@ -4249,6 +4579,7 @@ public class QuestionsAndSolutions {
          * Given an array and a number k that's smaller than the length of the array,
          * rotate the array to the right k elements in-place.
          */
+        System.out.println("========= Q60 =========");
         int[] arrayToRotate = { 1, 2, 3, 4, 5 };
         int numOfRotation = 3;
 
@@ -4272,6 +4603,7 @@ public class QuestionsAndSolutions {
          * For example, 1 -> 3 -> 5. The weight of the path is the sum of the entries.
          * Write a program that returns the weight of the maximum weight path.
          */
+        System.out.println("========= Q61 =========");
         int[][] triangle = {
                 { 1 },
                 { 2, 3 },
@@ -4287,6 +4619,7 @@ public class QuestionsAndSolutions {
          * 121 is a palindrome, as well as 888. 678 is not a palindrome. Do not convert
          * the integer into a string.
          */
+        System.out.println("========= Q62 =========");
         int number1 = 121;
         int number2 = 888;
         int number3 = 678;
@@ -4301,6 +4634,7 @@ public class QuestionsAndSolutions {
          * time. Recall that a complete binary tree has every level filled except the
          * last, and the nodes in the last level are filled starting from the left.
          */
+        System.out.println("========= Q63 =========");
         TreeNode<Integer> completeBT = new TreeNode<>(1);
         completeBT.left = new TreeNode<>(2);
         completeBT.right = new TreeNode<>(3);
@@ -4316,6 +4650,7 @@ public class QuestionsAndSolutions {
          * Given an integer, find the next permutation of it in absolute order. For
          * example, given 48975, the next permutation would be 49578.
          */
+        System.out.println("========= Q64 =========");
         int numToFindNextPermutation = 48975;
         int nextPermutation = findNextPermutation(numToFindNextPermutation);
         System.out.println("Next permutation: " + nextPermutation);
@@ -4329,6 +4664,7 @@ public class QuestionsAndSolutions {
          * example, given the array ["a", "b", "c"] and the permutation [2, 1, 0],
          * return ["c", "b", "a"].
          */
+        System.out.println("========= Q65 =========");
         String[] array = { "a", "b", "c" };
         int[] permutation = { 2, 1, 0 };
         String[] resultFromPermutation = applyPermutation(array, permutation);
@@ -4344,11 +4680,12 @@ public class QuestionsAndSolutions {
          * Test this conjecture.
          * Bonus: What input n <= 1000000 gives the longest sequence?
          */
-        int longestSequence = 0;
-        int longestSequenceNumber = 0;
+        System.out.println("========= Q66 =========");
+        long longestSequence = 0;
+        long longestSequenceNumber = 0;
 
-        for (int i = 1; i <= 1000000; i++) {
-            int sequenceLength = collatzSequence(i);
+        for (long i = 1; i <= 1000000; i++) {
+            long sequenceLength = collatzSequence(i);
             if (sequenceLength > longestSequence) {
                 longestSequence = sequenceLength;
                 longestSequenceNumber = i;
@@ -4365,6 +4702,7 @@ public class QuestionsAndSolutions {
          * Given a column number, return its alphabetical column id. For example, given
          * 1, return "A". Given 27, return "AA".
          */
+        System.out.println("========= Q67 =========");
         int columnNumber1 = 1;
         int columnNumber2 = 27;
 
@@ -4380,6 +4718,7 @@ public class QuestionsAndSolutions {
          * its binary representation.
          * For example, given 156, you should return 3.
          */
+        System.out.println("========= Q68 =========");
         int numToFindLongest1s = 156;
         int longestRun = longestConsecutiveRun(numToFindLongest1s);
         System.out.println("Longest consecutive run of 1s in " + n + ": " + longestRun);
@@ -4390,6 +4729,7 @@ public class QuestionsAndSolutions {
          * the sum of unique powers of 7. The first few sevenish numbers are 1, 7, 8,
          * 49, and so on. Create an algorithm to find the nth sevenish number.
          */
+        System.out.println("========= Q69 =========");
         int nthSevenish = 5;
         int nthSevenishNumber = getNthSevenishNumber(nthSevenish);
         System.out.println("The " + nthSevenish + "th sevenish number is: " + nthSevenishNumber);
@@ -4401,6 +4741,7 @@ public class QuestionsAndSolutions {
          * For example, for the input [1, 2, 3, 10], you should return 7.
          * Do this in O(N) time.
          */
+        System.out.println("========= Q70 =========");
         int[] numsToFindSmallestInteger = { 1, 2, 3, 10 };
         int smallestInteger = findSmallestPositiveInteger(numsToFindSmallestInteger);
         System.out.println("Smallest positive integer: " + smallestInteger);
@@ -4416,9 +4757,10 @@ public class QuestionsAndSolutions {
          * 5, 3], so you should return 3.
          * Bonus: Find an O(log N) solution if k = 2.
          */
-        int N = 5;
+        System.out.println("========= Q71 =========");
+        int nPrisoners = 5;
         int kthPrisoner = 2;
-        int lastSurvivor = findLastPrisoner(N, kthPrisoner);
+        int lastSurvivor = findLastPrisoner(nPrisoners, kthPrisoner);
         System.out.println("The last survivor's position is: " + lastSurvivor);
 
         /*
@@ -4428,6 +4770,7 @@ public class QuestionsAndSolutions {
          * in the grid, using each cell at most once. Given a game board and a
          * dictionary of valid words, implement a Boggle solver.
          */
+        System.out.println("========= Q72 =========");
         char[][] boggleBoard = {
                 { 'A', 'B', 'C', 'D' },
                 { 'E', 'F', 'G', 'H' },
@@ -4445,6 +4788,7 @@ public class QuestionsAndSolutions {
          * For example, given "aaabbc", you could return "ababac". Given "aaab", return
          * None.
          */
+        System.out.println("========= Q73 =========");
         String input1 = "aaabbc";
         String rearranged1 = rearrangeString(input1);
         System.out.println("Rearranged string for " + input1 + ": " + rearranged1);
@@ -4467,6 +4811,7 @@ public class QuestionsAndSolutions {
          * mapsum.insert("column", 2)
          * assert mapsum.sum("col") == 5
          */
+        System.out.println("========= Q74 =========");
         PrefixMapSum mapsum = new PrefixMapSum();
 
         mapsum.insert("columnar", 3);
@@ -4480,6 +4825,7 @@ public class QuestionsAndSolutions {
          * Implement the function fib(n), which returns the nth number in the Fibonacci
          * sequence, using only O(1) space.
          */
+        System.out.println("========= Q75 =========");
         int nthFib = 6;
         int nthFibonacciNumber = fib(n);
         System.out.println("Fibonacci number at index " + nthFib + ": " + nthFibonacciNumber);
@@ -4495,6 +4841,7 @@ public class QuestionsAndSolutions {
          * "9              9   "
          * Given a k-ary tree, determine whether it is symmetric.
          */
+        System.out.println("========= Q76 =========");
         NonBinaryTreeNode symmetricTree = new NonBinaryTreeNode(4);
         NonBinaryTreeNode node1 = new NonBinaryTreeNode(3);
         NonBinaryTreeNode node2 = new NonBinaryTreeNode(5);
@@ -4522,6 +4869,7 @@ public class QuestionsAndSolutions {
          * papers with at least 3 citations.
          * Given a list of paper citations of a researcher, calculate their h-index.
          */
+        System.out.println("========= Q77 =========");
         int[] citations = { 4, 3, 0, 1, 5 };
         int hIndex = calculateHIndex(citations);
         System.out.println("The h-index is: " + hIndex);
@@ -4539,6 +4887,7 @@ public class QuestionsAndSolutions {
          * Bonus: Create a generator that produces primes indefinitely (that is, without
          * taking N as an input).
          */
+        System.out.println("========= Q78 =========");
         int nPrime = 100;
         List<Integer> primeNums = generatePrimes(nPrime);
         System.out.println("Prime numbers less than " + nPrime + ": " + primeNums);
@@ -4556,6 +4905,7 @@ public class QuestionsAndSolutions {
          * height-balanced binary tree can be defined as one in which the heights of the
          * two subtrees of any node never differ by more than one.
          */
+        System.out.println("========= Q79 =========");
         TreeNode<Integer> balancedBinaryTree = new TreeNode<>(1);
         balancedBinaryTree.left = new TreeNode<>(2);
         balancedBinaryTree.right = new TreeNode<>(3);
@@ -4575,6 +4925,7 @@ public class QuestionsAndSolutions {
          * Create an algorithm to turn an ordinary fraction a / b, where a < b, into an
          * Egyptian fraction.
          */
+        System.out.println("========= Q80 =========");
         int numerator = 4;
         int denominator = 13;
 
@@ -4607,6 +4958,7 @@ public class QuestionsAndSolutions {
          * [0, 0, 0, 1]
          * Given a graph, find its transitive closure.
          */
+        System.out.println("========= Q81 =========");
         int[][] graph = {
                 { 0, 1, 3 },
                 { 1, 2 },
@@ -4627,6 +4979,7 @@ public class QuestionsAndSolutions {
          * window that must be sorted in order for the entire array to be sorted. For
          * example, given [3, 7, 5, 6, 9], you should return (1, 3).
          */
+        System.out.println("========= Q82 =========");
         int[] arr = { 3, 7, 5, 6, 9 };
         int[] bounds = findBounds(arr);
         System.out.println(Arrays.toString(bounds)); // Output: [1, 3]
@@ -4646,6 +4999,7 @@ public class QuestionsAndSolutions {
          * "4   5     6   7    "
          * You should return [1, 3, 2, 4, 5, 6, 7].
          */
+        System.out.println("========= Q83 =========");
         TreeNode<Integer> boustrophedonTree = new TreeNode<>(1);
         boustrophedonTree.left = new TreeNode<>(2);
         boustrophedonTree.right = new TreeNode<>(3);
@@ -4678,6 +5032,7 @@ public class QuestionsAndSolutions {
          * Given a dictionary of character frequencies, build a Huffman tree, and use it
          * to determine a mapping between characters and their encoded binary strings.
          */
+        System.out.println("========= Q84 =========");
         TreeNode<Character> huffmanTreeRoot = new TreeNode<>('*');
         huffmanTreeRoot.left = new TreeNode<>('*');
         huffmanTreeRoot.right = new TreeNode<>('*');
@@ -4702,6 +5057,7 @@ public class QuestionsAndSolutions {
          * For example, given [10, 40, 200, 1000, 60, 30], you should return [1, 2, 3,
          * 4, 2, 1].
          */
+        System.out.println("========= Q85 =========");
         int[] linesOfCode = { 10, 40, 200, 1000, 60, 30 };
         int[] bonuses = calculateBonuses(linesOfCode);
 
@@ -4718,6 +5074,7 @@ public class QuestionsAndSolutions {
          * Given a dictionary of words and an input word, create a function that returns
          * all valid step words.
          */
+        System.out.println("========= Q86 =========");
         String inputWord = "APPLE";
         List<String> dictionaryForAnagram = Arrays.asList("APPEAL", "PEAR", "PLEA", "LEAP");
         List<String> stepWords = findStepWords(inputWord, dictionaryForAnagram);
@@ -4736,6 +5093,7 @@ public class QuestionsAndSolutions {
          * For example, given the string .L.R....L, you should return LL.RRRLLL.
          * Given the string ..R...L.L, you should return ..RR.LLLL.
          */
+        System.out.println("========= Q87 =========");
         String dominoes1 = ".L.R....L";
         String dominoes2 = "..R...L.L";
 
@@ -4753,6 +5111,7 @@ public class QuestionsAndSolutions {
          * For example, given [-6, 0, 2, 40], you should return 2. Given [1, 5, 7, 8],
          * you should return False.
          */
+        System.out.println("========= Q88 =========");
         int[] nums1 = { -6, 0, 2, 40 };
         int[] nums2 = { 1, 5, 7, 8 };
 
@@ -4781,6 +5140,7 @@ public class QuestionsAndSolutions {
          * Write a program that takes in an array of integers representing byte values,
          * and returns whether it is a valid UTF-8 encoding.
          */
+        System.out.println("========= Q89 =========");
         int[] data1 = { 197, 130, 1 }; // Valid UTF-8 encoding
         int[] data2 = { 235, 140, 4 }; // Invalid UTF-8 encoding
 
@@ -4791,6 +5151,7 @@ public class QuestionsAndSolutions {
          * Q90.
          * Given an integer N, construct all possible binary search trees with N nodes.
          */
+        System.out.println("========= Q90 =========");
         int nForBinarySearchTree = 3;
         List<TreeNode<Integer>> possibleBSTs = generateBSTs(nForBinarySearchTree);
 
@@ -4819,6 +5180,7 @@ public class QuestionsAndSolutions {
          * Given a friendship list such as the one above, determine the number of friend
          * groups in the class.
          */
+        System.out.println("========= Q91 =========");
         int[][] adjacencyList = {
                 { 1, 2 },
                 { 0, 5 },
@@ -4836,6 +5198,7 @@ public class QuestionsAndSolutions {
          * Q92.
          * Given an undirected graph, determine if it contains a cycle.
          */
+        System.out.println("========= Q92 =========");
         int vertices = 5;
         Graph graphWithCycle = new Graph(vertices);
         graphWithCycle.addEdge(0, 1);
@@ -4853,6 +5216,7 @@ public class QuestionsAndSolutions {
          * triplet. Recall that a Pythagorean triplet (a, b, c) is defined by the
          * equation a2+ b2= c2.
          */
+        System.out.println("========= Q93 =========");
         int[] numsForPythagorean = { 3, 1, 4, 6, 5 };
 
         boolean hasPythagoreanTriplet = containsPythagoreanTriplet(numsForPythagorean);
@@ -4868,6 +5232,7 @@ public class QuestionsAndSolutions {
          * Given an integer N, write a program that returns, in order, the first N
          * regular numbers.
          */
+        System.out.println("========= Q94 =========");
         int nForRegularNums = 10;
 
         List<Long> regularNumbers = getRegularNumbers(nForRegularNums);
@@ -4894,6 +5259,7 @@ public class QuestionsAndSolutions {
          * "['B', 'G']                | (B, G) -> R "
          * "['R']                     |             "
          */
+        System.out.println("========= Q95 =========");
         char[] quxes = { 'R', 'G', 'B', 'G', 'B' };
         int remainingQuxes = getRemainingQuxes(quxes);
         System.out.println("Smallest number of remaining Quxes: " + remainingQuxes);
@@ -4909,6 +5275,7 @@ public class QuestionsAndSolutions {
          * For example, given the input [2, 1, 2, 3, 3, 1, 3, 5], the longest portion
          * will involve types 1 and 3, with a length of four.
          */
+        System.out.println("========= Q96 =========");
         int[] trees = { 2, 1, 2, 3, 3, 1, 3, 5 };
         int longestPortion = longestTwoAppleTrees(trees);
         System.out.println("Length of the longest portion with two types of apple trees: " + longestPortion);
@@ -4920,6 +5287,7 @@ public class QuestionsAndSolutions {
          * stream and returns the top 3 candidates at any given time. If you find a
          * voter voting more than once, report this as fraud.
          */
+        System.out.println("========= Q97 =========");
         // NOT tested
         String filePath = "voting_data.txt"; // Path to the voting data file
         Map<Integer, Integer> voteCounts = new HashMap<>();
@@ -4964,6 +5332,7 @@ public class QuestionsAndSolutions {
          * angle between the hour and the minute hands.
          * Bonus: When, during the course of a day, will the angle be zero?
          */
+        System.out.println("========= Q98 =========");
         String time = "10:45";
         double angle = calculateAngle(time);
         System.out.println("Angle between the hour and minute hands: " + angle + " degrees");
@@ -4989,6 +5358,7 @@ public class QuestionsAndSolutions {
          * this case, you should first remove 3 -> 4 -> -7, then -6 -> 6, leaving only
          * 5.
          */
+        System.out.println("========= Q99 =========");
         ListNode headToRemoveConsecutiveSumZero = new ListNode(3);
         headToRemoveConsecutiveSumZero.next = new ListNode(4);
         headToRemoveConsecutiveSumZero.next.next = new ListNode(-7);
@@ -5012,6 +5382,7 @@ public class QuestionsAndSolutions {
          * equal to an integer.
          * If either value does not exist, return None.
          */
+        System.out.println("========= Q100 =========");
         TreeNode<Integer> treeToFindFloorOrCeiling = null;
         treeToFindFloorOrCeiling = insert(treeToFindFloorOrCeiling, 8);
         insert(treeToFindFloorOrCeiling, 4);
@@ -5029,6 +5400,184 @@ public class QuestionsAndSolutions {
         System.out.println("Floor: " + (floor != null ? floor : "None"));
         System.out.println("Ceiling: " + (ceiling != null ? ceiling : "None"));
 
+        /*
+         * Q101.
+         * Write an algorithm that finds the total number of set bits in all integers
+         * between 1 and N.
+         */
+        System.out.println("========= Q101 =========");
+        int nToGetNumOfBits = 10;
+        int setBitsCount = countSetBits(nToGetNumOfBits);
+
+        System.out.println("Total number of set bits between 1 and " + nToGetNumOfBits + ": " + setBitsCount);
+
+        /*
+         * Q102.
+         * Given a array that's sorted but rotated at some unknown pivot, in which all
+         * elements are distinct, find a "peak" element in O(log N) time.
+         * An element is considered a peak if it is greater than both its left and right
+         * neighbors. It is guaranteed that the first and last elements are lower than
+         * all others.
+         */
+        System.out.println("========= Q102 =========");
+        int[] numsToFindPeak = { 5, 6, 7, 8, 9, 10, 1, 2, 3, 4 };
+        int peakElementIndex = findPeakElement(numsToFindPeak);
+
+        System.out.println("Peak element: " + numsToFindPeak[peakElementIndex]);
+
+        /*
+         * Q103.
+         * You are given a 2 x N board, and instructed to completely cover the board
+         * with the following shapes:
+         * Dominoes, or 2 x 1 rectangles.
+         * Trominoes, or L-shapes.
+         * For example, if N = 4, here is one possible configuration, where A is a
+         * domino, and B and C are trominoes.
+         * A B B C
+         * A B C C
+         * Given an integer N, determine in how many ways this task is possible.
+         */
+        System.out.println("========= Q103 =========");
+        int colsForBoard = 4;
+        int ways = countWaysToCoverBoard(colsForBoard);
+
+        System.out.println("Number of ways to cover the board: " + ways);
+
+        /*
+         * Q104.
+         * In linear algebra, a Toeplitz matrix is one in which the elements on any
+         * given diagonal from top left to bottom right are identical.
+         * Here is an example:
+         * 1 2 3 4 8
+         * 5 1 2 3 4
+         * 4 5 1 2 3
+         * 7 4 5 1 2
+         * Write a program to determine whether a given input is a Toeplitz matrix.
+         */
+        System.out.println("========= Q104 =========");
+        int[][] toeplitzMatrix = {
+                { 1, 2, 3, 4, 8 },
+                { 5, 1, 2, 3, 4 },
+                { 4, 5, 1, 2, 3 },
+                { 7, 4, 5, 1, 2 }
+        };
+
+        boolean isToeplitz = isToeplitzMatrix(toeplitzMatrix);
+
+        if (isToeplitz) {
+            System.out.println("The matrix is a Toeplitz matrix.");
+        } else {
+            System.out.println("The matrix is not a Toeplitz matrix.");
+        }
+
+        /*
+         * Q105.
+         * Consider the following scenario: there are N mice and N holes placed at
+         * integer points along a line. Given this, find a method that maps mice to
+         * holes such that the largest number of steps any mouse takes is minimized.
+         * Each move consists of moving one mouse one unit to the left or right, and
+         * only one mouse can fit inside each hole.
+         * For example, suppose the mice are positioned at [1, 4, 9, 15], and the holes
+         * are located at [10, -5, 0, 16]. In this case, the best pairing would require
+         * us to send the mouse at 1 to the hole at -5, so our function should return 6.
+         */
+        System.out.println("========= Q105 =========");
+        int[] mice = { 1, 4, 9, 15 };
+        int[] holes = { 10, -5, 0, 16 };
+
+        int minimumSteps = minimizeSteps(mice, holes);
+
+        System.out.println("The minimum number of steps required is: " + minimumSteps);
+
+        /*
+         * Q106.
+         * The United States uses the imperial system of weights and measures, which
+         * means that there are many different, seemingly arbitrary units to measure
+         * distance. There are 12 inches in a foot, 3 feet in a yard, 22 yards in a
+         * chain, and so on.
+         * Create a data structure that can efficiently convert a certain quantity of
+         * one unit to the correct amount of any other unit. You should also allow for
+         * additional units to be added to the system.
+         */
+        System.out.println("========= Q106 =========");
+        UnitConverter unitConverter = new UnitConverter();
+        unitConverter.addUnitConversion("inch", "foot", 0.0833);
+        unitConverter.addUnitConversion("foot", "yard", 0.3333);
+        unitConverter.addUnitConversion("yard", "mile", 0.00056818);
+
+        double quantity = 1000;
+        String fromUnit = "inch";
+        String toUnit = "yard";
+        double convertedResult = unitConverter.convert(quantity, fromUnit, toUnit);
+
+        System.out.println(quantity + " " + fromUnit + " is equal to " + convertedResult + " " + toUnit);
+
+        /*
+         * Q107.
+         * Write a program to merge two binary trees. Each node in the new tree should
+         * hold a value equal to the sum of the values of the corresponding nodes of the
+         * input trees.
+         * If only one input tree has a node in a given position, the corresponding node
+         * in the new tree should match that input node.
+         */
+        System.out.println("========= Q107 =========");
+        TreeNode<Integer> t1 = new TreeNode<>(1);
+        t1.left = new TreeNode<>(3);
+        t1.right = new TreeNode<>(2);
+        t1.left.left = new TreeNode<>(5);
+
+        TreeNode<Integer> t2 = new TreeNode<>(2);
+        t2.left = new TreeNode<>(1);
+        t2.right = new TreeNode<>(3);
+        t2.left.right = new TreeNode<>(4);
+        t2.right.right = new TreeNode<>(7);
+
+        TreeNode<Integer> mergedTree = mergeTrees(t1, t2);
+
+        System.out.print("Merged tree (Preorder traversal): ");
+        printPreorder(mergedTree);
+
+        /*
+         * Q108.
+         * Given integers M and N, write a program that counts how many positive integer
+         * pairs (a, b) satisfy the following conditions:
+         * a + b = M
+         * a XOR b = N
+         */
+        System.out.println("========= Q108 =========");
+        int M = 40;
+        int N = 20;
+
+        int pairCount = countPairs(M, N);
+        System.out.println("Number of positive integer pairs: " + pairCount);
+
+        /*
+         * Q109.
+         * The 24 game is played as follows. You are given a list of four integers, each
+         * between 1 and 9, in a fixed order. By placing the operators +, -, *, and /
+         * between the numbers, and grouping them with parentheses, determine whether it
+         * is possible to reach the value 24.
+         * For example, given the input [5, 2, 7, 8], you should return True, since (5 *
+         * 2 - 7) * 8 = 24.
+         * Write a function that plays the 24 game.
+         */
+        System.out.println("========= Q109 =========");
+        int[] numsFor24Game = { 5, 2, 7, 8 };
+        boolean canReach24 = canReach24(numsFor24Game);
+        System.out.println("Can reach 24: " + canReach24);
+
+        /*
+         * Q110.
+         * Given an array of numbers and a number k, determine if there are three
+         * entries in the array which add up to the specified number k. For example,
+         * given [20, 303, 3, 4, 25] and k = 49, return true as 20 + 4 + 25 = 49.
+         */
+        System.out.println("========= Q110 =========");
+        int[] numsForThreeSum = { 20, 303, 3, 4, 25 };
+        int kForThreeSum = 49;
+        boolean hasThreeSum = hasThreeSum(numsForThreeSum, kForThreeSum);
+        System.out.println("Has three sum: " + hasThreeSum);
+
     }
 
     private static void printLinkedList(ListNode head) {
@@ -5040,7 +5589,7 @@ public class QuestionsAndSolutions {
         System.out.println("null");
     }
 
-    private static void printTree(TreeNode<Character> node) {
+    private static <T> void printTree(TreeNode<T> node) {
         if (node == null) {
             return;
         }
@@ -5048,6 +5597,15 @@ public class QuestionsAndSolutions {
         System.out.print(node.val + " ");
         printTree(node.left);
         printTree(node.right);
+    }
+
+    private static <T> void printPreorder(TreeNode<T> root) {
+        if (root != null) {
+            System.out.print(root.val + " ");
+            printPreorder(root.left);
+            printPreorder(root.right);
+        }
+        System.out.println();
     }
 
     // S55.

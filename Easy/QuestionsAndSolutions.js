@@ -1704,7 +1704,7 @@ const debounce = new Debounce(() => console.log('Hello'), 1000);
 for (let i = 0; i < 10; i++) {
     debounce.execute();
     const currentTime = new Date().getTime();
-    while (new Date().getTime() - currentTime < 500) {}
+    while (new Date().getTime() - currentTime < 500) { }
 }
 
 /*
@@ -2043,19 +2043,19 @@ console.log('========= Q40 =========');
 const hitCounter = new HitCounter();
 hitCounter.record(Date.now());
 let currentTime = Date.now();
-while (Date.now() - currentTime < 100) {}
+while (Date.now() - currentTime < 100) { }
 const lower = Date.now();
 hitCounter.record(lower);
 currentTime = Date.now();
-while (Date.now() - currentTime < 100) {}
+while (Date.now() - currentTime < 100) { }
 hitCounter.record(Date.now());
 currentTime = Date.now();
-while (Date.now() - currentTime < 100) {}
+while (Date.now() - currentTime < 100) { }
 currentTime = Date.now();
 const upper = currentTime;
 hitCounter.record(upper);
 currentTime = Date.now();
-while (Date.now() - currentTime < 100) {}
+while (Date.now() - currentTime < 100) { }
 hitCounter.record(Date.now());
 
 console.log(`Total Hits: ${hitCounter.total()}`);
@@ -2500,9 +2500,9 @@ function simulateMarkovChain(start, numSteps, transitionProbabilities) {
                     currentState = transition.toState;
                     stateCount.set(
                         currentState,
-                        stateCount.get(currentState)
-                            ? stateCount.get(currentState) + 1
-                            : 1
+                        stateCount.get(currentState) ?
+                            stateCount.get(currentState) + 1 :
+                            1
                     );
                     break;
                 }
@@ -3061,7 +3061,11 @@ function maximumPathSum(triangle) {
 }
 
 console.log('========= Q61 =========');
-const triangle = [[1], [2, 3], [1, 5, 1]];
+const triangle = [
+    [1],
+    [2, 3],
+    [1, 5, 1]
+];
 const maxPathSum = maximumPathSum(triangle);
 console.log(`Maximum Path Sum: ${maxPathSum}`);
 console.log('\n');
@@ -3478,9 +3482,9 @@ function highestPowerOf2(N) {
 }
 
 console.log('========= Q71 =========');
-const N = 5;
+const nPrisoners = 5;
 const kthPrisoner = 2;
-const lastSurvivor = findLastPrisoner(N, kthPrisoner);
+const lastSurvivor = findLastPrisoner(nPrisoners, kthPrisoner);
 console.log(`The last survivor's position is: ${lastSurvivor}`);
 console.log('\n');
 
@@ -4042,7 +4046,12 @@ function findTransitiveClosure(graph) {
 }
 
 console.log('========= Q81 =========');
-const graph = [[0, 1, 3], [1, 2], [2], [3]];
+const graph = [
+    [0, 1, 3],
+    [1, 2],
+    [2],
+    [3]
+];
 console.log(`Transitive closure of ${graph}: `);
 console.log(findTransitiveClosure(graph));
 console.log(`\n`);
@@ -4535,7 +4544,15 @@ function dfsToFindFriendGroup(adjacencyList, node, visited) {
 }
 
 console.log('========= Q91 =========');
-const adjacencyList = [[1, 2], [0, 5], [0], [6], [], [1], [3]];
+const adjacencyList = [
+    [1, 2],
+    [0, 5],
+    [0],
+    [6],
+    [],
+    [1],
+    [3]
+];
 console.log(`Number of friend groups: ${countFriendGroups(adjacencyList)}`); // Output: 3
 console.log(`\n`);
 
@@ -4827,7 +4844,7 @@ try {
 
         let candidate = new Candidate(candidateId, count);
         topCandidates.push(candidate);
-        topCandidates.sort((a, b) => b.count -a.count );
+        topCandidates.sort((a, b) => b.count - a.count);
 
         if (topCandidates.length > 3) {
             topCandidates.pop();
@@ -4838,7 +4855,7 @@ try {
             console.log(
                 `Candidate ${topCandidates[i].getId()}: ${topCandidates[
                     i
-                ].getCount() } votes`
+                ].getCount()} votes`
             );
         }
     }
@@ -5017,4 +5034,435 @@ const ceiling = findCeiling(treeToFindFloorOrCeiling, targetForFloorAndCeiling);
 console.log(`Target: ${targetForFloorAndCeiling}`);
 console.log(`Floor: ${floor ? floor : 'None'}`);
 console.log(`Ceiling: ${ceiling ? ceiling : 'None'}`);
+console.log(`\n`);
+
+/*
+ * Q101.
+ * Write an algorithm that finds the total number of set bits in all integers
+ * between 1 and N.
+ */
+function countSetBits(n) {
+    let count = 0;
+
+    for (let i = 1; i <= n; i++) {
+        count += countSetBitsUtil(i);
+    }
+
+    return count;
+}
+
+function countSetBitsUtil(num) {
+    let count = 0;
+
+    while (num > 0) {
+        if ((num & 1) === 1) {
+            count++;
+        }
+
+        num >>= 1;
+    }
+
+    return count;
+}
+
+console.log('========= Q101 =========');
+const numToGetNumOfBits = 10;
+console.log(`total number of set bits in between 1 and ${numToGetNumOfBits}: ${countSetBits(numToGetNumOfBits)}`);
+console.log(`\n`);
+
+/*
+ * Q102.
+ * Given a array that's sorted but rotated at some unknown pivot, in which all
+ * elements are distinct, find a "peak" element in O(log N) time.
+ * An element is considered a peak if it is greater than both its left and right
+ * neighbors. It is guaranteed that the first and last elements are lower than
+ * all others.
+ */
+function findPeakElement(nums) {
+    let left = 0;
+    let right = nums.length - 1;
+
+    while (left < right) {
+        const mid = left + Math.floor((right - left) / 2);
+
+        if (nums[mid] > nums[right]) {
+            left = mid + 1;
+        } else {
+            right = mid;
+        }
+    }
+
+    return left - 1;
+}
+
+console.log('========= Q102 =========');
+const numsToFindPeak = [5, 6, 7, 8, 9, 10, 1, 2, 3, 4];
+const peakElementIndex = findPeakElement(numsToFindPeak);
+console.log(`Peak element: ${numsToFindPeak[peakElementIndex]}`);
+console.log(`\n`);
+
+/*
+ * Q103.
+ * You are given a 2 x N board, and instructed to completely cover the board
+ * with the following shapes:
+ * Dominoes, or 2 x 1 rectangles.
+ * Trominoes, or L-shapes.
+ * For example, if N = 4, here is one possible configuration, where A is a
+ * domino, and B and C are trominoes.
+ * A B B C
+ * A B C C
+ * Given an integer N, determine in how many ways this task is possible.
+ */
+function countWaysToCoverBoard(N) {
+    if (N === 0) {
+        return 1;
+    }
+
+    let dp = new Array(N + 1).fill(0);
+    dp[0] = 1;
+    dp[1] = 1;
+
+    for (let i = 2; i <= N; i++) {
+        //dp[i-1]: the number of ways to cover the board by extending the previous width by a 2x1 domino
+        //dp[i-2]: the number of ways to cover the board by extending the previous width by a 2x2 tromino
+        //2*dp[i-2]: the number of ways to cover the board by placing two 1x2 trominoes vertically
+        dp[i] = dp[i - 1] + dp[i - 2] + 2 * dp[i - 2];
+    }
+
+    return dp[N]; //1 1 4 7 19 by increasing N by 1
+}
+
+console.log('========= Q103 =========');
+const colsForBoard = 4;
+const ways = countWaysToCoverBoard(colsForBoard);
+console.log(`Number of ways to cover the board: ${ways}`);
+console.log(`\n`);
+
+/*
+ * Q104.
+ * In linear algebra, a Toeplitz matrix is one in which the elements on any
+ * given diagonal from top left to bottom right are identical.
+ * Here is an example:
+ * 1 2 3 4 8
+ * 5 1 2 3 4
+ * 4 5 1 2 3
+ * 7 4 5 1 2
+ * Write a program to determine whether a given input is a Toeplitz matrix.
+ */
+function isToeplitzMatrix(matrix) {
+    const rows = matrix.length;
+    const cols = matrix[0].length;
+
+    for (let i = 0; i < rows - 1; i++) {
+        for (let j = 0; j < cols - 1; j++) {
+            if (matrix[i][j] !== matrix[i + 1][j + 1]) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+console.log('========= Q104 =========');
+const toeplitzMatrix = [
+    [1, 2, 3, 4, 8],
+    [5, 1, 2, 3, 4],
+    [4, 5, 1, 2, 3],
+    [7, 4, 5, 1, 2]
+];
+const isToeplitz = isToeplitzMatrix(toeplitzMatrix);
+console.log(`Is Toeplitz matrix: ${isToeplitz}`);
+console.log(`\n`);
+
+/*
+* Q105.
+* Consider the following scenario: there are N mice and N holes placed at
+* integer points along a line. Given this, find a method that maps mice to
+* holes such that the largest number of steps any mouse takes is minimized.
+* Each move consists of moving one mouse one unit to the left or right, and
+* only one mouse can fit inside each hole.
+* For example, suppose the mice are positioned at [1, 4, 9, 15], and the holes
+* are located at [10, -5, 0, 16]. In this case, the best pairing would require
+* us to send the mouse at 1 to the hole at -5, so our function should return 6.
+*/
+function minimizeSteps(mice, holes) {
+    mice.sort((a, b) => a - b);
+    holes.sort((a, b) => a - b);
+
+    let maxSteps = 0;
+
+    for (let i = 0; i < mice.length; i++) {
+        let steps = Math.abs(mice[i] - holes[i]);
+        maxSteps = Math.max(maxSteps, steps);
+    }
+
+    return maxSteps;
+}
+
+console.log('========= Q105 =========');
+const mice = [1, 4, 9, 15];
+const holes = [10, -5, 0, 16];
+
+const minMouseSteps = minimizeSteps(mice, holes);
+console.log(`The minimum number of steps required is: ${minMouseSteps}`);
+console.log(`\n`);
+
+/*
+* Q106.
+* The United States uses the imperial system of weights and measures, which
+* means that there are many different, seemingly arbitrary units to measure
+* distance. There are 12 inches in a foot, 3 feet in a yard, 22 yards in a
+* chain, and so on.
+* Create a data structure that can efficiently convert a certain quantity of
+* one unit to the correct amount of any other unit. You should also allow for
+* additional units to be added to the system.
+*/
+class UnitConverter {
+    #conversionGraph;
+
+    constructor() {
+        this.#conversionGraph = new Map();
+    }
+
+    addUnitConversion(fromUnit, toUnit, conversionRate) {
+        this.#conversionGraph.set(fromUnit, new Map());
+        this.#conversionGraph.set(toUnit, new Map());
+
+        this.#conversionGraph.get(fromUnit).set(toUnit, conversionRate);
+        this.#conversionGraph.get(toUnit).set(fromUnit, 1 / conversionRate);
+    }
+
+    convert(quantity, fromUnit, toUnit) {
+        if (fromUnit === toUnit) {
+            return quantity;
+        }
+
+        if (!this.#conversionGraph.has(fromUnit) || !this.#conversionGraph.has(toUnit)) {
+            throw new Error(`Conversion not defined between ${fromUnit} and ${toUnit}`);
+        }
+
+        let distances = new Map();
+        distances.set(fromUnit, 1);
+
+        let queue = [fromUnit];
+
+        while (queue.length > 0) {
+            let currentUnit = queue.shift();
+            let currentDistance = distances.get(currentUnit);
+
+            if (currentUnit === toUnit) {
+                return quantity * currentDistance;
+            }
+
+            let neighbors = this.#conversionGraph.get(currentUnit);
+            for (let neighbor of neighbors.keys()) {
+                if (!distances.has(neighbor)) {
+                    let neighborDistance = currentDistance * neighbors.get(neighbor);
+                    distances.set(neighbor, neighborDistance);
+                    queue.push(neighbor);
+                }
+            }
+        }
+
+        throw new Error(`Conversion not possible from ${fromUnit} to ${toUnit}`);
+    }
+}
+
+console.log('========= Q106 =========');
+const unitConverter = new UnitConverter();
+unitConverter.addUnitConversion('inch', 'foot', 1 / 12);
+unitConverter.addUnitConversion('foot', 'yard', 1 / 3);
+unitConverter.addUnitConversion('yard', 'chain', 1 / 22);
+
+const quantity = 1000;
+const fromUnit = 'inch';
+const toUnit = 'yard';
+const convertedResult = unitConverter.convert(quantity, fromUnit, toUnit);
+console.log(`${quantity} ${fromUnit} = ${convertedResult} ${toUnit}`);
+console.log(`\n`);
+
+/*
+* Q107.
+* Write a program to merge two binary trees. Each node in the new tree should
+* hold a value equal to the sum of the values of the corresponding nodes of the
+* input trees.
+* If only one input tree has a node in a given position, the corresponding node
+* in the new tree should match that input node.
+*/
+function mergeTrees(t1, t2) {
+    if (!t1 && !t2) {
+        return null;
+    }
+
+    let val1 = t1 ? t1.val : 0;
+    let val2 = t2 ? t2.val : 0;
+
+    let newNode = new TreeNode(val1 + val2);
+    newNode.left = mergeTrees(t1 ? t1.left : null, t2 ? t2.left : null);
+    newNode.right = mergeTrees(t1 ? t1.right : null, t2 ? t2.right : null);
+
+    return newNode;
+}
+
+function printPreorder(root) {
+    if (root) {
+        console.log(root.val);
+        printPreorder(root.left);
+        printPreorder(root.right);
+    }
+}
+console.log('========= Q107 =========');
+const t1 = new TreeNode(1);
+t1.left = new TreeNode(3);
+t1.right = new TreeNode(2);
+t1.left.left = new TreeNode(5);
+
+const t2 = new TreeNode(2);
+t2.left = new TreeNode(1);
+t2.right = new TreeNode(3);
+t2.left.right = new TreeNode(4);
+t2.right.right = new TreeNode(7);
+
+const mergedTree = mergeTrees(t1, t2);
+printPreorder(mergedTree);
+console.log(`\n`);
+
+/*
+* Q108.
+* Given integers M and N, write a program that counts how many positive integer
+* pairs (a, b) satisfy the following conditions:
+* a + b = M
+* a XOR b = N
+*/
+function countPairs(M, N) {
+    let count = 0;
+
+    for (let a = 1; a <= Math.floor(M / 2); a++) {
+        let b = M - a;
+        if ((a ^ b) === N) {
+            count++;
+        }
+    }
+
+    return count;
+}
+
+console.log('========= Q108 =========');
+const M = 40;
+const N = 20;
+const pairCount = countPairs(M, N);
+console.log(`Number of positive integer pairs: ${pairCount}`);
+console.log(`\n`);
+
+/*
+* Q109.
+* The 24 game is played as follows. You are given a list of four integers, each
+* between 1 and 9, in a fixed order. By placing the operators +, -, *, and /
+* between the numbers, and grouping them with parentheses, determine whether it
+* is possible to reach the value 24.
+* For example, given the input [5, 2, 7, 8], you should return True, since (5 *
+* 2 - 7) * 8 = 24.
+* Write a function that plays the 24 game.
+*/
+function canReach24(nums) {
+    return canReachTarget(nums, 24);
+}
+
+function canReachTarget(nums, target) {
+    if (nums.length === 1) {
+        return nums[0] === target;
+    }
+
+    for (let i = 0; i < nums.length; i++) {
+        for (let j = 0; j < nums.length; j++) {
+            if (i !== j) {
+                let remaining = getRemainingArray(nums, i, j);
+
+                if (canReachTarget(applyOperators(nums[i], nums[j], remaining), target)) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+function applyOperators(a, b, remaining) {
+    let result = new Array(remaining.length + 1);
+
+    for (let i = 0; i < remaining.length; i++) {
+        result[i] = remaining[i];
+    }
+
+    result[result.length - 1] = a + b;
+    if (canReachTarget(result, 24)) {
+        return result;
+    }
+
+    result[result.length - 1] = a - b;
+    if (canReachTarget(result, 24)) {
+        return result;
+    }
+
+    result[result.length - 1] = a * b;
+    if (canReachTarget(result, 24)) {
+        return result;
+    }
+
+    result[result.length - 1] = a / b;
+    if (canReachTarget(result, 24)) {
+        return result;
+    }
+
+    return remaining;
+}
+
+function getRemainingArray(nums, i, j) {
+    let remaining = new Array(nums.length - 2);
+    let index = 0;
+
+    for (let k = 0; k < nums.length; k++) {
+        if (k !== i && k !== j) {
+            remaining[index++] = nums[k];
+        }
+    }
+
+    return remaining;
+}
+
+console.log('========= Q109 =========');
+const numsFor24Game = [5, 2, 7, 8];
+const canReach24Result = canReach24(numsFor24Game);
+console.log(`Can reach 24: ${canReach24Result}`);
+console.log(`\n`);
+
+/*
+* Q110.
+* Given an array of numbers and a number k, determine if there are three
+* entries in the array which add up to the specified number k. For example,
+* given [20, 303, 3, 4, 25] and k = 49, return true as 20 + 4 + 25 = 49.
+*/
+function hasThreeSum(nums, k) {
+    let set = new Set();
+
+    for (let i = 0; i < nums.length - 2; i++) {
+        let target = k - nums[i];
+        set.clear();
+
+        for (let j = i + 1; j < nums.length; j++) {
+            if (set.has(target - nums[j])) {
+                return true;
+            }
+            set.add(nums[j]);
+        }
+    }
+    return false;
+}
+
+console.log('========= Q110 =========');
+const numsForThreeSum = [20, 303, 3, 4, 25];
+const kForThreeSum = 49;
+const hasThreeSumResult = hasThreeSum(numsForThreeSum, kForThreeSum);
+console.log(`Has three sum: ${hasThreeSumResult}`);
 console.log(`\n`);
