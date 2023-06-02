@@ -1704,8 +1704,9 @@ const debounce = new Debounce(() => console.log('Hello'), 1000);
 for (let i = 0; i < 10; i++) {
     debounce.execute();
     const currentTime = new Date().getTime();
-    while (new Date().getTime() - currentTime < 500) {}
+    while (new Date().getTime() - currentTime < 500) { }
 }
+console.log('\n');
 
 /*
  * Q33.
@@ -2043,19 +2044,19 @@ console.log('========= Q40 =========');
 const hitCounter = new HitCounter();
 hitCounter.record(Date.now());
 let currentTime = Date.now();
-while (Date.now() - currentTime < 100) {}
+while (Date.now() - currentTime < 100) { }
 const lower = Date.now();
 hitCounter.record(lower);
 currentTime = Date.now();
-while (Date.now() - currentTime < 100) {}
+while (Date.now() - currentTime < 100) { }
 hitCounter.record(Date.now());
 currentTime = Date.now();
-while (Date.now() - currentTime < 100) {}
+while (Date.now() - currentTime < 100) { }
 currentTime = Date.now();
 const upper = currentTime;
 hitCounter.record(upper);
 currentTime = Date.now();
-while (Date.now() - currentTime < 100) {}
+while (Date.now() - currentTime < 100) { }
 hitCounter.record(Date.now());
 
 console.log(`Total Hits: ${hitCounter.total()}`);
@@ -2501,8 +2502,8 @@ function simulateMarkovChain(start, numSteps, transitionProbabilities) {
                     stateCount.set(
                         currentState,
                         stateCount.get(currentState) ?
-                        stateCount.get(currentState) + 1 :
-                        1
+                            stateCount.get(currentState) + 1 :
+                            1
                     );
                     break;
                 }
@@ -4839,7 +4840,7 @@ try {
         }
 
         voteCounts.set(voterId, candidateId);
-        let count = voteCounts.get(candidateId) ++ || 1;
+        let count = voteCounts.get(candidateId)++ || 1;
         voteCounts.set(candidateId, count);
 
         let candidate = new Candidate(candidateId, count);
@@ -5862,7 +5863,7 @@ function checkWordLengths(grid) {
     return true;
 }
 
-function dfsInCrossword(grid, visited, row, col){
+function dfsInCrossword(grid, visited, row, col) {
     const n = grid.length;
     if (row < 0 || row >= n || col < 0 || col >= n || grid[row][col] === 'B' || visited[row][col]) {
         return;
@@ -5875,7 +5876,7 @@ function dfsInCrossword(grid, visited, row, col){
     dfsInCrossword(grid, visited, row, col + 1);
 }
 
-function isCrosswordSymmetric(grid){
+function isCrosswordSymmetric(grid) {
     const n = grid.length;
     for (let i = 0; i < n; i++) {
         for (let j = 0; j < n; j++) {
@@ -6123,4 +6124,313 @@ const coinMap = [
 const currentPosition = [0, 2];
 const closestCoin = findClosestCoin(currentPosition, coinMap);
 console.log(`Closest coin: ${closestCoin}`);
+console.log(`\n`);
+
+/*
+* Q121.
+* Given a string, generate all possible subsequences of the string.
+* For example, given the string xyz, return an array or set with the following
+* strings:
+* x
+* y
+* z
+* xy
+* xz
+* yz
+* xyz
+* Note that zx is not a valid subsequence since it is not in the order of the
+* given string.
+*/
+function generateSubsequences(str) {
+    let subsequences = []
+    generateSubsequencesHelper(str, 0, '', subsequences);
+    return subsequences;
+}
+
+function generateSubsequencesHelper(str, index, subsequence, subsequences) {
+    if (index === str.length) {
+        subsequences.push(subsequence);
+        return;
+    }
+    // Exclude current character
+    generateSubsequencesHelper(str, index + 1, subsequence + str[index], subsequences);
+    // Include current character
+    generateSubsequencesHelper(str, index + 1, subsequence, subsequences);
+}
+
+console.log('========= Q121 =========');
+const str = 'xyz';
+const subsequences = generateSubsequences(str);
+console.log(`Subsequences: ${subsequences}`);
+console.log(`\n`);
+
+/*
+* Q122.
+* Read this Wikipedia article on Base64 encoding.
+* Implement a function that converts a hex string to base64.
+* For example, the string:
+* deadbeef
+* should produce:
+* 3q2+7w==
+*/
+const BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+function convertHexToBase64(hexString) {
+    let hexBytes = hexStringToBytes(hexString);
+    let base64String = '';
+
+    let i = 0;
+    while (i < hexBytes.length) {
+        const byte1 = hexBytes[i++] & 0xFF;
+        const byte2 = (i < hexBytes.length) ? hexBytes[i++] & 0xFF : 0;
+        const byte3 = (i < hexBytes.length) ? hexBytes[i++] & 0xFF : 0;
+
+        const index1 = byte1 >>> 2;
+        const index2 = ((byte1 & 0x03) << 4) | (byte2 >>> 4);
+        const index3 = ((byte2 & 0x0F) << 2) | (byte3 >>> 6);
+        const index4 = byte3 & 0x3F;
+
+        base64String += BASE64_CHARS[index1];
+        base64String += BASE64_CHARS[index2];
+        base64String += BASE64_CHARS[index3];
+        base64String += BASE64_CHARS[index4];
+    }
+    let paddingLength = 3 - (hexBytes.length % 3);
+
+    return base64String.substring(0, base64String.length - paddingLength) + '='.repeat(paddingLength);
+}
+
+function hexStringToBytes(hexString) {
+    const length = hexString.length;
+    let bytes = new Uint8Array(length / 2);
+
+    for (let i = 0; i < length; i += 2) {
+        bytes[i / 2] = (parseInt(hexString[i], 16) << 4) + parseInt(hexString[i + 1], 16);
+    }
+
+    return bytes;
+}
+
+console.log('========= Q122 =========');
+const hexStringToConvert = 'deadbeef';
+const base64String = convertHexToBase64(hexStringToConvert);
+console.log(`Base64 string: ${base64String}`);
+console.log(`\n`);
+
+/*
+* Q123.
+* Yesterday you implemented a function that encodes a hexadecimal string into
+* Base64.
+* Write a function to decode a Base64 string back to a hexadecimal string.
+* For example, the following string:
+* 3q2+7w==
+* should produce:
+* deadbeef
+*/
+function convertBase64ToHex(base64String) {
+    let hexString = '';
+    const paddingCount = countPadding(base64String);
+    const numGroups = Math.floor((base64String.length - paddingCount) / 4);
+
+    for (let i = 0; i < numGroups; i++) {
+        let base64Indexes = new Array(4);
+
+        for (let j = 0; j < 4; j++) {
+            base64Indexes[j] = BASE64_CHARS.indexOf(base64String[i * 4 + j]);
+        }
+
+        const value1 = (base64Indexes[0] << 2) | (base64Indexes[1] >> 4);
+        const value2 = ((base64Indexes[1] & 0xF) << 4) | (base64Indexes[2] >> 2);
+        const value3 = ((base64Indexes[2] & 0x3) << 6) | base64Indexes[3];
+
+        hexString += (byteToHex(value1) + byteToHex(value2) + byteToHex(value3));
+    }
+    if (paddingCount == 1) {
+        let base64Indexes = new Array(4);
+
+        for (let j = 0; j < 3; j++) {
+            base64Indexes[j] = BASE64_CHARS.indexOf(base64String[numGroups * 4 + j]);
+        }
+        base64Indexes[3] = 0; // Padding is treated as 0
+
+        const value1 = (base64Indexes[0] << 2) | (base64Indexes[1] >> 4);
+        const value2 = ((base64Indexes[1] & 0xF) << 4) | (base64Indexes[2] >> 2);
+
+        hexString += byteToHex(value1);
+        hexString += byteToHex(value2);
+    } else if (paddingCount == 2) {
+        let base64Indexes = new Array(4);
+
+        for (let j = 0; j < 2; j++) {
+            base64Indexes[j] = BASE64_CHARS.indexOf(base64String[numGroups * 4 + j]);
+        }
+        base64Indexes[2] = base64Indexes[3] = 0; // Padding is treated as 0
+
+        const value1 = (base64Indexes[0] << 2) | (base64Indexes[1] >> 4);
+
+        hexString += byteToHex(value1);
+    }
+
+    return hexString;
+}
+
+function countPadding(base64String) {
+    let paddingCount = 0;
+
+    for (let i = base64String.length - 1; i >= 0; i--) {
+        if (base64String[i] == '=') {
+            paddingCount++;
+        } else {
+            break;
+        }
+    }
+
+    return paddingCount;
+}
+
+function byteToHex(byte) {
+    return ('0' + byte.toString(16)).slice(-2);
+}
+
+console.log('========= Q123 =========');
+const base64StringToConvert = '3q2+7w==';
+const hexString = convertBase64ToHex(base64StringToConvert);
+console.log(`Hex string: ${hexString}`);
+console.log(`\n`);
+
+/*
+* Q124.
+* Given a string, sort it in decreasing order based on the frequency of
+* characters. If there are multiple possible solutions, return any of them.
+* For example, given the string tweet, return tteew. eettw would also be
+* acceptable.
+*/
+function sortStringByFrequnecy(str) {
+    let frequencyMap = new Map();
+
+    for (const char of str) {
+        frequencyMap.set(char, frequencyMap.get(char) ? frequencyMap.get(char) + 1 : 1);
+    }
+
+    let characters = Array.from(frequencyMap.keys());
+    characters.sort((a, b) => frequencyMap.get(b) - frequencyMap.get(a));
+
+    let sortedString = '';
+    for (const char of characters) {
+        sortedString += char.repeat(frequencyMap.get(char));
+    }
+
+    return sortedString;
+}
+
+console.log('========= Q124 =========');
+const stringToDecreasingOrder = 'tweet';
+const sortedString = sortStringByFrequnecy(stringToDecreasingOrder);
+console.log(`Sorted string: ${sortedString}`);
+console.log(`\n`);
+
+/*
+* Q125.
+* Given a binary tree and an integer k, return whether there exists a
+* root-to-leaf path that sums up to k.
+* For example, given k = 18 and the following binary tree:
+* "    8      "
+* "   / \     "
+* "  4   13   "
+* " / \   \   "
+* "2   6   19 "
+* Return True since the path 8 -> 4 -> 6 sums to 18.
+*/
+function hasPathSum(root, k) {
+    if (!root) {
+        return false;
+    }
+
+    return hasPathSumHelper(root, k);
+}
+
+function hasPathSumHelper(node, sum) {
+    if (!node) {
+        return false;
+    }
+
+    if (!node.left && !node.right && node.val == sum) {
+        return true;
+    }
+
+    return hasPathSumHelper(node.left, sum - node.val) || hasPathSumHelper(node.right, sum - node.val);
+}
+
+console.log('========= Q125 =========');
+const treeToFindTargetSum = new TreeNode(8);
+treeToFindTargetSum.left = new TreeNode(4);
+treeToFindTargetSum.right = new TreeNode(13);
+treeToFindTargetSum.left.left = new TreeNode(2);
+treeToFindTargetSum.left.right = new TreeNode(6);
+treeToFindTargetSum.right.right = new TreeNode(19);
+
+const targetSum = 18;
+const hasPathSumResult = hasPathSum(treeToFindTargetSum, targetSum);
+console.log(`Has path sum: ${hasPathSumResult}`);
+console.log(`\n`);
+
+/*
+* Q126.
+* Using a function rand5() that returns an integer from 1 to 5 (inclusive) with
+* uniform probability, implement a function rand7() that returns an integer
+* from 1 to 7 (inclusive).
+*/
+function rand5() {
+    return Math.floor(Math.random() * 5) + 1;
+}
+
+function rand7() {
+    while (true) {
+        let num = 5 * (rand5() - 1) + rand5() - 1;
+        if (num < 21) {
+            return num % 7 + 1;
+        }
+    }
+}
+
+console.log('========= Q126 =========');
+for (let i = 0; i < 10; i++) {
+    console.log(`Random number between 1 and 7: ${rand7()}`);
+}
+console.log(`\n`);
+
+/*
+* Q127.
+* Given a positive integer N, find the smallest number of steps it will take to
+* reach 1.
+* There are two kinds of permitted steps:
+* You may decrement N to N - 1.
+* If a * b = N, you may decrement N to the larger of a and b.
+* For example, given 100, you can reach 1 in five steps with the following
+* route: 100 -> 10 -> 9 -> 3 -> 2 -> 1.
+*/
+function minStepsToOne(N) {
+    if (N <= 1) {
+        return 0;
+    }
+
+    let dp = new Array(N + 1).fill(0);
+
+    for (let i = 2; i <= N; i++) {
+        // Initialize the minimum steps for i to be the steps for i-1 plus 1
+        dp[i] = dp[i - 1] + 1;
+        // Check if i can be factored into two numbers a and b
+        for (let j = 2; j * j <= i; j++) {
+            if (i % j == 0) {
+                // Calculate the steps for i using the larger factor of a and b
+                dp[i] = Math.min(dp[i], dp[Math.max(j, Math.floor(i / j))] + 1);
+            }
+        }
+    }
+    return dp[N]
+}
+
+console.log('========= Q127 =========');
+const startToFindMinStepsTo1 = 100;
+const minStepsTo1 = minStepsToOne(startToFindMinStepsTo1);
+console.log(`Min steps to 1: ${minStepsTo1}`);
 console.log(`\n`);

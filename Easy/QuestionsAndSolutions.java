@@ -3800,6 +3800,216 @@ public class QuestionsAndSolutions {
         return Math.abs(point1[0] - point2[0]) + Math.abs(point1[1] - point2[1]);
     }
 
+    // S121.
+    public static List<String> generateSubsequences(String str) {
+        List<String> subsequences = new ArrayList<>();
+        generateSubsequencesHelper(str, "", 0, subsequences);
+        return subsequences;
+    }
+
+    private static void generateSubsequencesHelper(String str, String current, int index, List<String> subsequences) {
+        if (index == str.length()) {
+            subsequences.add(current);
+            return;
+        }
+
+        // Exclude current character
+        generateSubsequencesHelper(str, current, index + 1, subsequences);
+        // Include current character
+        generateSubsequencesHelper(str, current + str.charAt(index), index + 1, subsequences);
+    }
+
+    // S122.
+    private static final String BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+    private static String convertHexToBase64(String hexString) {
+        byte[] hexBytes = hexStringToByteArray(hexString);
+        StringBuilder base64Builder = new StringBuilder();
+
+        int i = 0;
+        while (i < hexBytes.length) {
+            int byte1 = hexBytes[i++] & 0xFF;
+            int byte2 = (i < hexBytes.length) ? hexBytes[i++] & 0xFF : 0;
+            int byte3 = (i < hexBytes.length) ? hexBytes[i++] & 0xFF : 0;
+
+            int index1 = byte1 >>> 2;
+            int index2 = ((byte1 & 0x03) << 4) | (byte2 >>> 4);
+            int index3 = ((byte2 & 0x0F) << 2) | (byte3 >>> 6);
+            int index4 = byte3 & 0x3F;
+
+            base64Builder.append(BASE64_CHARS.charAt(index1));
+            base64Builder.append(BASE64_CHARS.charAt(index2));
+            base64Builder.append(BASE64_CHARS.charAt(index3));
+            base64Builder.append(BASE64_CHARS.charAt(index4));
+        }
+
+        int paddingLength = 3 - (hexBytes.length % 3);
+        for (int j = 0; j < paddingLength; j++) {
+            base64Builder.setCharAt(base64Builder.length() - 1 - j, '=');
+        }
+
+        return base64Builder.toString();
+    }
+
+    private static byte[] hexStringToByteArray(String hexString) {
+        int length = hexString.length();
+        byte[] byteArray = new byte[length / 2];
+
+        for (int i = 0; i < length; i += 2) {
+            byteArray[i / 2] = (byte) ((Character.digit(hexString.charAt(i), 16) << 4)
+                    + Character.digit(hexString.charAt(i + 1), 16));
+        }
+
+        return byteArray;
+    }
+
+    // S123.
+    private static String convertBase64ToHex(String base64String) {
+        StringBuilder hexBuilder = new StringBuilder();
+        int paddingCount = countPadding(base64String);
+        int numGroups = (base64String.length() - paddingCount) / 4;
+
+        for (int i = 0; i < numGroups; i++) {
+            int[] base64Indexes = new int[4];
+
+            for (int j = 0; j < 4; j++) {
+                base64Indexes[j] = BASE64_CHARS.indexOf(base64String.charAt(i * 4 + j));
+            }
+
+            int value1 = (base64Indexes[0] << 2) | (base64Indexes[1] >> 4);
+            int value2 = ((base64Indexes[1] & 0xF) << 4) | (base64Indexes[2] >> 2);
+            int value3 = ((base64Indexes[2] & 0x3) << 6) | base64Indexes[3];
+
+            hexBuilder.append(byteToHex(value1)).append(byteToHex(value2)).append(byteToHex(value3));
+        }
+
+        if (paddingCount == 1) {
+            int[] base64Indexes = new int[4];
+
+            for (int j = 0; j < 3; j++) {
+                base64Indexes[j] = BASE64_CHARS.indexOf(base64String.charAt(numGroups * 4 + j));
+            }
+            base64Indexes[3] = 0; // Padding is treated as 0
+
+            int value1 = (base64Indexes[0] << 2) | (base64Indexes[1] >> 4);
+            int value2 = ((base64Indexes[1] & 0xF) << 4) | (base64Indexes[2] >> 2);
+
+            hexBuilder.append(byteToHex(value1)).append(byteToHex(value2));
+        } else if (paddingCount == 2) {
+            int[] base64Indexes = new int[4];
+
+            for (int j = 0; j < 2; j++) {
+                base64Indexes[j] = BASE64_CHARS.indexOf(base64String.charAt(numGroups * 4 + j));
+            }
+            base64Indexes[2] = base64Indexes[3] = 0; // Padding is treated as 0
+
+            int value1 = (base64Indexes[0] << 2) | (base64Indexes[1] >> 4);
+
+            hexBuilder.append(byteToHex(value1));
+        }
+
+        return hexBuilder.toString();
+    }
+
+    private static int countPadding(String base64) {
+        int paddingCount = 0;
+
+        for (int i = base64.length() - 1; i >= 0; i--) {
+            if (base64.charAt(i) == '=') {
+                paddingCount++;
+            } else {
+                break;
+            }
+        }
+
+        return paddingCount;
+    }
+
+    private static String byteToHex(int value) {
+        return String.format("%02x", value);
+    }
+
+    // S124.
+    public static String sortStringByFrequency(String str) {
+        Map<Character, Integer> frequencyMap = new HashMap<>();
+
+        for (char ch : str.toCharArray()) {
+            frequencyMap.put(ch, frequencyMap.getOrDefault(ch, 0) + 1);
+        }
+
+        List<Character> characters = new ArrayList<>(frequencyMap.keySet());
+
+        characters.sort((a, b) -> frequencyMap.get(b) - frequencyMap.get(a));
+
+        StringBuilder sortedString = new StringBuilder();
+        for (char ch : characters) {
+            int frequency = frequencyMap.get(ch);
+            for (int i = 0; i < frequency; i++) {
+                sortedString.append(ch);
+            }
+        }
+
+        return sortedString.toString();
+    }
+
+    // S125.
+    public static boolean hasPathSum(TreeNode<Integer> root, int k) {
+        if (root == null) {
+            return false;
+        }
+        return hasPathSumHelper(root, k);
+    }
+
+    private static boolean hasPathSumHelper(TreeNode<Integer> node, int sum) {
+        if (node == null) {
+            return false;
+        }
+        if (node.left == null && node.right == null && node.val == sum) {
+            return true;
+        }
+
+        return hasPathSumHelper(node.left, sum - node.val) || hasPathSumHelper(node.right, sum - node.val);
+    }
+
+    // S126.
+    public static int rand5() {
+        return (int) (Math.random() * 5) + 1;
+    }
+
+    public static int rand7() {
+        while (true) {
+            int num = (rand5() - 1) * 5 + (rand5() - 1);
+
+            if (num < 21) {
+                return (num % 7) + 1;
+            }
+        }
+    }
+
+    // S127.
+    public static int minStepsToOne(int N) {
+        if (N <= 1) {
+            return 0;
+        }
+
+        int[] dp = new int[N + 1];
+
+        for (int i = 2; i <= N; i++) {
+            // Initialize the minimum steps for i to be the steps for i-1 plus 1
+            dp[i] = dp[i - 1] + 1;
+
+            // Check if i can be factored into two numbers a and b
+            for (int j = 2; j * j <= i; j++) {
+                if (i % j == 0) {
+                    // Calculate the steps for i using the larger factor of a and b
+                    dp[i] = Math.min(dp[i], dp[Math.max(j, i / j)] + 1);
+                }
+            }
+        }
+
+        return dp[N];
+    }
+
     public static void main(String[] args) throws InterruptedException {
         /*
          * Q1.
@@ -6267,6 +6477,116 @@ public class QuestionsAndSolutions {
         int[] closestCoin = findClosestCoin(currentPosition, coinMap);
         System.out.println("Closest coin: (" + closestCoin[0] + ", " + closestCoin[1] + ")");
 
+        /*
+         * Q121.
+         * Given a string, generate all possible subsequences of the string.
+         * For example, given the string xyz, return an array or set with the following
+         * strings:
+         * x
+         * y
+         * z
+         * xy
+         * xz
+         * yz
+         * xyz
+         * Note that zx is not a valid subsequence since it is not in the order of the
+         * given string.
+         */
+        System.out.println("========= Q121 =========");
+        String str = "xyz";
+        List<String> subsequences = generateSubsequences(str);
+        System.out.println(subsequences);
+
+        /*
+         * Q122.
+         * Read this Wikipedia article on Base64 encoding.
+         * Implement a function that converts a hex string to base64.
+         * For example, the string:
+         * deadbeef
+         * should produce:
+         * 3q2+7w==
+         */
+        System.out.println("========= Q122 =========");
+        String hexStringToConvert = "deadbeef";
+        String base64String = convertHexToBase64(hexStringToConvert);
+        System.out.println("Base64 encoded string: " + base64String);
+
+        /*
+         * Q123.
+         * Yesterday you implemented a function that encodes a hexadecimal string into
+         * Base64.
+         * Write a function to decode a Base64 string back to a hexadecimal string.
+         * For example, the following string:
+         * 3q2+7w==
+         * should produce:
+         * deadbeef
+         */
+        System.out.println("========= Q123 =========");
+        String base64StringToConvert = "3q2+7w==";
+        String hexString = convertBase64ToHex(base64StringToConvert);
+        System.out.println("Hexadecimal string: " + hexString);
+
+        /*
+         * Q124.
+         * Given a string, sort it in decreasing order based on the frequency of
+         * characters. If there are multiple possible solutions, return any of them.
+         * For example, given the string tweet, return tteew. eettw would also be
+         * acceptable.
+         */
+        System.out.println("========= Q124 =========");
+        String stringToDecreasingOrder = "tweet";
+        String sortedStr = sortStringByFrequency(stringToDecreasingOrder);
+        System.out.println(sortedStr);
+
+        /*
+         * Q125.
+         * Given a binary tree and an integer k, return whether there exists a
+         * root-to-leaf path that sums up to k.
+         * For example, given k = 18 and the following binary tree:
+         * "    8      "
+         * "   / \     "
+         * "  4   13   "
+         * " / \   \   "
+         * "2   6   19 "
+         * Return True since the path 8 -> 4 -> 6 sums to 18.
+         */
+        System.out.println("========= Q125 =========");
+        TreeNode<Integer> treeToFindTargetSum = new TreeNode<>(8);
+        treeToFindTargetSum.left = new TreeNode<>(4);
+        treeToFindTargetSum.right = new TreeNode<>(13);
+        treeToFindTargetSum.left.left = new TreeNode<>(2);
+        treeToFindTargetSum.left.right = new TreeNode<>(6);
+        treeToFindTargetSum.right.right = new TreeNode<>(19);
+
+        int targetSum = 18;
+        boolean hasPathSum = hasPathSum(treeToFindTargetSum, targetSum);
+        System.out.println(hasPathSum); // Output: true
+
+        /*
+         * Q126.
+         * Using a function rand5() that returns an integer from 1 to 5 (inclusive) with
+         * uniform probability, implement a function rand7() that returns an integer
+         * from 1 to 7 (inclusive).
+         */
+        System.out.println("========= Q126 =========");
+        for (int i = 0; i < 10; i++) {
+            System.out.println(rand7());
+        }
+
+        /*
+         * Q127.
+         * Given a positive integer N, find the smallest number of steps it will take to
+         * reach 1.
+         * There are two kinds of permitted steps:
+         * You may decrement N to N - 1.
+         * If a * b = N, you may decrement N to the larger of a and b.
+         * For example, given 100, you can reach 1 in five steps with the following
+         * route: 100 -> 10 -> 9 -> 3 -> 2 -> 1.
+         */
+        System.out.println("========= Q127 =========");
+        int startToFindMinStepsTo1 = 100;
+        int minStepsTo1 = minStepsToOne(startToFindMinStepsTo1);
+        System.out.println("Minimum number of steps to reach 1: " + minStepsTo1);
     }
 
     private static void printLinkedList(ListNode head) {
@@ -6294,7 +6614,6 @@ public class QuestionsAndSolutions {
             printPreorder(root.left);
             printPreorder(root.right);
         }
-        System.out.println();
     }
 
     // S55.
