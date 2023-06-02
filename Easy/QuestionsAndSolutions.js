@@ -1704,7 +1704,7 @@ const debounce = new Debounce(() => console.log('Hello'), 1000);
 for (let i = 0; i < 10; i++) {
     debounce.execute();
     const currentTime = new Date().getTime();
-    while (new Date().getTime() - currentTime < 500) { }
+    while (new Date().getTime() - currentTime < 500) {}
 }
 
 /*
@@ -2043,19 +2043,19 @@ console.log('========= Q40 =========');
 const hitCounter = new HitCounter();
 hitCounter.record(Date.now());
 let currentTime = Date.now();
-while (Date.now() - currentTime < 100) { }
+while (Date.now() - currentTime < 100) {}
 const lower = Date.now();
 hitCounter.record(lower);
 currentTime = Date.now();
-while (Date.now() - currentTime < 100) { }
+while (Date.now() - currentTime < 100) {}
 hitCounter.record(Date.now());
 currentTime = Date.now();
-while (Date.now() - currentTime < 100) { }
+while (Date.now() - currentTime < 100) {}
 currentTime = Date.now();
 const upper = currentTime;
 hitCounter.record(upper);
 currentTime = Date.now();
-while (Date.now() - currentTime < 100) { }
+while (Date.now() - currentTime < 100) {}
 hitCounter.record(Date.now());
 
 console.log(`Total Hits: ${hitCounter.total()}`);
@@ -2501,8 +2501,8 @@ function simulateMarkovChain(start, numSteps, transitionProbabilities) {
                     stateCount.set(
                         currentState,
                         stateCount.get(currentState) ?
-                            stateCount.get(currentState) + 1 :
-                            1
+                        stateCount.get(currentState) + 1 :
+                        1
                     );
                     break;
                 }
@@ -4839,7 +4839,7 @@ try {
         }
 
         voteCounts.set(voterId, candidateId);
-        let count = voteCounts.get(candidateId)++ || 1;
+        let count = voteCounts.get(candidateId) ++ || 1;
         voteCounts.set(candidateId, count);
 
         let candidate = new Candidate(candidateId, count);
@@ -5176,16 +5176,16 @@ console.log(`Is Toeplitz matrix: ${isToeplitz}`);
 console.log(`\n`);
 
 /*
-* Q105.
-* Consider the following scenario: there are N mice and N holes placed at
-* integer points along a line. Given this, find a method that maps mice to
-* holes such that the largest number of steps any mouse takes is minimized.
-* Each move consists of moving one mouse one unit to the left or right, and
-* only one mouse can fit inside each hole.
-* For example, suppose the mice are positioned at [1, 4, 9, 15], and the holes
-* are located at [10, -5, 0, 16]. In this case, the best pairing would require
-* us to send the mouse at 1 to the hole at -5, so our function should return 6.
-*/
+ * Q105.
+ * Consider the following scenario: there are N mice and N holes placed at
+ * integer points along a line. Given this, find a method that maps mice to
+ * holes such that the largest number of steps any mouse takes is minimized.
+ * Each move consists of moving one mouse one unit to the left or right, and
+ * only one mouse can fit inside each hole.
+ * For example, suppose the mice are positioned at [1, 4, 9, 15], and the holes
+ * are located at [10, -5, 0, 16]. In this case, the best pairing would require
+ * us to send the mouse at 1 to the hole at -5, so our function should return 6.
+ */
 function minimizeSteps(mice, holes) {
     mice.sort((a, b) => a - b);
     holes.sort((a, b) => a - b);
@@ -5209,15 +5209,15 @@ console.log(`The minimum number of steps required is: ${minMouseSteps}`);
 console.log(`\n`);
 
 /*
-* Q106.
-* The United States uses the imperial system of weights and measures, which
-* means that there are many different, seemingly arbitrary units to measure
-* distance. There are 12 inches in a foot, 3 feet in a yard, 22 yards in a
-* chain, and so on.
-* Create a data structure that can efficiently convert a certain quantity of
-* one unit to the correct amount of any other unit. You should also allow for
-* additional units to be added to the system.
-*/
+ * Q106.
+ * The United States uses the imperial system of weights and measures, which
+ * means that there are many different, seemingly arbitrary units to measure
+ * distance. There are 12 inches in a foot, 3 feet in a yard, 22 yards in a
+ * chain, and so on.
+ * Create a data structure that can efficiently convert a certain quantity of
+ * one unit to the correct amount of any other unit. You should also allow for
+ * additional units to be added to the system.
+ */
 class UnitConverter {
     #conversionGraph;
 
@@ -5283,13 +5283,13 @@ console.log(`${quantity} ${fromUnit} = ${convertedResult} ${toUnit}`);
 console.log(`\n`);
 
 /*
-* Q107.
-* Write a program to merge two binary trees. Each node in the new tree should
-* hold a value equal to the sum of the values of the corresponding nodes of the
-* input trees.
-* If only one input tree has a node in a given position, the corresponding node
-* in the new tree should match that input node.
-*/
+ * Q107.
+ * Write a program to merge two binary trees. Each node in the new tree should
+ * hold a value equal to the sum of the values of the corresponding nodes of the
+ * input trees.
+ * If only one input tree has a node in a given position, the corresponding node
+ * in the new tree should match that input node.
+ */
 function mergeTrees(t1, t2) {
     if (!t1 && !t2) {
         return null;
@@ -5329,12 +5329,12 @@ printPreorder(mergedTree);
 console.log(`\n`);
 
 /*
-* Q108.
-* Given integers M and N, write a program that counts how many positive integer
-* pairs (a, b) satisfy the following conditions:
-* a + b = M
-* a XOR b = N
-*/
+ * Q108.
+ * Given integers M and N, write a program that counts how many positive integer
+ * pairs (a, b) satisfy the following conditions:
+ * a + b = M
+ * a XOR b = N
+ */
 function countPairs(M, N) {
     let count = 0;
 
@@ -5356,15 +5356,15 @@ console.log(`Number of positive integer pairs: ${pairCount}`);
 console.log(`\n`);
 
 /*
-* Q109.
-* The 24 game is played as follows. You are given a list of four integers, each
-* between 1 and 9, in a fixed order. By placing the operators +, -, *, and /
-* between the numbers, and grouping them with parentheses, determine whether it
-* is possible to reach the value 24.
-* For example, given the input [5, 2, 7, 8], you should return True, since (5 *
-* 2 - 7) * 8 = 24.
-* Write a function that plays the 24 game.
-*/
+ * Q109.
+ * The 24 game is played as follows. You are given a list of four integers, each
+ * between 1 and 9, in a fixed order. By placing the operators +, -, *, and /
+ * between the numbers, and grouping them with parentheses, determine whether it
+ * is possible to reach the value 24.
+ * For example, given the input [5, 2, 7, 8], you should return True, since (5 *
+ * 2 - 7) * 8 = 24.
+ * Write a function that plays the 24 game.
+ */
 function canReach24(nums) {
     return canReachTarget(nums, 24);
 }
@@ -5438,11 +5438,11 @@ console.log(`Can reach 24: ${canReach24Result}`);
 console.log(`\n`);
 
 /*
-* Q110.
-* Given an array of numbers and a number k, determine if there are three
-* entries in the array which add up to the specified number k. For example,
-* given [20, 303, 3, 4, 25] and k = 49, return true as 20 + 4 + 25 = 49.
-*/
+ * Q110.
+ * Given an array of numbers and a number k, determine if there are three
+ * entries in the array which add up to the specified number k. For example,
+ * given [20, 303, 3, 4, 25] and k = 49, return true as 20 + 4 + 25 = 49.
+ */
 function hasThreeSum(nums, k) {
     let set = new Set();
 
@@ -5465,4 +5465,662 @@ const numsForThreeSum = [20, 303, 3, 4, 25];
 const kForThreeSum = 49;
 const hasThreeSumResult = hasThreeSum(numsForThreeSum, kForThreeSum);
 console.log(`Has three sum: ${hasThreeSumResult}`);
+console.log(`\n`);
+
+/*
+ * Q111.
+ * Given a set of points (x, y) on a 2D cartesian plane, find the two closest
+ * points. For example, given the points [(1, 1), (-1, -1), (3, 4), (6, 1), (-1,
+ * -6), (-4, -3)], return [(-1, -1), (1, 1)].
+ */
+class Point {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+function findClosestPoints(points) {
+    if (!points || points.length < 2) {
+        return null;
+    }
+
+    let result = new Array(2);
+    let minDistance = Number.MAX_VALUE;
+
+    for (let i = 0; i < points.length; i++) {
+        for (let j = i + 1; j < points.length; j++) {
+            let distance = calculateDistance(points[i], points[j]);
+            if (distance < minDistance) {
+                minDistance = distance;
+                result[0] = points[i];
+                result[1] = points[j];
+            }
+        }
+    }
+    return result;
+}
+
+function calculateDistance(p1, p2) {
+    let dx = p1.x - p2.x;
+    let dy = p1.y - p2.y;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+console.log('========= Q111 =========');
+const setOfPoints = [new Point(1, 1), new Point(-1, -1), new Point(3, 4), new Point(6, 1), new Point(-1, -6), new Point(-4, -3)];
+const closestPoints = findClosestPoints(setOfPoints);
+console.log(`Closest points: ${JSON.stringify(closestPoints)}`);
+console.log(`\n`);
+
+/*
+ * Q112.
+ * You are given an N by N matrix of random letters and a dictionary of words.
+ * Find the maximum number of words that can be packed on the board from the
+ * given dictionary.
+ * A word is considered to be able to be packed on the board if:
+ * It can be found in the dictionary
+ * It can be constructed from untaken letters by other words found so far on the
+ * board
+ * The letters are adjacent to each other (vertically and horizontally, not
+ * diagonally).
+ * Each tile can be visited only once by any word.
+ * For example, given the following dictionary:
+ * { 'eat', 'rain', 'in', 'rat' }
+ * and matrix:
+ * [['e', 'a', 'n'],
+ * ['t', 't', 'i'],
+ * ['a', 'r', 'a']]
+ * Your function should return 3, since we can make the words 'eat', 'in', and
+ * 'rat' without them touching each other. We could have alternatively made
+ * 'eat' and 'rain', but that would be incorrect since that's only 2 words.
+ */
+function findMaxPackedWords(board, dictionary) {
+    dictionary.sort((a, b) => a.length - b.length);
+
+    let count = 0;
+    let visited = new Array(board.length).fill(false).map(() => new Array(board[0].length).fill(false));
+
+    for (const word of dictionary) {
+        if (isWordPacked(board, visited, word)) {
+            count++;
+        }
+    }
+
+    return count;
+}
+
+function isWordPacked(board, visited, word) {
+    const rows = board.length;
+    const cols = board[0].length;
+    const firstChar = word.charAt(0);
+
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            if (board[i][j] === firstChar && !visited[i][j]) {
+                visited[i][j] = true;
+
+                if (dfs(board, visited, word.substring(1), i, j)) {
+                    return true;
+                }
+
+                visited[i][j] = false;
+            }
+        }
+    }
+    return false;
+}
+
+function dfs(board, visited, word, row, col) {
+    const rows = board.length;
+    const cols = board[0].length;
+
+    if (word.length === 0) {
+        return true; // All characters of the word have been visited
+    }
+
+    const directions = [
+        [-1, 0],
+        [1, 0],
+        [0, -1],
+        [0, 1]
+    ];
+    for (const direction of directions) {
+        const newRow = row + direction[0];
+        const newCol = col + direction[1];
+
+        if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols && !visited[newRow][newCol] && board[newRow][newCol] === word[0]) {
+            visited[newRow][newCol] = true;
+
+            if (dfs(board, visited, word.substring(1), newRow, newCol)) {
+                return true;
+            }
+            visited[newRow][newCol] = false;
+        }
+    }
+    return false;
+}
+
+console.log('========= Q112 =========');
+const randomLetterBoard = [
+    ['e', 'a', 'n'],
+    ['t', 't', 'i'],
+    ['a', 'r', 'a']
+];
+const dictionaryOfWords = ['eat', 'rain', 'in', 'rat'];
+const maxWordCount = findMaxPackedWords(randomLetterBoard, dictionaryOfWords);
+console.log(`Max word count: ${maxWordCount}`);
+console.log(`\n`);
+
+/*
+ * Q113.
+ * You are given a string of length N and a parameter k. The string can be
+ * manipulated by taking one of the first k letters and moving it to the end.
+ * Write a program to determine the lexicographically smallest string that can
+ * be created after an unlimited number of moves.
+ * For example, suppose we are given the string daily and k = 1. The best we can
+ * create in this case is ailyd.
+ */
+function getLexicographicallySmallestString(input, k) {
+    let smallestString = input;
+
+    for (let i = 0; i < k; i++) {
+        let currentString = input.substring(i + 1) + input.substring(0, i + 1);
+        if (currentString < smallestString) {
+            smallestString = currentString;
+        }
+    }
+    return smallestString;
+}
+
+console.log('========= Q113 =========');
+const inputString = 'daily';
+const firstNumOfLetters = 1;
+const smallestString = getLexicographicallySmallestString(inputString, firstNumOfLetters);
+console.log(`Lexicographically Smallest string: ${smallestString}`);
+console.log(`\n`);
+
+/*
+ * Q114.
+ * A ternary search tree is a trie-like data structure where each node may have
+ * up to three children. Here is an example which represents the words code,
+ * cob, be, ax, war, and we.
+ * "       c           "
+ * "    /  |  \        "
+ * "   b   o   w       "
+ * " / |   |   |       "
+ * "a  e   d   a       "
+ * "|    / |   | \     "
+ * "x   b  e   r  e    "
+ * The tree is structured according to the following rules:
+ * left child nodes link to words lexicographically earlier than the parent
+ * prefix
+ * right child nodes link to words lexicographically later than the parent
+ * prefix
+ * middle child nodes continue the current word
+ * For instance, since code is the first word inserted in the tree, and cob
+ * lexicographically precedes cod, cob is represented as a left child extending
+ * from cod.
+ * Implement insertion and search functions for a ternary search tree.
+ */
+class TernarySearchTree {
+    #root;
+
+    insertWord(word) {
+        this.#root = this.insert(this.#root, word, 0);
+    }
+
+    insert(node, word, index) {
+        const currentChar = word[index];
+
+        if (!node) {
+            node = new TernarySearchTreeNode(currentChar);
+        }
+
+        if (currentChar < node.character) {
+            node.left = this.insert(node.left, word, index);
+        } else if (currentChar > node.character) {
+            node.right = this.insert(node.right, word, index);
+        } else {
+            if (index < word.length - 1) {
+                node.middle = this.insert(node.middle, word, index + 1);
+            } else {
+                node.isEndOfWord = true;
+            }
+        }
+
+        return node;
+    }
+
+    searchWord(word) {
+        // console.log(this.#root.middle)
+        return this.search(this.#root, word, 0);
+    }
+
+    search(node, word, index) {
+        if (!node) {
+            return false;
+        }
+
+        const currentChar = word[index];
+        if (currentChar < node.character) {
+            return this.search(node.left, word, index);
+        } else if (currentChar > node.character) {
+            return this.search(node.right, word, index);
+        } else {
+            if (index === word.length - 1) {
+                return node.isEndOfWord;
+            } else {
+                return this.search(node.middle, word, index + 1);
+            }
+        }
+    }
+}
+
+class TernarySearchTreeNode {
+    constructor(character) {
+        this.character = character;
+        this.left = null;
+        this.middle = null;
+        this.right = null;
+        this.isEndOfWord = false;
+    }
+}
+
+console.log('========= Q114 =========');
+const ternarySearchTree = new TernarySearchTree();
+ternarySearchTree.insertWord('code');
+ternarySearchTree.insertWord('cob');
+ternarySearchTree.insertWord('be');
+ternarySearchTree.insertWord('ax');
+ternarySearchTree.insertWord('war');
+ternarySearchTree.insertWord('we');
+
+console.log(`Search for 'code': ${ternarySearchTree.searchWord('code')}`);
+console.log(`Search for 'cob': ${ternarySearchTree.searchWord('cob')}`);
+console.log(`Search for 'be': ${ternarySearchTree.searchWord('be')}`);
+console.log(`Search for 'ax': ${ternarySearchTree.searchWord('ax')}`);
+console.log(`Search for 'war': ${ternarySearchTree.searchWord('war')}`);
+console.log(`Search for 'we': ${ternarySearchTree.searchWord('we')}`);
+console.log(`Search for 'hello': ${ternarySearchTree.searchWord('hello')}`);
+console.log(`\n`);
+
+/*
+ * Q115.
+ * A typical American-style crossword puzzle grid is an N x N matrix with black
+ * and white squares, which obeys the following rules:
+ * Every white square must be part of an "across" word and a "down" word.
+ * No word can be fewer than three letters long.
+ * Every white square must be reachable from every other white square.
+ * The grid is rotationally symmetric (for example, the colors of the top left
+ * and bottom right squares must match).
+ * Write a program to determine whether a given matrix qualifies as a crossword
+ * grid.
+ */
+function isCrosswordGrid(grid) {
+    const n = grid.length;
+
+    // Check rule 1: Every white square must be part of an "across" word and a
+    // "down" word
+    for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+            if (grid[i][j] === 'W') {
+                if (!hasAcrossWord(grid, i, j) && !hasDownWord(grid, i, j)) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    // Check rule 2: No word can be fewer than three letters long
+    if (!checkWordLengths(grid)) {
+        return false;
+    }
+
+    // Check rule 3: Every white square must be reachable from every other white
+    // square
+    let visited = new Array(n).fill(false).map(() => new Array(n).fill(false));
+    let startX = -1;
+    let startY = -1;
+    for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+            if (grid[i][j] === 'W') {
+                startX = i;
+                startY = j;
+                break;
+            }
+        }
+    }
+
+    dfsInCrossword(grid, visited, startX, startY);
+
+    // Check if all white squares were visited
+    for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+            if (grid[i][j] === 'W' && !visited[i][j]) {
+                return false;
+            }
+        }
+    }
+
+    // Check rule 4: The grid is rotationally symmetric
+    return isCrosswordSymmetric(grid);
+}
+
+function hasAcrossWord(grid, row, col) {
+    const n = grid.length;
+    return (col > 0 && grid[row][col - 1] === 'W') || (col < n - 1 && grid[row][col + 1] === 'W');
+}
+
+function hasDownWord(grid, row, col) {
+    const n = grid.length;
+    return (row > 0 && grid[row - 1][col] === 'W') || (row < n - 1 && grid[row + 1][col] === 'W');
+}
+
+function checkWordLengths(grid) {
+    const n = grid.length;
+
+    for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+            if (grid[i][j] === 'W') {
+                let length = 1;
+
+                if (j > 0 && grid[i][j - 1] === 'W') {
+                    length++;
+                    if (j > 1 && grid[i][j - 2] === 'W') {
+                        length++;
+                    }
+                }
+
+                if (j < n - 1 && grid[i][j + 1] === 'W') {
+                    length++;
+                    if (j < n - 2 && grid[i][j + 2] === 'W') {
+                        length++;
+                    }
+                }
+
+                if (i > 0 && grid[i - 1][j] === 'W') {
+                    length++;
+                    if (i > 1 && grid[i - 2][j] === 'W') {
+                        length++;
+                    }
+                }
+
+                if (i < n - 1 && grid[i + 1][j] === 'W') {
+                    length++;
+                    if (i < n - 2 && grid[i + 2][j] === 'W') {
+                        length++;
+                    }
+                }
+
+                if (length < 3) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+function dfsInCrossword(grid, visited, row, col){
+    const n = grid.length;
+    if (row < 0 || row >= n || col < 0 || col >= n || grid[row][col] === 'B' || visited[row][col]) {
+        return;
+    }
+
+    visited[row][col] = true;
+    dfsInCrossword(grid, visited, row - 1, col);
+    dfsInCrossword(grid, visited, row + 1, col);
+    dfsInCrossword(grid, visited, row, col - 1);
+    dfsInCrossword(grid, visited, row, col + 1);
+}
+
+function isCrosswordSymmetric(grid){
+    const n = grid.length;
+    for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+            if (grid[i][j] != grid[n - 1 - i][n - 1 - j]) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+console.log('========= Q115 =========');
+const grid1 = [
+    ['B', 'B', 'B', 'B', 'B'],
+    ['B', 'W', 'W', 'W', 'B'],
+    ['B', 'W', 'B', 'W', 'B'],
+    ['B', 'W', 'W', 'W', 'B'],
+    ['B', 'B', 'B', 'B', 'B']
+]
+const grid2 = [
+    ['B', 'B', 'B', 'B', 'B'],
+    ['B', 'W', 'B', 'W', 'B'],
+    ['B', 'W', 'W', 'W', 'B'],
+    ['B', 'B', 'B', 'W', 'B'],
+    ['B', 'B', 'B', 'W', 'B']
+]
+const grid3 = [
+    ['B', 'B', 'B', 'B', 'B'],
+    ['B', 'W', 'B', 'W', 'B'],
+    ['B', 'W', 'B', 'W', 'B'],
+    ['B', 'W', 'B', 'W', 'B'],
+    ['B', 'B', 'B', 'W', 'B']
+]
+console.log(`Is crossword grid: ${isCrosswordGrid(grid1)}`);
+console.log(`Is crossword grid: ${isCrosswordGrid(grid2)}`);
+console.log(`Is crossword grid: ${isCrosswordGrid(grid3)}`);
+console.log(`\n`);
+
+/*
+ * Q116.
+ * You are given a string formed by concatenating several words corresponding to
+ * the integers zero through nine and then anagramming.
+ * For example, the input could be 'niesevehrtfeev', which is an anagram of
+ * 'threefiveseven'. Note that there can be multiple instances of each integer.
+ * Given this string, return the original integers in sorted order. In the
+ * example above, this would be 357.
+ */
+function getOriginalDigits(s) {
+    let countMap = new Map();
+
+    for (const c of s) {
+        countMap.set(c, countMap.get(c) + 1 || 1);
+    }
+
+    const digitToChar = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+    const digitOrder = [0, 2, 4, 6, 8, 1, 3, 5, 7, 9];
+    const uniqueChars = ['z', 'o', 'w', 't', 'u', 'f', 'x', 's', 'g', 'i'];
+
+    let result = '';
+    for (const digit of digitOrder) {
+        const uniqueChar = uniqueChars[digit];
+        const count = countMap.get(uniqueChar) || 0;
+
+        for (let i = 0; i < count; i++) {
+            result += digit;
+        }
+
+        for (const c of digitToChar[digit]) {
+            countMap.set(c, countMap.get(c) - count);
+        }
+
+    }
+    const sortedResult = result.split('').sort().join('');
+
+    return sortedResult;
+}
+
+console.log('========= Q116 =========');
+const s = "niesevehrtfeev";
+const originalDigits = getOriginalDigits(s);
+console.log(`Original digits: ${originalDigits}`);
+console.log(`\n`);
+
+/*
+ * Q117.
+ * A strobogrammatic number is a positive number that appears the same after
+ * being rotated 180 degrees. For example, 16891 is strobogrammatic.
+ * Create a program that finds all strobogrammatic numbers with N digits.
+ */
+function findStrobogrammaticNumbers(n) {
+    return findStrobogrammaticNumbersHelper(n, n)
+}
+
+function findStrobogrammaticNumbersHelper(n, m) {
+    if (n == 0) {
+        return [""];
+    }
+
+    if (n == 1) {
+        return ["0", "1", "8"];
+    }
+
+    let result = [];
+    let inner = findStrobogrammaticNumbersHelper(n - 2, m);
+
+    for (const num of inner) {
+        if (n !== m) {
+            result.push("0" + num + "0");
+        }
+        result.push("1" + num + "1");
+        result.push("6" + num + "9");
+        result.push("8" + num + "8");
+        result.push("9" + num + "6");
+    }
+    return result;
+}
+
+console.log('========= Q117 =========');
+const strobogrammaticNumbers = findStrobogrammaticNumbers(5);
+console.log(`Strobogrammatic numbers with 5 digits: ${strobogrammaticNumbers}`);
+console.log(`\n`);
+
+/*
+ * Q118.
+ * The “active time” of a courier is the time between the pickup and dropoff of
+ * a delivery. Given a set of data formatted like the following:
+ * (delivery id, timestamp, pickup/dropoff)
+ * Calculate the total active time in seconds. A courier can pick up multiple
+ * orders before dropping them off. The timestamp is in unix epoch seconds.
+ * For example, if the input is the following:
+ * (1, 1573280047, 'pickup')
+ * (1, 1570320725, 'dropoff')
+ * (2, 1570321092, 'pickup')
+ * (3, 1570321212, 'pickup')
+ * (3, 1570322352, 'dropoff')
+ * (2, 1570323012, 'dropoff')
+ * The total active time would be 1260 seconds.
+ */
+function calculateTotalActiveTime(data) {
+    let activeTimeMap = new Map();
+    let totalActiveTime = 0;
+
+    for (const entry of data) {
+        const parts = entry.split(',');
+
+        const deliveryId = parts[0].substring(1);
+        const timestamp = parseInt(parts[1].trim());
+        const action = parts[2].substring(1, parts[2].length - 2);
+
+        if (action === 'pickup') {
+            activeTimeMap.set(deliveryId, timestamp);
+        } else if (action === 'dropoff') {
+            if (activeTimeMap.has(deliveryId)) {
+                const pickupTime = activeTimeMap.get(deliveryId);
+                totalActiveTime += timestamp - pickupTime;
+                activeTimeMap.delete(deliveryId);
+            }
+        }
+    }
+    return totalActiveTime;
+}
+
+console.log('========= Q118 =========');
+const courierSchedule = ["(1, 1573280047, 'pickup')",
+    "(1, 1570320725, 'dropoff')",
+    "(2, 1570321092, 'pickup')",
+    "(3, 1570321212, 'pickup')",
+    "(3, 1570322352, 'dropoff')",
+    "(2, 1570323012, 'dropoff')"
+];
+const totalActiveTime = calculateTotalActiveTime(courierSchedule);
+console.log(`Total active time: ${totalActiveTime} seconds`);
+console.log(`\n`);
+
+/*
+ * Q119.
+ * Write a function that takes a natural number as input and returns the number
+ * of digits the input has.
+ * Constraint: don't use any loops.
+ */
+function countDigits(number) {
+    return number.toString().length;
+}
+
+console.log('========= Q119 =========');
+const digitCount = countDigits(12345);
+console.log(`Number of digits: ${digitCount}`);
+console.log(`\n`);
+
+/*
+ * Q120.
+ * You are writing an AI for a 2D map game. You are somewhere in a 2D grid, and
+ * there are coins strewn about over the map.
+ * Given the position of all the coins and your current position, find the
+ * closest coin to you in terms of Manhattan distance. That is, you can move
+ * around up, down, left, and right, but not diagonally. If there are multiple
+ * possible closest coins, return any of them.
+ * For example, given the following map, where you are x, coins are o, and empty
+ * spaces are . (top left is 0, 0):
+ * ---------------------
+ * | . | . | x | . | o |
+ * ---------------------
+ * | o | . | . | . | . |
+ * ---------------------
+ * | o | . | . | . | o |
+ * ---------------------
+ * | . | . | o | . | . |
+ * ---------------------
+ * return (0, 4), since that coin is closest. This map would be represented in
+ * our question as:
+ * Our position: (0, 2)
+ * Coins: [(0, 4), (1, 0), (2, 0), (3, 2)]
+ */
+function findClosestCoin(currentPosition, map) {
+    let minDistance = Number.MAX_SAFE_INTEGER;
+    let closestCoin;
+
+    for (let i = 0; i < map.length; i++) {
+        for (let j = 0; j < map[i].length; j++) {
+            if (map[i][j] === 'o') {
+                const coinPosition = [i, j];
+                const distance = calculateManhattanDistance(currentPosition, coinPosition);
+
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestCoin = coinPosition;
+                }
+            }
+        }
+    }
+    return closestCoin;
+}
+
+function calculateManhattanDistance(point1, point2) {
+    return Math.abs(point1[0] - point2[0]) + Math.abs(point1[1] - point2[1]);
+}
+
+console.log('========= Q120 =========');
+const coinMap = [
+    ['.', '.', 'x', '.', 'o'],
+    ['o', '.', '.', '.', '.'],
+    ['o', '.', '.', '.', 'o'],
+    ['.', '.', 'o', '.', '.']
+];
+const currentPosition = [0, 2];
+const closestCoin = findClosestCoin(currentPosition, coinMap);
+console.log(`Closest coin: ${closestCoin}`);
 console.log(`\n`);

@@ -3363,6 +3363,443 @@ public class QuestionsAndSolutions {
         return false;
     }
 
+    // S111.
+    static class Point {
+        int x;
+        int y;
+
+        public Point(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        @Override
+        public String toString() {
+            return "(" + x + ", " + y + ")";
+        }
+    }
+
+    public static Point[] findClosestPoints(Point[] points) {
+        if (points == null || points.length < 2) {
+            return null;
+        }
+
+        Point[] result = new Point[2];
+        double minDistance = Double.POSITIVE_INFINITY;
+
+        for (int i = 0; i < points.length; i++) {
+            for (int j = i + 1; j < points.length; j++) {
+                double distance = calculateDistance(points[i], points[j]);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    result[0] = points[i];
+                    result[1] = points[j];
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private static double calculateDistance(Point p1, Point p2) {
+        int dx = p1.x - p2.x;
+        int dy = p1.y - p2.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    // S112.
+    public static int findMaxPackedWords(char[][] board, String[] dictionary) {
+        Arrays.sort(dictionary, Comparator.comparingInt(String::length));
+
+        int count = 0;
+
+        boolean[][] visited = new boolean[board.length][board[0].length];
+        for (String word : dictionary) {
+            if (isWordPacked(board, visited, word)) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private static boolean isWordPacked(char[][] board, boolean[][] visited, String word) {
+        int rows = board.length;
+        int cols = board[0].length;
+        char firstChar = word.charAt(0);
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (board[i][j] == firstChar && !visited[i][j]) {
+                    visited[i][j] = true;
+
+                    if (dfs(board, visited, word.substring(1), i, j)) {
+                        return true;
+                    }
+
+                    visited[i][j] = false;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean dfs(char[][] board, boolean[][] visited, String word, int row, int col) {
+        int rows = board.length;
+        int cols = board[0].length;
+
+        if (word.length() == 0) {
+            return true; // All characters of the word have been visited
+        }
+
+        int[] dx = { -1, 1, 0, 0 };
+        int[] dy = { 0, 0, -1, 1 };
+
+        for (int i = 0; i < 4; i++) {
+            int newRow = row + dx[i];
+            int newCol = col + dy[i];
+
+            if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols && !visited[newRow][newCol]
+                    && board[newRow][newCol] == word.charAt(0)) {
+                visited[newRow][newCol] = true;
+
+                if (dfs(board, visited, word.substring(1), newRow, newCol)) {
+                    return true;
+                }
+
+                visited[newRow][newCol] = false;
+            }
+        }
+
+        return false;
+    }
+
+    // S113.
+    public static String getLexicographicallySmallestString(String input, int k) {
+        String smallestString = input;
+
+        for (int i = 0; i < k; i++) {
+            String currentString = input.substring(i + 1) + input.substring(0, i + 1);
+            if (currentString.compareTo(smallestString) < 0) {
+                smallestString = currentString;
+            }
+        }
+
+        return smallestString;
+    }
+
+    // S114.
+    static class TernarySearchTree {
+        private Node root;
+
+        private static class Node {
+            char character;
+            Node left, middle, right;
+            boolean isEndOfWord;
+
+            Node(char character) {
+                this.character = character;
+            }
+        }
+
+        public void insert(String word) {
+            root = insert(root, word, 0);
+        }
+
+        private Node insert(Node node, String word, int index) {
+            char currentChar = word.charAt(index);
+            if (node == null) {
+                node = new Node(currentChar);
+            }
+
+            if (currentChar < node.character) {
+                node.left = insert(node.left, word, index);
+            } else if (currentChar > node.character) {
+                node.right = insert(node.right, word, index);
+            } else {
+                if (index < word.length() - 1) {
+                    node.middle = insert(node.middle, word, index + 1);
+                } else {
+                    node.isEndOfWord = true;
+                }
+            }
+
+            return node;
+        }
+
+        public boolean search(String word) {
+            return search(root, word, 0);
+        }
+
+        private boolean search(Node node, String word, int index) {
+            if (node == null) {
+                return false;
+            }
+
+            char currentChar = word.charAt(index);
+            if (currentChar < node.character) {
+                return search(node.left, word, index);
+            } else if (currentChar > node.character) {
+                return search(node.right, word, index);
+            } else {
+                if (index == word.length() - 1) {
+                    return node.isEndOfWord;
+                } else {
+                    return search(node.middle, word, index + 1);
+                }
+            }
+        }
+    }
+
+    // S115.
+    public static boolean isCrosswordGrid(char[][] grid) {
+        int n = grid.length;
+
+        // Check rule 1: Every white square must be part of an "across" word and a
+        // "down" word
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 'W') {
+                    if (!hasAcrossWord(grid, i, j) && !hasDownWord(grid, i, j)) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        // Check rule 2: No word can be fewer than three letters long
+        if (!checkWordLengths(grid)) {
+            return false;
+        }
+
+        // Check rule 3: Every white square must be reachable from every other white
+        // square
+        boolean[][] visited = new boolean[n][n];
+        int startX = -1;
+        int startY = -1;
+        outer: for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 'W') {
+                    startX = i;
+                    startY = j;
+                    break outer;
+                }
+            }
+        }
+
+        dfs(grid, visited, startX, startY);
+
+        // Check if all white squares were visited
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 'W' && !visited[i][j]) {
+                    return false;
+                }
+            }
+        }
+
+        // Check rule 4: The grid is rotationally symmetric
+        return isSymmetric(grid);
+    }
+
+    private static boolean hasAcrossWord(char[][] grid, int row, int col) {
+        int n = grid.length;
+        return (col > 0 && grid[row][col - 1] == 'W') || (col < n - 1 && grid[row][col + 1] == 'W');
+    }
+
+    private static boolean hasDownWord(char[][] grid, int row, int col) {
+        int n = grid.length;
+        return (row > 0 && grid[row - 1][col] == 'W') || (row < n - 1 && grid[row + 1][col] == 'W');
+    }
+
+    private static boolean checkWordLengths(char[][] grid) {
+        int n = grid.length;
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 'W') {
+                    int length = 1;
+
+                    if (j > 0 && grid[i][j - 1] == 'W') {
+                        length++;
+                        if (j > 1 && grid[i][j - 2] == 'W') {
+                            length++;
+                        }
+                    }
+
+                    if (j < n - 1 && grid[i][j + 1] == 'W') {
+                        length++;
+                        if (j < n - 2 && grid[i][j + 2] == 'W') {
+                            length++;
+                        }
+                    }
+
+                    if (i > 0 && grid[i - 1][j] == 'W') {
+                        length++;
+                        if (i > 1 && grid[i - 2][j] == 'W') {
+                            length++;
+                        }
+                    }
+
+                    if (i < n - 1 && grid[i + 1][j] == 'W') {
+                        length++;
+                        if (i < n - 2 && grid[i + 2][j] == 'W') {
+                            length++;
+                        }
+                    }
+
+                    if (length < 3) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private static void dfs(char[][] grid, boolean[][] visited, int row, int col) {
+        int n = grid.length;
+        if (row < 0 || row >= n || col < 0 || col >= n || visited[row][col] || grid[row][col] == 'B') {
+            return;
+        }
+        visited[row][col] = true;
+        dfs(grid, visited, row - 1, col);
+        dfs(grid, visited, row + 1, col);
+        dfs(grid, visited, row, col - 1);
+        dfs(grid, visited, row, col + 1);
+    }
+
+    private static boolean isSymmetric(char[][] grid) {
+        int n = grid.length;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] != grid[n - 1 - i][n - 1 - j]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    // S116.
+    public static String getOriginalDigits(String s) {
+        Map<Character, Integer> countMap = new HashMap<>();
+
+        for (char c : s.toCharArray()) {
+            countMap.put(c, countMap.getOrDefault(c, 0) + 1);
+        }
+
+        String[] digitToChar = { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
+        int[] digitOrder = { 0, 2, 4, 6, 8, 1, 3, 5, 7, 9 };
+        char[] uniqueChars = { 'z', 'o', 'w', 't', 'u', 'f', 'x', 's', 'g', 'i' };
+
+        StringBuilder result = new StringBuilder();
+        for (int digit : digitOrder) {
+            char uniqueChar = uniqueChars[digit];
+            int count = countMap.getOrDefault(uniqueChar, 0);
+
+            for (int i = 0; i < count; i++) {
+                result.append(digit);
+            }
+
+            for (char c : digitToChar[digit].toCharArray()) {
+                countMap.put(c, countMap.getOrDefault(c, 0) - count);
+            }
+        }
+
+        char[] resultArray = result.toString().toCharArray();
+        Arrays.sort(resultArray);
+        return new String(resultArray);
+    }
+
+    // S117.
+    public static List<String> findStrobogrammaticNumbers(int n) {
+        return findStrobogrammaticNumbersHelper(n, n);
+    }
+
+    private static List<String> findStrobogrammaticNumbersHelper(int n, int m) {
+        if (n == 0) {
+            return new ArrayList<>(Arrays.asList(""));
+        }
+        if (n == 1) {
+            return new ArrayList<>(Arrays.asList("0", "1", "8"));
+        }
+
+        List<String> result = new ArrayList<>();
+        List<String> inner = findStrobogrammaticNumbersHelper(n - 2, m);
+
+        for (String num : inner) {
+            if (n != m) {
+                result.add("0" + num + "0");
+            }
+            result.add("1" + num + "1");
+            result.add("6" + num + "9");
+            result.add("8" + num + "8");
+            result.add("9" + num + "6");
+        }
+
+        return result;
+    }
+
+    // S118.
+    public static int calculateTotalActiveTime(String[] data) {
+        Map<Integer, Integer> activeTimeMap = new HashMap<>();
+        int totalActiveTime = 0;
+
+        for (String entry : data) {
+            String[] parts = entry.split(", ");
+
+            int deliveryId = Integer.parseInt(parts[0].substring(1));
+            int timestamp = Integer.parseInt(parts[1]);
+            String action = parts[2].substring(1, parts[2].length() - 2);
+
+            if (action.equals("pickup")) {
+                activeTimeMap.put(deliveryId, timestamp);
+            } else if (action.equals("dropoff")) {
+                if (activeTimeMap.containsKey(deliveryId)) {
+                    int pickupTimestamp = activeTimeMap.get(deliveryId);
+                    totalActiveTime += timestamp - pickupTimestamp;
+                    System.out.println(totalActiveTime);
+                    activeTimeMap.remove(deliveryId);
+                }
+            }
+        }
+
+        return totalActiveTime;
+    }
+
+    // S119.
+    public static int countDigits(int number) {
+        String numberString = String.valueOf(number);
+        return numberString.length();
+    }
+
+    // S120.
+    public static int[] findClosestCoin(int[] currentPosition, char[][] map) {
+        int minDistance = Integer.MAX_VALUE;
+        int[] closestCoin = null;
+
+        for (int i = 0; i < map.length; i++) {
+            for (int j = 0; j < map[i].length; j++) {
+                if (map[i][j] == 'o') {
+                    int[] coinPosition = { i, j };
+                    int distance = calculateManhattanDistance(currentPosition, coinPosition);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestCoin = coinPosition;
+                    }
+                }
+            }
+        }
+
+        return closestCoin;
+    }
+
+    public static int calculateManhattanDistance(int[] point1, int[] point2) {
+        return Math.abs(point1[0] - point2[0]) + Math.abs(point1[1] - point2[1]);
+    }
+
     public static void main(String[] args) throws InterruptedException {
         /*
          * Q1.
@@ -5577,6 +6014,258 @@ public class QuestionsAndSolutions {
         int kForThreeSum = 49;
         boolean hasThreeSum = hasThreeSum(numsForThreeSum, kForThreeSum);
         System.out.println("Has three sum: " + hasThreeSum);
+
+        /*
+         * Q111.
+         * Given a set of points (x, y) on a 2D cartesian plane, find the two closest
+         * points. For example, given the points [(1, 1), (-1, -1), (3, 4), (6, 1), (-1,
+         * -6), (-4, -3)], return [(-1, -1), (1, 1)].
+         */
+        System.out.println("========= Q111 =========");
+        Point[] setOfPoints = {
+                new Point(1, 1),
+                new Point(-1, -1),
+                new Point(3, 4),
+                new Point(6, 1),
+                new Point(-1, -6),
+                new Point(-4, -3)
+        };
+
+        Point[] closestPoints = findClosestPoints(setOfPoints);
+        System.out.println(Arrays.toString(closestPoints));
+
+        /*
+         * Q112.
+         * You are given an N by N matrix of random letters and a dictionary of words.
+         * Find the maximum number of words that can be packed on the board from the
+         * given dictionary.
+         * A word is considered to be able to be packed on the board if:
+         * It can be found in the dictionary
+         * It can be constructed from untaken letters by other words found so far on the
+         * board
+         * The letters are adjacent to each other (vertically and horizontally, not
+         * diagonally).
+         * Each tile can be visited only once by any word.
+         * For example, given the following dictionary:
+         * { 'eat', 'rain', 'in', 'rat' }
+         * and matrix:
+         * [['e', 'a', 'n'],
+         * ['t', 't', 'i'],
+         * ['a', 'r', 'a']]
+         * Your function should return 3, since we can make the words 'eat', 'in', and
+         * 'rat' without them touching each other. We could have alternatively made
+         * 'eat' and 'rain', but that would be incorrect since that's only 2 words.
+         */
+        System.out.println("========= Q112 =========");
+        char[][] randomLetterBoard = {
+                { 'e', 'a', 'n' },
+                { 't', 't', 'i' },
+                { 'a', 'r', 'a' }
+        };
+
+        String[] dictionaryOfWords = { "eat", "rain", "in", "rat" };
+
+        int maxPackedWords = findMaxPackedWords(randomLetterBoard, dictionaryOfWords);
+        System.out.println("Maximum number of words that can be packed: " + maxPackedWords);
+
+        /*
+         * Q113.
+         * You are given a string of length N and a parameter k. The string can be
+         * manipulated by taking one of the first k letters and moving it to the end.
+         * Write a program to determine the lexicographically smallest string that can
+         * be created after an unlimited number of moves.
+         * For example, suppose we are given the string daily and k = 1. The best we can
+         * create in this case is ailyd.
+         */
+        System.out.println("========= Q113 =========");
+        String inputToFindSmallestString = "daily";
+        int firstNumOfLetters = 1;
+
+        String smallestString = getLexicographicallySmallestString(inputToFindSmallestString, firstNumOfLetters);
+        System.out.println("Lexicographically Smallest String: " + smallestString);
+
+        /*
+         * Q114.
+         * A ternary search tree is a trie-like data structure where each node may have
+         * up to three children. Here is an example which represents the words code,
+         * cob, be, ax, war, and we.
+         * "       c           "
+         * "    /  |  \        "
+         * "   b   o   w       "
+         * " / |   |   |       "
+         * "a  e   d   a       "
+         * "|    / |   | \     "
+         * "x   b  e   r  e    "
+         * The tree is structured according to the following rules:
+         * left child nodes link to words lexicographically earlier than the parent
+         * prefix
+         * right child nodes link to words lexicographically later than the parent
+         * prefix
+         * middle child nodes continue the current word
+         * For instance, since code is the first word inserted in the tree, and cob
+         * lexicographically precedes cod, cob is represented as a left child extending
+         * from cod.
+         * Implement insertion and search functions for a ternary search tree.
+         */
+        System.out.println("========= Q114 =========");
+        TernarySearchTree ternarySearchTree = new TernarySearchTree();
+
+        ternarySearchTree.insert("code");
+        ternarySearchTree.insert("cob");
+        ternarySearchTree.insert("be");
+        ternarySearchTree.insert("ax");
+        ternarySearchTree.insert("war");
+        ternarySearchTree.insert("we");
+
+        System.out.println(ternarySearchTree.search("code")); // Output: true
+        System.out.println(ternarySearchTree.search("cob")); // Output: true
+        System.out.println(ternarySearchTree.search("be")); // Output: true
+        System.out.println(ternarySearchTree.search("ax")); // Output: true
+        System.out.println(ternarySearchTree.search("war")); // Output: true
+        System.out.println(ternarySearchTree.search("we")); // Output: true
+        System.out.println(ternarySearchTree.search("hello")); // Output: false
+
+        /*
+         * Q115.
+         * A typical American-style crossword puzzle grid is an N x N matrix with black
+         * and white squares, which obeys the following rules:
+         * Every white square must be part of an "across" word and a "down" word.
+         * No word can be fewer than three letters long.
+         * Every white square must be reachable from every other white square.
+         * The grid is rotationally symmetric (for example, the colors of the top left
+         * and bottom right squares must match).
+         * Write a program to determine whether a given matrix qualifies as a crossword
+         * grid.
+         */
+        System.out.println("========= Q115 =========");
+        char[][] grid1 = {
+                { 'B', 'B', 'B', 'B', 'B' },
+                { 'B', 'W', 'W', 'W', 'B' },
+                { 'B', 'W', 'O', 'W', 'B' },
+                { 'B', 'W', 'W', 'W', 'B' },
+                { 'B', 'B', 'B', 'B', 'B' }
+        };
+
+        char[][] grid2 = {
+                { 'B', 'B', 'B', 'B', 'B' },
+                { 'B', 'W', 'B', 'W', 'B' },
+                { 'B', 'W', 'W', 'W', 'B' },
+                { 'B', 'B', 'B', 'W', 'B' },
+                { 'B', 'B', 'B', 'W', 'B' }
+        };
+        char[][] grid3 = {
+                { 'B', 'B', 'B', 'B', 'B' },
+                { 'B', 'W', 'B', 'W', 'B' },
+                { 'B', 'W', 'B', 'W', 'B' },
+                { 'B', 'W', 'B', 'W', 'B' },
+                { 'B', 'B', 'B', 'W', 'B' }
+        };
+
+        System.out.println("Given grid is a crossword grid: " + isCrosswordGrid(grid1));
+        System.out.println("Given grid is a crossword grid: " + isCrosswordGrid(grid2));
+        System.out.println("Given grid is a crossword grid: " + isCrosswordGrid(grid3));
+        /*
+         * Q116.
+         * You are given a string formed by concatenating several words corresponding to
+         * the integers zero through nine and then anagramming.
+         * For example, the input could be 'niesevehrtfeev', which is an anagram of
+         * 'threefiveseven'. Note that there can be multiple instances of each integer.
+         * Given this string, return the original integers in sorted order. In the
+         * example above, this would be 357.
+         */
+        System.out.println("========= Q116 =========");
+        String s = "niesevehrtfeev";
+        String originalDigits = getOriginalDigits(s);
+        System.out.println(originalDigits); // Output: 357
+
+        /*
+         * Q117.
+         * A strobogrammatic number is a positive number that appears the same after
+         * being rotated 180 degrees. For example, 16891 is strobogrammatic.
+         * Create a program that finds all strobogrammatic numbers with N digits.
+         */
+        System.out.println("========= Q117 =========");
+        int nDigitToFindStrobogrammatic = 5;
+        List<String> strobogrammaticNumbers = findStrobogrammaticNumbers(nDigitToFindStrobogrammatic);
+        System.out.println(
+                "Strobogrammatic numbers with " + nDigitToFindStrobogrammatic + " digits: " + strobogrammaticNumbers);
+
+        /*
+         * Q118.
+         * The “active time” of a courier is the time between the pickup and dropoff of
+         * a delivery. Given a set of data formatted like the following:
+         * (delivery id, timestamp, pickup/dropoff)
+         * Calculate the total active time in seconds. A courier can pick up multiple
+         * orders before dropping them off. The timestamp is in unix epoch seconds.
+         * For example, if the input is the following:
+         * (1, 1573280047, 'pickup')
+         * (1, 1570320725, 'dropoff')
+         * (2, 1570321092, 'pickup')
+         * (3, 1570321212, 'pickup')
+         * (3, 1570322352, 'dropoff')
+         * (2, 1570323012, 'dropoff')
+         * The total active time would be 1260 seconds.
+         */
+        System.out.println("========= Q118 =========");
+        String[] courierSchedule = {
+                "(1, 1573280047, 'pickup')",
+                "(1, 1570320725, 'dropoff')",
+                "(2, 1570321092, 'pickup')",
+                "(3, 1570321212, 'pickup')",
+                "(3, 1570322352, 'dropoff')",
+                "(2, 1570323012, 'dropoff')"
+        };
+
+        int totalActiveTime = calculateTotalActiveTime(courierSchedule);
+        System.out.println("Total active time: " + totalActiveTime + " seconds");
+
+        /*
+         * Q119.
+         * Write a function that takes a natural number as input and returns the number
+         * of digits the input has.
+         * Constraint: don't use any loops.
+         */
+        System.out.println("========= Q119 =========");
+        int number = 12345;
+        int digitCount = countDigits(number);
+        System.out.println("Number of digits: " + digitCount);
+
+        /*
+         * Q120.
+         * You are writing an AI for a 2D map game. You are somewhere in a 2D grid, and
+         * there are coins strewn about over the map.
+         * Given the position of all the coins and your current position, find the
+         * closest coin to you in terms of Manhattan distance. That is, you can move
+         * around up, down, left, and right, but not diagonally. If there are multiple
+         * possible closest coins, return any of them.
+         * For example, given the following map, where you are x, coins are o, and empty
+         * spaces are . (top left is 0, 0):
+         * ---------------------
+         * | . | . | x | . | o |
+         * ---------------------
+         * | o | . | . | . | . |
+         * ---------------------
+         * | o | . | . | . | o |
+         * ---------------------
+         * | . | . | o | . | . |
+         * ---------------------
+         * return (0, 4), since that coin is closest. This map would be represented in
+         * our question as:
+         * Our position: (0, 2)
+         * Coins: [(0, 4), (1, 0), (2, 0), (3, 2)]
+         */
+        System.out.println("========= Q120 =========");
+        char[][] coinMap = {
+                { '.', '.', 'x', '.', 'o' },
+                { 'o', '.', '.', '.', '.' },
+                { 'o', '.', '.', '.', 'o' },
+                { '.', '.', 'o', '.', '.' }
+        };
+
+        int[] currentPosition = { 0, 2 };
+
+        int[] closestCoin = findClosestCoin(currentPosition, coinMap);
+        System.out.println("Closest coin: (" + closestCoin[0] + ", " + closestCoin[1] + ")");
 
     }
 
