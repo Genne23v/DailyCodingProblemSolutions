@@ -2,6 +2,7 @@ package Medium;
 
 import java.util.Random;
 import java.util.Set;
+import java.util.Stack;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -858,6 +859,296 @@ public class QuestionsAndSolutions {
     }
 
     // S21.
+    public static void shuffleDeck(int[] deck) {
+        Random rand = new Random();
+        int n = deck.length;
+
+        for (int i = n - 1; i > 0; i--) {
+            int j = rand.nextInt(i + 1);
+            swap(deck, i, j);
+        }
+    }
+
+    private static void swap(int[] deck, int i, int j) {
+        int temp = deck[i];
+        deck[i] = deck[j];
+        deck[j] = temp;
+    }
+
+    // S22.
+    static class QueueUsingStacks<T> {
+        private Stack<T> enqueueStack;
+        private Stack<T> dequeueStack;
+
+        public QueueUsingStacks() {
+            enqueueStack = new Stack<>();
+            dequeueStack = new Stack<>();
+        }
+
+        public void enqueue(T element) {
+            enqueueStack.push(element);
+        }
+
+        public T dequeue() {
+            if (isEmpty()) {
+                throw new IllegalStateException("Queue is empty");
+            }
+
+            if (dequeueStack.isEmpty()) {
+                // Transfer elements from enqueueStack to dequeueStack in reverse order
+                while (!enqueueStack.isEmpty()) {
+                    dequeueStack.push(enqueueStack.pop());
+                }
+            }
+
+            return dequeueStack.pop();
+        }
+
+        public boolean isEmpty() {
+            return enqueueStack.isEmpty() && dequeueStack.isEmpty();
+        }
+
+        public int size() {
+            return enqueueStack.size() + dequeueStack.size();
+        }
+    }
+
+    // S23.
+    static class GraphColoring {
+        private int[][] graph;
+        private int numVertices;
+        private int[] colors;
+
+        public GraphColoring(int[][] graph) {
+            this.graph = graph;
+            this.numVertices = graph.length;
+            this.colors = new int[numVertices];
+        }
+
+        public boolean canColorGraph(int k) {
+            return canColorVertex(0, k);
+        }
+
+        private boolean canColorVertex(int vertex, int k) {
+            if (vertex == numVertices) {
+                return true; // All vertices have been colored
+            }
+
+            for (int color = 1; color <= k; color++) {
+                if (isColorValid(vertex, color)) {
+                    colors[vertex] = color;
+
+                    if (canColorVertex(vertex + 1, k)) {
+                        return true;
+                    }
+
+                    colors[vertex] = 0; // Backtrack and try a different color
+                }
+            }
+
+            return false;
+        }
+
+        private boolean isColorValid(int vertex, int color) {
+            for (int i = 0; i < numVertices; i++) {
+                if (graph[vertex][i] == 1 && colors[i] == color) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    // S24.
+    public static List<String> breakLines(String s, int k) {
+        String[] words = s.split(" ");
+        List<String> lines = new ArrayList<>();
+        StringBuilder currentLine = new StringBuilder();
+        int currentLength = 0;
+
+        for (String word : words) {
+            int wordLength = word.length();
+
+            if (currentLength + wordLength <= k) {
+                currentLine.append(word).append(" ");
+                currentLength += wordLength + 1;
+            } else {
+                lines.add(currentLine.toString().trim());
+                currentLine = new StringBuilder(word).append(" ");
+                currentLength = wordLength + 1;
+            }
+        }
+
+        lines.add(currentLine.toString().trim());
+
+        return lines;
+    }
+
+    // S25.
+    public static Integer search(int[] nums, int target) {
+        int left = 0;
+        int right = nums.length - 1;
+
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+
+            if (nums[mid] == target) {
+                return mid;
+            }
+
+            if (nums[left] <= nums[mid]) {
+                if (nums[left] <= target && target < nums[mid]) {
+                    right = mid - 1;
+                } else {
+                    left = mid + 1;
+                }
+            } else {
+                if (nums[mid] < target && target <= nums[right]) {
+                    left = mid + 1;
+                } else {
+                    right = mid - 1;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    // S26.
+    public static boolean canPartition(int[] nums) {
+        int totalSum = 0;
+        for (int num : nums) {
+            totalSum += num;
+        }
+
+        if (totalSum % 2 != 0) {
+            return false; // If the total sum is odd, it cannot be partitioned into two equal subsets
+        }
+
+        int targetSum = totalSum / 2;
+        int n = nums.length;
+        boolean[][] dp = new boolean[n + 1][targetSum + 1];
+
+        // Initialize the first column with true, as we can make a sum of 0 with an
+        // empty subset
+        for (int i = 0; i <= n; i++) {
+            dp[i][0] = true;
+        }
+
+        // Fill the dp array using the subset sum bottom-up approach
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= targetSum; j++) {
+                if (j < nums[i - 1]) {
+                    dp[i][j] = dp[i - 1][j]; // Copy previous number's result
+                } else {
+                    dp[i][j] = dp[i - 1][j] || dp[i - 1][j - nums[i - 1]]; // Copy previous number's result or use the
+                                                                           // result without previous number
+                }
+            }
+        }
+
+        return dp[n][targetSum];
+    }
+
+    // S27.
+    public static long pow(int x, int y) {
+        if (y < 0) {
+            return pow(1 / x, -y);
+        } else if (y == 0) {
+            return 1;
+        } else if (y == 1) {
+            return x;
+        } else if (y % 2 == 0) {
+            long halfPower = pow(x, y / 2);
+            return halfPower * halfPower;
+        } else {
+            long halfPower = pow(x, y / 2);
+            return x * halfPower * halfPower;
+        }
+    }
+
+    // S28.
+    public static int countWays(int N, int M) {
+        int[][] dp = new int[N][M];
+
+        for (int i = 0; i < N; i++) {
+            dp[i][0] = 1;
+        }
+        for (int j = 0; j < M; j++) {
+            dp[0][j] = 1;
+        }
+
+        for (int i = 1; i < N; i++) {
+            for (int j = 1; j < M; j++) {
+                // The number of ways to reach cell (i, j) is the sum of the ways
+                // to reach the cell above (i-1, j) and the cell to the left (i, j-1)
+                dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+            }
+        }
+
+        return dp[N - 1][M - 1];
+    }
+
+    // S29.
+    public static int tossUnbiased() {
+        while (true) {
+            int toss1 = tossBiased();
+            int toss2 = tossBiased();
+
+            if (toss1 != toss2) {
+                return toss1;
+            }
+        }
+    }
+
+    // Assume this is the provided biased coin toss function
+    public static int tossBiased() {
+        double probabilityOfHeads = 0.3;
+
+        double random = Math.random();
+
+        if (random < probabilityOfHeads) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    // S30.
+    public static int countAttackingPairs(int[][] bishops, int M) {
+        Map<Integer, Integer> positiveSlopes = new HashMap<>();
+        Map<Integer, Integer> negativeSlopes = new HashMap<>();
+
+        int pairs = 0;
+
+        for (int[] bishop : bishops) {
+            int row = bishop[0];
+            int col = bishop[1];
+
+            // Calculate the positive and negative diagonal slopes
+            int positiveSlope = row + col;
+            int negativeSlope = row - col;
+
+            positiveSlopes.put(positiveSlope, positiveSlopes.getOrDefault(positiveSlope, 0) + 1);
+            negativeSlopes.put(negativeSlope, negativeSlopes.getOrDefault(negativeSlope, 0) + 1);
+        }
+
+        for (int count : positiveSlopes.values()) {
+            pairs += countPairs(count);
+        }
+        for (int count : negativeSlopes.values()) {
+            pairs += countPairs(count);
+        }
+
+        return pairs;
+    }
+
+    // Count the number of pairs given the count of bishops on a diagonal slope
+    private static int countPairs(int count) {
+        // Calculate the number of pairs using combination formula (nC2)
+        return count * (count - 1) / 2;
+    }
 
     public static void main(String[] args) {
         /*
@@ -1168,13 +1459,13 @@ public class QuestionsAndSolutions {
          * tree.
          */
         System.out.println("========= Q15 ==========");
-        TreeNode binaryTreeRoot = new TreeNode(6);
-        binaryTreeRoot.left = new TreeNode(2);
-        binaryTreeRoot.right = new TreeNode(8);
-        binaryTreeRoot.left.left = new TreeNode(1);
-        binaryTreeRoot.left.right = new TreeNode(4);
-        binaryTreeRoot.right.left = new TreeNode(7);
-        binaryTreeRoot.right.right = new TreeNode(9);
+        TreeNode<Integer> binaryTreeRoot = new TreeNode<>(6);
+        binaryTreeRoot.left = new TreeNode<>(2);
+        binaryTreeRoot.right = new TreeNode<>(8);
+        binaryTreeRoot.left.left = new TreeNode<>(1);
+        binaryTreeRoot.left.right = new TreeNode<>(4);
+        binaryTreeRoot.right.left = new TreeNode<>(7);
+        binaryTreeRoot.right.right = new TreeNode<>(9);
 
         int secondLargest = findSecondLargest(binaryTreeRoot);
         System.out.println("Second largest node: " + secondLargest); // Output: 8
@@ -1333,6 +1624,196 @@ public class QuestionsAndSolutions {
          * likely.
          */
         System.out.println("========= Q21 ==========");
+        int[] deck = new int[52];
+        for (int i = 0; i < 52; i++) {
+            deck[i] = i + 1;
+        }
+
+        shuffleDeck(deck);
+
+        System.out.println("Shuffled deck:");
+        for (int card : deck) {
+            System.out.print(card + " ");
+        }
+        System.out.println();
+
+        /*
+         * Q22.
+         * Implement a queue using two stacks. Recall that a queue is a FIFO (first-in,
+         * first-out) data structure with the following methods: enqueue, which inserts
+         * an element into the queue, and dequeue, which removes it.
+         */
+        System.out.println("========= Q22 ==========");
+        QueueUsingStacks<Integer> queue = new QueueUsingStacks<>();
+        queue.enqueue(1);
+        queue.enqueue(2);
+        queue.enqueue(3);
+
+        System.out.println(queue.dequeue()); // Output: 1
+        System.out.println(queue.dequeue()); // Output: 2
+
+        queue.enqueue(4);
+        System.out.println(queue.dequeue()); // Output: 3
+        System.out.println(queue.dequeue()); // Output: 4
+
+        System.out.println(queue.isEmpty()); // Output: true
+
+        /*
+         * Q23.
+         * Given an undirected graph represented as an adjacency matrix and an integer
+         * k, write a function to determine whether each vertex in the graph can be
+         * colored such that no two adjacent vertices share the same color using at most
+         * k colors.
+         */
+        System.out.println("========= Q23 ==========");
+        int[][] graph = {
+                { 0, 1, 1, 1 },
+                { 1, 0, 1, 0 },
+                { 1, 1, 0, 1 },
+                { 1, 0, 1, 0 }
+        };
+
+        int numOfColours = 3;
+
+        GraphColoring graphColouring = new GraphColoring(graph);
+        boolean canColour = graphColouring.canColorGraph(numOfColours);
+        System.out.println("Can color graph with " + numOfColours + " colors? " + canColour);
+
+        /*
+         * Q24.
+         * Given a string s and an integer k, break up the string into multiple lines
+         * such that each line has a length of k or less. You must break it up so that
+         * words don't break across lines. Each line has to have the maximum possible
+         * amount of words. If there's no way to break the text up, then return null.
+         * You can assume that there are no spaces at the ends of the string and that
+         * there is exactly one space between each word.
+         * For example, given the string "the quick brown fox jumps over the lazy dog"
+         * and k = 10, you should return: ["the quick", "brown fox", "jumps over",
+         * "the lazy", "dog"]. No string in the list has a length of more than 10.
+         */
+        System.out.println("========= Q24 ==========");
+        String s = "the quick brown fox jumps over the lazy dog";
+        int lineWidth = 10;
+
+        List<String> lines = breakLines(s, lineWidth);
+        if (lines != null) {
+            for (String line : lines) {
+                System.out.println(line);
+            }
+        } else {
+            System.out.println("Cannot break the text into lines.");
+        }
+
+        /*
+         * Q25.
+         * An sorted array of integers was rotated an unknown number of times.
+         * Given such an array, find the index of the element in the array in faster
+         * than linear time. If the element doesn't exist in the array, return null.
+         * For example, given the array [13, 18, 25, 2, 8, 10] and the element 8, return
+         * 4 (the index of 8 in the array).
+         * You can assume all the integers in the array are unique.
+         */
+        System.out.println("========= Q25 ==========");
+        int[] nums = { 13, 18, 25, 2, 8, 10 };
+        int target = 8;
+
+        Integer index = search(nums, target);
+        if (index != null) {
+            System.out.println("Index of " + target + " is: " + index);
+        } else {
+            System.out.println(target + " is not found in the array.");
+        }
+
+        /*
+         * Q26.
+         * Given a multiset of integers, return whether it can be partitioned into two
+         * subsets whose sums are the same.
+         * For example, given the multiset {15, 5, 20, 10, 35, 15, 10}, it would return
+         * true, since we can split it up into {15, 5, 10, 15, 10} and {20, 35}, which
+         * both add up to 55.
+         * Given the multiset {15, 5, 20, 10, 35}, it would return false, since we can't
+         * split it up into two subsets that add up to the same sum.
+         */
+        System.out.println("========= Q26 ==========");
+        int[] numsToPartition = { 15, 5, 20, 10, 35, 15, 10 };
+        boolean partitionResult = canPartition(numsToPartition);
+        System.out.println("Can partition the multiset: " + partitionResult);
+
+        /*
+         * Q27.
+         * Implement integer exponentiation. That is, implement the pow(x, y) function,
+         * where x and y are integers and returns x^y.
+         * Do this faster than the naive method of repeated multiplication.
+         * For example, pow(2, 10) should return 1024.
+         */
+        System.out.println("========= Q27 ==========");
+        int x = 2;
+        int y = 10;
+        long powResult = pow(x, y);
+        System.out.println(x + "^" + y + " = " + powResult);
+
+        /*
+         * Q28.
+         * There is an N by M matrix of zeroes. Given N and M, write a function to count
+         * the number of ways of starting at the top-left corner and getting to the
+         * bottom-right corner. You can only move right or down.
+         * For example, given a 2 by 2 matrix, you should return 2, since there are two
+         * ways to get to the bottom-right:
+         * Right, then down
+         * Down, then right
+         * Given a 5 by 5 matrix, there are 70 ways to get to the bottom-right.
+         */
+        System.out.println("========= Q28 ==========");
+        int ways = countWays(2, 2);
+        System.out.println("Number of ways to reach bottom-right from top-left in 2x2 matrix: " + ways);
+        ways = countWays(5, 5);
+        System.out.println("Number of ways to reach bottom-right from top-left in 5x5 matrix: " + ways);
+
+        /*
+         * Q29.
+         * Assume you have access to a function toss_biased() which returns 0 or 1 with
+         * a probability that's not 50-50 (but also not 0-100 or 100-0). You do not know
+         * the bias of the coin.
+         * Write a function to simulate an unbiased coin toss.
+         */
+        System.out.println("========= Q29 ==========");
+        int unbiasedResult = tossUnbiased();
+        System.out.println("Unbiased result: " + unbiasedResult);
+
+        /*
+         * Q30.
+         * On our special chessboard, two bishops attack each other if they share the
+         * same diagonal. This includes bishops that have another bishop located between
+         * them, i.e. bishops can attack through pieces.
+         * You are given N bishops, represented as (row, column) tuples on a M by M
+         * chessboard. Write a function to count the number of pairs of bishops that
+         * attack each other. The ordering of the pair doesn't matter: (1, 2) is
+         * considered the same as (2, 1).
+         * For example, given M = 5 and the list of bishops:
+         * (0, 0)
+         * (1, 2)
+         * (2, 2)
+         * (4, 0)
+         * The board would look like this:
+         * [b 0 0 0 0]
+         * [0 0 b 0 0]
+         * [0 0 b 0 0]
+         * [0 0 0 0 0]
+         * [b 0 0 0 0]
+         * You should return 2, since bishops 1 and 3 attack each other, as well as
+         * bishops 3 and 4.
+         */
+        System.out.println("========= Q30 ==========");
+        int M = 5;
+        int[][] bishops = {
+                { 0, 0 },
+                { 1, 2 },
+                { 2, 2 },
+                { 4, 0 }
+        };
+
+        int pairs = countAttackingPairs(bishops, M);
+        System.out.println("Number of attacking pairs: " + pairs);
 
     }
 }

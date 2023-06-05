@@ -914,7 +914,9 @@ class GameOfLife {
     #_board;
 
     constructor(size) {
-        this.#_board = new Array(size).fill(null).map(() => new Array(size).fill(null));
+        this.#_board = new Array(size)
+            .fill(null)
+            .map(() => new Array(size).fill(null));
 
         for (let i = 0; i < this.#_board.length; i++) {
             for (let j = 0; j < this.#_board.length; j++) {
@@ -929,7 +931,6 @@ class GameOfLife {
             const y = coordinate[1];
             this.#_board[x][y] = new Cell(x, y, true);
         }
-        console.log(this.#_board);
     }
 
     run(steps) {
@@ -937,7 +938,9 @@ class GameOfLife {
             console.log(`Step ${step}:`);
             this.printBoard();
 
-            let nextBoard = new Array(this.#_board.length).fill(null).map(() => new Array(this.#_board.length).fill(null));
+            let nextBoard = new Array(this.#_board.length)
+                .fill(null)
+                .map(() => new Array(this.#_board.length).fill(null));
 
             for (let i = 0; i < this.#_board.length; i++) {
                 for (let j = 0; j < this.#_board.length; j++) {
@@ -975,7 +978,11 @@ class GameOfLife {
                     continue;
                 }
 
-                if (this.isValidCoordinate(i, j) && this.#_board[i][j] && this.#_board[i][j].alive) {
+                if (
+                    this.isValidCoordinate(i, j) &&
+                    this.#_board[i][j] &&
+                    this.#_board[i][j].alive
+                ) {
                     count++;
                 }
             }
@@ -984,12 +991,17 @@ class GameOfLife {
     }
 
     isValidCoordinate(x, y) {
-        return x >= 0 && x < this.#_board.length && y >= 0 && y < this.#_board.length;
+        return (
+            x >= 0 &&
+            x < this.#_board.length &&
+            y >= 0 &&
+            y < this.#_board.length
+        );
     }
 
     printBoard() {
         let minX = Number.MAX_SAFE_INTEGER;
-        let maxX = Number.MIN_SAFE_INTEGER
+        let maxX = Number.MIN_SAFE_INTEGER;
         let minY = Number.MAX_SAFE_INTEGER;
         let maxY = Number.MIN_SAFE_INTEGER;
 
@@ -1008,7 +1020,7 @@ class GameOfLife {
         for (let i = minX; i <= maxX; i++) {
             for (let j = minY; j <= maxY; j++) {
                 const cell = this.#_board[i][j];
-                const symbol = (cell && cell.alive) ? '*' : '.';
+                const symbol = cell && cell.alive ? '*' : '.';
                 stringToPrint += symbol;
             }
             stringToPrint += '\n';
@@ -1018,8 +1030,13 @@ class GameOfLife {
 }
 
 console.log('========= Q16 =========');
-const liveCellCoordinates =
-    [[1, 2], [2, 2], [2, 3], [3, 1], [3, 2]];
+const liveCellCoordinates = [
+    [1, 2],
+    [2, 2],
+    [2, 3],
+    [3, 1],
+    [3, 2],
+];
 
 const size = 5;
 const steps = 5;
@@ -1029,22 +1046,22 @@ game.initialize(liveCellCoordinates);
 game.run(steps);
 
 /*
-* Q17.
-* Given an unordered list of flights taken by someone, each represented as
-* (origin, destination) pairs, and a starting airport, compute the person's
-* itinerary. If no such itinerary exists, return null. If there are multiple
-* possible itineraries, return the lexicographically smallest one. All flights
-* must be used in the itinerary.
-* For example, given the list of flights [('SFO', 'HKO'), ('YYZ', 'SFO'),
-* ('YUL', 'YYZ'), ('HKO', 'ORD')] and starting airport 'YUL', you should return
-* the list ['YUL', 'YYZ', 'SFO', 'HKO', 'ORD'].
-* Given the list of flights [('SFO', 'COM'), ('COM', 'YYZ')] and starting
-* airport 'COM', you should return null.
-* Given the list of flights [('A', 'B'), ('A', 'C'), ('B', 'C'), ('C', 'A')]
-* and starting airport 'A', you should return the list ['A', 'B', 'C', 'A',
-* 'C'] even though ['A', 'C', 'A', 'B', 'C'] is also a valid itinerary.
-* However, the first one is lexicographically smaller.
-*/
+ * Q17.
+ * Given an unordered list of flights taken by someone, each represented as
+ * (origin, destination) pairs, and a starting airport, compute the person's
+ * itinerary. If no such itinerary exists, return null. If there are multiple
+ * possible itineraries, return the lexicographically smallest one. All flights
+ * must be used in the itinerary.
+ * For example, given the list of flights [('SFO', 'HKO'), ('YYZ', 'SFO'),
+ * ('YUL', 'YYZ'), ('HKO', 'ORD')] and starting airport 'YUL', you should return
+ * the list ['YUL', 'YYZ', 'SFO', 'HKO', 'ORD'].
+ * Given the list of flights [('SFO', 'COM'), ('COM', 'YYZ')] and starting
+ * airport 'COM', you should return null.
+ * Given the list of flights [('A', 'B'), ('A', 'C'), ('B', 'C'), ('C', 'A')]
+ * and starting airport 'A', you should return the list ['A', 'B', 'C', 'A',
+ * 'C'] even though ['A', 'C', 'A', 'B', 'C'] is also a valid itinerary.
+ * However, the first one is lexicographically smaller.
+ */
 function findItinerary(flights, startAirport) {
     let flightMap = new Map();
 
@@ -1081,31 +1098,44 @@ function dfs(flightMap, airport, itinerary) {
 }
 
 console.log('========= Q17 =========');
-const flights1 = [['SFO', 'HKO'], ['YYZ', 'SFO'], ['YUL', 'YYZ'], ['HKO', 'ORD']];
+const flights1 = [
+    ['SFO', 'HKO'],
+    ['YYZ', 'SFO'],
+    ['YUL', 'YYZ'],
+    ['HKO', 'ORD'],
+];
 const startAirport1 = 'YUL';
 console.log(`Itinerary 1: ${findItinerary(flights1, startAirport1)}`);
 
-const flights2 = [['SFO', 'COM'], ['COM', 'YYZ']];
+const flights2 = [
+    ['SFO', 'COM'],
+    ['COM', 'YYZ'],
+];
 const startAirport2 = 'COM';
 console.log(`Itinerary 2: ${findItinerary(flights2, startAirport2)}`);
 
-const flights3 = [['A', 'B'], ['A', 'C'], ['B', 'C'], ['C', 'A']];
+const flights3 = [
+    ['A', 'B'],
+    ['A', 'C'],
+    ['B', 'C'],
+    ['C', 'A'],
+];
 const startAirport3 = 'A';
 console.log(`Itinerary 3: ${findItinerary(flights3, startAirport3)}`);
 console.log('\n');
 
 /*
-* Q18.
-* We can determine how "out of order" an array A is by counting the number of
-* inversions it has. Two elements A[i] and A[j] form an inversion if A[i] >
-* A[j] but i < j. That is, a smaller element appears after a larger element.
-* Given an array, count the number of inversions it has. Do this faster than
-* O(N^2) time.
-* You may assume each element in the array is distinct.
-* For example, a sorted list has zero inversions. The array [2, 4, 1, 3, 5] has
-* three inversions: (2, 1), (4, 1), and (4, 3). The array [5, 4, 3, 2, 1] has
-* ten inversions: every distinct pair forms an inversion.
-*/
+ * Q18.
+ * We can determine how "out of order" an array A is by counting the number of
+ * inversions it has. Two elements A[i] and A[j] form an inversion if A[i] >
+ * A[j] but i < j. That is, a smaller element appears after a larger element.
+ * Given an array, count the number of inversions it has. Do this faster than
+ * O(N^2) time.
+ * You may assume each element in the array is distinct.
+ * For example, a sorted list has zero inversions. The array [2, 4, 1, 3, 5] has
+ * three inversions: (2, 1), (4, 1), and (4, 3). The array [5, 4, 3, 2, 1] has
+ * ten inversions: every distinct pair forms an inversion.
+ */
 function countInversion(arr) {
     if (!arr || arr.length <= 1) {
         return 0;
@@ -1166,26 +1196,33 @@ console.log(`Inversion count of ${arr2}: ${countInversion(arr2)}`);
 console.log('\n');
 
 /*
-* Q19.
-* Given pre-order and in-order traversals of a binary tree, write a function to
-* reconstruct the tree.
-* For example, given the following preorder traversal:
-* [a, b, d, e, c, f, g]
-* And the following inorder traversal:
-* [d, b, e, a, f, c, g]
-* You should return the following tree:
-* "    a      "
-* "   / \     "
-* "  b   c    "
-* " / \ / \   "
-* "d  e f  g  "
-*/
+ * Q19.
+ * Given pre-order and in-order traversals of a binary tree, write a function to
+ * reconstruct the tree.
+ * For example, given the following preorder traversal:
+ * [a, b, d, e, c, f, g]
+ * And the following inorder traversal:
+ * [d, b, e, a, f, c, g]
+ * You should return the following tree:
+ * "    a      "
+ * "   / \     "
+ * "  b   c    "
+ * " / \ / \   "
+ * "d  e f  g  "
+ */
 function buildTree(preorder, inorder) {
     if (!preorder || !inorder || preorder.length !== inorder.length) {
         return null;
     }
 
-    return buildTreeHelper(preorder, 0, preorder.length - 1, inorder, 0, inorder.length - 1);
+    return buildTreeHelper(
+        preorder,
+        0,
+        preorder.length - 1,
+        inorder,
+        0,
+        inorder.length - 1
+    );
 }
 
 function buildTreeHelper(preorder, preStart, preEnd, inorder, inStart, inEnd) {
@@ -1205,10 +1242,22 @@ function buildTreeHelper(preorder, preStart, preEnd, inorder, inStart, inEnd) {
     }
 
     let leftSubtreeSize = rootIndexInorder - inStart;
-    root.left = buildTreeHelper(preorder, preStart + 1, preStart + leftSubtreeSize, inorder, inStart,
-        rootIndexInorder - 1);
-    root.right = buildTreeHelper(preorder, preStart + leftSubtreeSize + 1, preEnd, inorder, rootIndexInorder + 1,
-        inEnd);
+    root.left = buildTreeHelper(
+        preorder,
+        preStart + 1,
+        preStart + leftSubtreeSize,
+        inorder,
+        inStart,
+        rootIndexInorder - 1
+    );
+    root.right = buildTreeHelper(
+        preorder,
+        preStart + leftSubtreeSize + 1,
+        preEnd,
+        inorder,
+        rootIndexInorder + 1,
+        inEnd
+    );
 
     return root;
 }
@@ -1232,23 +1281,22 @@ printInorder(constructedTreeRoot);
 console.log('\n');
 
 /*
-* Q20.
-* Given an array of numbers, find the maximum sum of any contiguous subarray of
-* the array.
-* For example, given the array [34, -50, 42, 14, -5, 86], the maximum sum would
-* be 137, since we would take elements 42, 14, -5, and 86.
-* Given the array [-5, -1, -8, -9], the maximum sum would be 0, since we would
-* not take any elements.
-* Do this in O(N) time.
-*/
-function findMaxSubarraySum(nums){
+ * Q20.
+ * Given an array of numbers, find the maximum sum of any contiguous subarray of
+ * the array.
+ * For example, given the array [34, -50, 42, 14, -5, 86], the maximum sum would
+ * be 137, since we would take elements 42, 14, -5, and 86.
+ * Given the array [-5, -1, -8, -9], the maximum sum would be 0, since we would
+ * not take any elements.
+ * Do this in O(N) time.
+ */
+function findMaxSubarraySum(nums) {
     let maxSum = 0;
     let currentSum = 0;
 
     for (const num of nums) {
         currentSum = Math.max(num, currentSum + num);
         maxSum = Math.max(maxSum, currentSum);
-        console.log(`num: ${num}, currentSum: ${currentSum}, maxSum: ${maxSum}`)
     }
 
     return maxSum;
@@ -1258,16 +1306,507 @@ console.log('========= Q20 =========');
 const arrToFindMaxSubarray1 = [34, -50, 42, 14, -5, 86];
 const arrToFindMaxSubarray2 = [-5, -1, -8, -9];
 
-console.log(`Maximum sum in arr1: ${findMaxSubarraySum(arrToFindMaxSubarray1)}`);
-console.log(`Maximum sum in arr2: ${findMaxSubarraySum(arrToFindMaxSubarray2)}`);
+console.log(
+    `Maximum sum in arr1: ${findMaxSubarraySum(arrToFindMaxSubarray1)}`
+);
+console.log(
+    `Maximum sum in arr2: ${findMaxSubarraySum(arrToFindMaxSubarray2)}`
+);
 console.log('\n');
 
 /*
-* Q21.
-* Given a function that generates perfectly random numbers between 1 and k
-* (inclusive), where k is an input, write a function that shuffles a deck of
-* cards represented as an array using only swaps.
-* It should run in O(N) time.
-* Hint: Make sure each one of the 52! permutations of the deck is equally
-* likely.
-*/
+ * Q21.
+ * Given a function that generates perfectly random numbers between 1 and k
+ * (inclusive), where k is an input, write a function that shuffles a deck of
+ * cards represented as an array using only swaps.
+ * It should run in O(N) time.
+ * Hint: Make sure each one of the 52! permutations of the deck is equally
+ * likely.
+ */
+function shuffleDeck(deck) {
+    const n = deck.length;
+
+    for (let i = n - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        swap(deck, i, j);
+    }
+}
+
+function swap(deck, i, j) {
+    let temp = deck[i];
+    deck[i] = deck[j];
+    deck[j] = temp;
+}
+
+console.log('========= Q21 =========');
+let deck = new Array(52);
+for (let i = 0; i < 52; i++) {
+    deck[i] = i + 1;
+}
+
+shuffleDeck(deck);
+
+console.log(`Shuffled deck: ${deck}`);
+console.log('\n');
+
+/*
+ * Q22.
+ * Implement a queue using two stacks. Recall that a queue is a FIFO (first-in,
+ * first-out) data structure with the following methods: enqueue, which inserts
+ * an element into the queue, and dequeue, which removes it.
+ */
+class Stack {
+    #_stack;
+
+    constructor() {
+        this.#_stack = [];
+    }
+
+    push(element) {
+        this.#_stack.push(element);
+    }
+
+    pop() {
+        return this.#_stack.pop();
+    }
+
+    isEmpty() {
+        return this.#_stack.length === 0;
+    }
+}
+
+class QueueUsingStack {
+    #_enqueueStack;
+    #_dequeueStack;
+
+    constructor() {
+        this.#_enqueueStack = new Stack();
+        this.#_dequeueStack = new Stack();
+    }
+
+    enqueue(element) {
+        this.#_enqueueStack.push(element);
+    }
+
+    dequeue() {
+        if (this.#_dequeueStack.isEmpty()) {
+            while (!this.#_enqueueStack.isEmpty()) {
+                this.#_dequeueStack.push(this.#_enqueueStack.pop());
+            }
+        }
+
+        return this.#_dequeueStack.pop();
+    }
+
+    isEmpty() {
+        return this.#_enqueueStack.isEmpty() && this.#_dequeueStack.isEmpty();
+    }
+
+    size() {
+        return this.#_enqueueStack.length + this.#_dequeueStack.length;
+    }
+}
+
+console.log('========= Q22 =========');
+const queue = new QueueUsingStack();
+queue.enqueue(1);
+queue.enqueue(2);
+queue.enqueue(3);
+
+console.log(`Dequeued element: ${queue.dequeue()}`); // Output: 1
+console.log(`Dequeued element: ${queue.dequeue()}`); // Output: 2
+
+queue.enqueue(4);
+console.log(`Dequeued element: ${queue.dequeue()}`); // Output: 3
+console.log(`Dequeued element: ${queue.dequeue()}`); // Output: 4
+
+console.log(`Is queue empty? ${queue.isEmpty()}`); // Output: true
+console.log('\n');
+
+/*
+ * Q23.
+ * Given an undirected graph represented as an adjacency matrix and an integer
+ * k, write a function to determine whether each vertex in the graph can be
+ * colored such that no two adjacent vertices share the same color using at most
+ * k colors.
+ */
+class GraphColoring {
+    #_graph;
+    #_colors;
+    #_numVertices;
+
+    constructor(graph) {
+        this.#_graph = graph;
+        this.#_numVertices = graph.length;
+        this.#_colors = new Array(this.#_numVertices).fill(0);
+    }
+
+    canColorGraph(k) {
+        return this.canColorVertex(0, k);
+    }
+
+    canColorVertex(vertex, k) {
+        if (vertex === this.#_numVertices) {
+            return true; // All vertices have been colored
+        }
+
+        for (let color = 1; color <= k; color++) {
+            if (this.isColorValid(vertex, color)) {
+                this.#_colors[vertex] = color;
+
+                if (this.canColorVertex(vertex + 1, k)) {
+                    return true;
+                }
+
+                this.#_colors[vertex] = 0; // Backtrack and try a different color
+            }
+        }
+
+        return false;
+    }
+
+    isColorValid(vertex, color) {
+        for (let i = 0; i < this.#_numVertices; i++) {
+            if (this.#_graph[vertex][i] === 1 && color === this.#_colors[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+}
+
+console.log('========= Q23 =========');
+const graph = [
+    [0, 1, 1, 1],
+    [1, 0, 1, 0],
+    [1, 1, 0, 1],
+    [1, 0, 1, 0],
+];
+
+const numOfColours = 3;
+const graphColouring = new GraphColoring(graph);
+console.log(
+    `Can color graph with ${numOfColours} colours? ${graphColouring.canColorGraph(
+        numOfColours
+    )}`
+);
+console.log('\n');
+
+/*
+ * Q24.
+ * Given a string s and an integer k, break up the string into multiple lines
+ * such that each line has a length of k or less. You must break it up so that
+ * words don't break across lines. Each line has to have the maximum possible
+ * amount of words. If there's no way to break the text up, then return null.
+ * You can assume that there are no spaces at the ends of the string and that
+ * there is exactly one space between each word.
+ * For example, given the string "the quick brown fox jumps over the lazy dog"
+ * and k = 10, you should return: ["the quick", "brown fox", "jumps over",
+ * "the lazy", "dog"]. No string in the list has a length of more than 10.
+ */
+function breakLines(s, k) {
+    const words = s.split(' ');
+    const lines = [];
+    let currentLine = '';
+    let currentLineLength = 0;
+
+    for (const word of words) {
+        const wordLength = word.length;
+
+        if (currentLineLength + wordLength <= k) {
+            currentLine += `${word} `;
+            currentLineLength += wordLength + 1;
+        } else {
+            lines.push(currentLine.trim());
+            currentLine = `${word} `;
+            currentLineLength = wordLength + 1;
+        }
+    }
+
+    lines.push(currentLine.trim());
+
+    return lines;
+}
+
+console.log('========= Q24 =========');
+const s = 'the quick brown fox jumps over the lazy dog';
+const lineWidth = 10;
+
+const lines = breakLines(s, lineWidth);
+for (const line of lines) {
+    console.log(line);
+}
+console.log('\n');
+
+/*
+ * Q25.
+ * An sorted array of integers was rotated an unknown number of times.
+ * Given such an array, find the index of the element in the array in faster
+ * than linear time. If the element doesn't exist in the array, return null.
+ * For example, given the array [13, 18, 25, 2, 8, 10] and the element 8, return
+ * 4 (the index of 8 in the array).
+ * You can assume all the integers in the array are unique.
+ */
+function search(nums, target) {
+    let left = 0;
+    let right = nums.length - 1;
+
+    while (left <= right) {
+        let mid = left + Math.floor((right - left) / 2);
+
+        if (nums[mid] === target) {
+            return mid;
+        }
+
+        if (nums[left] <= nums[mid]) {
+            if (target >= nums[left] && target < nums[mid]) {
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        } else {
+            if (target > nums[mid] && target <= nums[right]) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+    }
+    return null;
+}
+
+console.log('========= Q25 =========');
+const nums = [13, 18, 25, 2, 8, 10];
+const target = 8;
+console.log(`Index of ${target} is ${search(nums, target)}`);
+console.log('\n');
+
+/*
+ * Q26.
+ * Given a multiset of integers, return whether it can be partitioned into two
+ * subsets whose sums are the same.
+ * For example, given the multiset {15, 5, 20, 10, 35, 15, 10}, it would return
+ * true, since we can split it up into {15, 5, 10, 15, 10} and {20, 35}, which
+ * both add up to 55.
+ * Given the multiset {15, 5, 20, 10, 35}, it would return false, since we can't
+ * split it up into two subsets that add up to the same sum.
+ */
+function canPartition(nums) {
+    let totalSum = 0;
+    for (const num of nums) {
+        totalSum += num;
+    }
+
+    if (totalSum % 2 !== 0) {
+        return false; // If the total sum is odd, it cannot be partitioned into two equal subsets
+    }
+
+    let targetSum = totalSum / 2;
+    const n = nums.length;
+    let dp = new Array(n + 1).fill(false).map(() => new Array(targetSum + 1));
+
+    // Initialize the first column with true, as we can make a sum of 0 with an
+    // empty subset
+    for (let i = 0; i <= n; i++) {
+        dp[i][0] = true;
+    }
+
+    // Fill the dp array using the subset sum bottom-up approach
+    for (let i = 1; i <= n; i++) {
+        for (let j = 1; j <= targetSum; j++) {
+            if (j < nums[i - 1]) {
+                dp[i][j] = dp[i - 1][j]; // Copy previous number's result
+            } else {
+                dp[i][j] = dp[i - 1][j] || dp[i - 1][j - nums[i - 1]]; // Copy previous number's result or use the result without previous number
+            }
+        }
+    }
+
+    return dp[n][targetSum];
+}
+
+console.log('========= Q26 =========');
+const numsToPartition = [15, 5, 20, 10, 35, 15, 10];
+console.log(
+    `Can partition ${numsToPartition}? ${canPartition(numsToPartition)}`
+);
+console.log('\n');
+
+/*
+ * Q27.
+ * Implement integer exponentiation. That is, implement the pow(x, y) function,
+ * where x and y are integers and returns x^y.
+ * Do this faster than the naive method of repeated multiplication.
+ * For example, pow(2, 10) should return 1024.
+ */
+function pow(x, y) {
+    if (y < 0) {
+        return pow(1 / x, -y);
+    } else if (y === 0) {
+        return 1;
+    } else if (y === 1) {
+        return x;
+    } else if (y % 2 === 0) {
+        const halfPower = pow(x, y / 2);
+        return halfPower * halfPower;
+    } else {
+        const halfPower = pow(x, (y - 1) / 2);
+        return halfPower * halfPower * x;
+    }
+}
+
+console.log('========= Q27 =========');
+const x = 2;
+const y = 10;
+console.log(`${x}^${y} = ${pow(x, y)}`);
+console.log('\n');
+
+/*
+ * Q28.
+ * There is an N by M matrix of zeroes. Given N and M, write a function to count
+ * the number of ways of starting at the top-left corner and getting to the
+ * bottom-right corner. You can only move right or down.
+ * For example, given a 2 by 2 matrix, you should return 2, since there are two
+ * ways to get to the bottom-right:
+ * Right, then down
+ * Down, then right
+ * Given a 5 by 5 matrix, there are 70 ways to get to the bottom-right.
+ */
+function countWays(N, M) {
+    let dp = new Array(N).fill(0).map(() => new Array(M).fill(0));
+
+    for (let i = 0; i < N; i++) {
+        dp[i][0] = 1;
+    }
+    for (let j = 0; j < M; j++) {
+        dp[0][j] = 1;
+    }
+
+    for (let i = 1; i < N; i++) {
+        for (let j = 1; j < M; j++) {
+            // The number of ways to reach cell (i, j) is the sum of the ways
+            // to reach the cell above (i-1, j) and the cell to the left (i, j-1)
+            dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+        }
+    }
+
+    return dp[N - 1][M - 1];
+}
+
+console.log('========= Q28 =========');
+console.log(
+    `Number of ways to reach bottom-right from top-left in 2x2 matrix: ${countWays(
+        2,
+        2
+    )}`
+);
+console.log(
+    `Number of ways to reach bottom-right from top-left in 5x5 matrix: ${countWays(
+        5,
+        5
+    )}`
+);
+console.log('\n');
+
+/*
+ * Q29.
+ * Assume you have access to a function toss_biased() which returns 0 or 1 with
+ * a probability that's not 50-50 (but also not 0-100 or 100-0). You do not know
+ * the bias of the coin.
+ * Write a function to simulate an unbiased coin toss.
+ */
+function tossUnbiased() {
+    while (true) {
+        const toss1 = tossBiased();
+        const toss2 = tossBiased();
+        if (toss1 !== toss2) {
+            return toss1;
+        }
+    }
+}
+
+function tossBiased() {
+    const probabilityOffHeads = 0.3;
+
+    return Math.random() < probabilityOffHeads ? 1 : 0;
+}
+
+console.log('========= Q29 =========');
+console.log(`Tossing unbiased coin: `);
+for (let i = 0; i < 5; i++) {
+    console.log(tossUnbiased());
+}
+console.log('\n');
+
+/*
+ * Q30.
+ * On our special chessboard, two bishops attack each other if they share the
+ * same diagonal. This includes bishops that have another bishop located between
+ * them, i.e. bishops can attack through pieces.
+ * You are given N bishops, represented as (row, column) tuples on a M by M
+ * chessboard. Write a function to count the number of pairs of bishops that
+ * attack each other. The ordering of the pair doesn't matter: (1, 2) is
+ * considered the same as (2, 1).
+ * For example, given M = 5 and the list of bishops:
+ * (0, 0)
+ * (1, 2)
+ * (2, 2)
+ * (4, 0)
+ * The board would look like this:
+ * [b 0 0 0 0]
+ * [0 0 b 0 0]
+ * [0 0 b 0 0]
+ * [0 0 0 0 0]
+ * [b 0 0 0 0]
+ * You should return 2, since bishops 1 and 3 attack each other, as well as
+ * bishops 3 and 4.
+ */
+function countAttackingPairs(bishops, M) {
+    let positiveSlopes = new Map();
+    let negativeSlopes = new Map();
+    let pairs = 0;
+
+    for (const bishop of bishops) {
+        const row = bishop[0];
+        const col = bishop[1];
+
+        // Calculate the positive and negative diagonal slopes
+        const positiveSlope = row + col;
+        const negativeSlope = row - col;
+
+        positiveSlopes.set(
+            positiveSlope,
+            (positiveSlopes.get(positiveSlope) || 0) + 1
+        );
+        negativeSlopes.set(
+            negativeSlope,
+            (negativeSlopes.get(negativeSlope) || 0) + 1
+        );
+    }
+
+    for (const count of positiveSlopes.values()) {
+        pairs += countPairs(count);
+    }
+    for (const count of negativeSlopes.values()) {
+        pairs += countPairs(count);
+    }
+
+    return pairs;
+}
+
+function countPairs(count) {
+    // Calculate the number of pairs using combination formula (nC2)
+    return (count * (count - 1)) / 2;
+}
+
+console.log('========= Q30 =========');
+const M = 5;
+const bishops = [
+    [0, 0],
+    [1, 2],
+    [2, 2],
+    [4, 0],
+];
+console.log(`Number of attacking pairs: ${countAttackingPairs(bishops, M)}`);
+console.log('\n');
