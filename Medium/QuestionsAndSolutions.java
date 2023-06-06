@@ -25,6 +25,11 @@ public class QuestionsAndSolutions {
             this.left = left;
             this.right = right;
         }
+
+        public Node(T item) {
+            this.val = item;
+            this.left = this.right = null;
+        }
     }
 
     public static String serialize(Node<String> root) {
@@ -1144,10 +1149,307 @@ public class QuestionsAndSolutions {
         return pairs;
     }
 
-    // Count the number of pairs given the count of bishops on a diagonal slope
     private static int countPairs(int count) {
         // Calculate the number of pairs using combination formula (nC2)
         return count * (count - 1) / 2;
+    }
+
+    // S31.
+    public static int countOccurrences(int N, int X) {
+        int count = 0;
+
+        for (int i = 1; i <= N; i++) {
+            if (X % i == 0 && X / i <= N) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    // S32.
+    public static int minColumnRemovals(String[][] matrix) {
+        if (matrix == null || matrix.length == 0 || matrix[0].length == 0) {
+            return 0;
+        }
+
+        int rowCount = matrix.length;
+        int colCount = matrix[0].length;
+        int removalCount = 0;
+
+        for (int col = 0; col < colCount; col++) {
+            for (int row = 1; row < rowCount; row++) {
+                if (matrix[row][col].compareTo(matrix[row - 1][col]) < 0) {
+                    removalCount++;
+                    break;
+                }
+            }
+        }
+
+        return removalCount;
+    }
+
+    // S33.
+    public static ListNode mergeKLists(ListNode[] lists) {
+        if (lists == null || lists.length == 0) {
+            return null;
+        }
+
+        PriorityQueue<ListNode> queue = new PriorityQueue<>((a, b) -> a.val - b.val);
+
+        for (ListNode head : lists) {
+            if (head != null) {
+                queue.offer(head);
+            }
+        }
+
+        ListNode dummy = new ListNode(0);
+        ListNode curr = dummy;
+
+        while (!queue.isEmpty()) {
+            ListNode node = queue.poll();
+            curr.next = node;
+            curr = curr.next;
+
+            if (node.next != null) {
+                queue.offer(node.next);
+            }
+        }
+
+        return dummy.next;
+    }
+
+    public static void printList(ListNode head) {
+        ListNode curr = head;
+        while (curr != null) {
+            System.out.print(curr.val + " ");
+            curr = curr.next;
+        }
+        System.out.println();
+    }
+
+    // S34.
+    public static boolean checkPossibility(int[] nums) {
+        int count = 0;
+
+        for (int i = 0; i < nums.length - 1; i++) {
+            if (nums[i] > nums[i + 1]) {
+                count++;
+                if (count > 1) {
+                    return false;
+                }
+                // Check if we can modify the current element or the next element
+                if (i > 0 && nums[i - 1] > nums[i + 1]) {
+                    nums[i + 1] = nums[i];
+                } else {
+                    nums[i] = nums[i + 1];
+                }
+            }
+        }
+
+        return true;
+    }
+
+    // S35.
+    public static <T> TreeNode<T> invertTree(TreeNode<T> root) {
+        if (root == null) {
+            return null;
+        }
+
+        // Swap the left and right children of the current node
+        TreeNode<T> temp = root.left;
+        root.left = root.right;
+        root.right = temp;
+
+        invertTree(root.left);
+        invertTree(root.right);
+
+        return root;
+    }
+
+    public static <T> void printTree(TreeNode<T> root) {
+        if (root == null) {
+            return;
+        }
+
+        System.out.println(root.val);
+        printTree(root.left);
+        printTree(root.right);
+    }
+
+    // S36.
+    public static int countIslands(int[][] matrix) {
+        int count = 0;
+        int rows = matrix.length;
+        int cols = matrix[0].length;
+        boolean[][] visited = new boolean[rows][cols];
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (matrix[i][j] == 1 && !visited[i][j]) {
+                    exploreIsland(matrix, visited, i, j);
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
+    private static void exploreIsland(int[][] matrix, boolean[][] visited, int row, int col) {
+        int rows = matrix.length;
+        int cols = matrix[0].length;
+
+        if (row < 0 || col < 0 || row >= rows || col >= cols || matrix[row][col] == 0 || visited[row][col]) {
+            return;
+        }
+
+        visited[row][col] = true;
+
+        exploreIsland(matrix, visited, row - 1, col);
+        exploreIsland(matrix, visited, row + 1, col);
+        exploreIsland(matrix, visited, row, col - 1);
+        exploreIsland(matrix, visited, row, col + 1);
+    }
+
+    // S37.
+    public static int select(int x, int y, int b) {
+        // If b = 1, all bits will be 1 and return x
+        // If b = 0, change all bits to 1 to return y
+        return (x & -b) | (y & -(b ^ 1));
+    }
+
+    // S38.
+    public static int minRemoval(String s) {
+        int count = 0;
+        Stack<Character> stack = new Stack<>();
+
+        for (char c : s.toCharArray()) {
+            if (c == '(') {
+                stack.push(c);
+            } else if (c == ')') {
+                if (!stack.isEmpty() && stack.peek() == '(') {
+                    stack.pop();
+                } else {
+                    count++;
+                }
+            }
+        }
+
+        count += stack.size(); // Add the remaining opening parentheses in the stack
+
+        return count;
+    }
+
+    // S39.
+    public static int divide(int dividend, int divisor) {
+        if (divisor == 0) {
+            throw new ArithmeticException("Divisor cannot be zero.");
+        }
+
+        if (dividend == 0) {
+            return 0;
+        }
+
+        if (dividend < divisor) {
+            return 0;
+        }
+
+        // Perform repeated subtraction
+        int quotient = 0;
+        while (dividend >= divisor) {
+            dividend -= divisor;
+            quotient++;
+        }
+
+        return quotient;
+    }
+
+    // S40.
+    static class BinarySearchTree {
+        Node<Integer> root;
+
+        BinarySearchTree() {
+            root = null;
+        }
+
+        void insert(int key) {
+            root = insertRec(root, key);
+        }
+
+        Node<Integer> insertRec(Node<Integer> root, int key) {
+            if (root == null) {
+                root = new Node<>(key);
+                return root;
+            }
+
+            if (key < root.val)
+                root.left = insertRec(root.left, key);
+            else if (key > root.val)
+                root.right = insertRec(root.right, key);
+
+            return root;
+        }
+
+        void delete(int key) {
+            root = deleteRec(root, key);
+        }
+
+        Node<Integer> deleteRec(Node<Integer> root, int key) {
+            if (root == null)
+                return root;
+
+            if (key < root.val)
+                root.left = deleteRec(root.left, key);
+            else if (key > root.val)
+                root.right = deleteRec(root.right, key);
+            else {
+                if (root.left == null)
+                    return root.right;
+                else if (root.right == null)
+                    return root.left;
+
+                root.val = minValue(root.right);
+                root.right = deleteRec(root.right, root.val);
+            }
+
+            return root;
+        }
+
+        int minValue(Node<Integer> root) {
+            int minv = root.val;
+            while (root.left != null) {
+                minv = root.left.val;
+                root = root.left;
+            }
+            return minv;
+        }
+
+        boolean search(int key) {
+            return searchRec(root, key);
+        }
+
+        boolean searchRec(Node<Integer> root, int key) {
+            if (root == null || root.val == key)
+                return root != null;
+
+            if (key < root.val)
+                return searchRec(root.left, key);
+
+            return searchRec(root.right, key);
+        }
+
+        void inorderTraversal() {
+            inorderTraversalRec(root);
+        }
+
+        void inorderTraversalRec(Node<Integer> root) {
+            if (root != null) {
+                inorderTraversalRec(root.left);
+                System.out.print(root.val + " ");
+                inorderTraversalRec(root.right);
+            }
+        }
     }
 
     public static void main(String[] args) {
@@ -1814,6 +2116,248 @@ public class QuestionsAndSolutions {
 
         int pairs = countAttackingPairs(bishops, M);
         System.out.println("Number of attacking pairs: " + pairs);
+
+        /*
+         * Q31.
+         * Suppose you have a multiplication table that is N by N. That is, a 2D array
+         * where the value at the i-th row and j-th column is (i + 1) * (j + 1) (if
+         * 0-indexed) or i * j (if 1-indexed).
+         * Given integers N and X, write a function that returns the number of times X
+         * appears as a value in an N by N multiplication table.
+         * For example, given N = 6 and X = 12, you should return 4, since the
+         * multiplication table looks like this:
+         * | 1 | 2 | 3 | 4 | 5 | 6 |
+         * | 2 | 4 | 6 | 8 | 10 | 12 |
+         * | 3 | 6 | 9 | 12 | 15 | 18 |
+         * | 4 | 8 | 12 | 16 | 20 | 24 |
+         * | 5 | 10 | 15 | 20 | 25 | 30 |
+         * | 6 | 12 | 18 | 24 | 30 | 36 |
+         * And there are 4 12's in the table.
+         */
+        System.out.println("========= Q31 ==========");
+        int N = 6;
+        int X = 12;
+
+        int occurrences = countOccurrences(N, X);
+        System.out.println("Number of occurrences of " + X + ": " + occurrences);
+
+        /*
+         * Q32.
+         * You are given an N by M 2D matrix of lowercase letters. Determine the minimum
+         * number of columns that can be removed to ensure that each row is ordered from
+         * top to bottom lexicographically. That is, the letter at each column is
+         * lexicographically later as you go down each row. It does not matter whether
+         * each row itself is ordered lexicographically.
+         * For example, given the following table:
+         * cba
+         * daf
+         * ghi
+         * This is not ordered because of the a in the center. We can remove the second
+         * column to make it ordered:
+         * ca
+         * df
+         * gi
+         * So your function should return 1, since we only needed to remove 1 column.
+         * As another example, given the following table:
+         * abcdef
+         * Your function should return 0, since the rows are already ordered (there's
+         * only one row).
+         * As another example, given the following table:
+         * zyx
+         * wvu
+         * tsr
+         * Your function should return 3, since we would need to remove all the columns
+         * to order it.
+         */
+        System.out.println("========= Q32 ==========");
+        String[][] matrix1 = { { "c", "b", "a" }, { "d", "a", "f" }, { "g", "h", "i" } };
+        System.out.println("Minimum column removals: " + minColumnRemovals(matrix1));
+
+        String[][] matrix2 = { { "a", "b", "c", "d", "e", "f" } };
+        System.out.println("Minimum column removals: " + minColumnRemovals(matrix2));
+
+        String[][] matrix3 = { { "z", "y", "x" }, { "w", "v", "u" }, { "t", "s", "r" } };
+        System.out.println("Minimum column removals: " + minColumnRemovals(matrix3));
+
+        /*
+         * Q33.
+         * Given k sorted singly linked lists, write a function to merge all the lists
+         * into one sorted singly linked list.
+         */
+        System.out.println("========= Q33 ==========");
+        ListNode list1 = new ListNode(1);
+        list1.next = new ListNode(4);
+        list1.next.next = new ListNode(5);
+
+        ListNode list2 = new ListNode(1);
+        list2.next = new ListNode(3);
+        list2.next.next = new ListNode(4);
+
+        ListNode list3 = new ListNode(2);
+        list3.next = new ListNode(6);
+
+        ListNode[] lists = { list1, list2, list3 };
+
+        ListNode mergedList = mergeKLists(lists);
+        printList(mergedList);
+
+        /*
+         * Q34.
+         * Given an array of integers, write a function to determine whether the array
+         * could become non-decreasing by modifying at most 1 element.
+         * For example, given the array [10, 5, 7], you should return true, since we can
+         * modify the 10 into a 1 to make the array non-decreasing.
+         * Given the array [10, 5, 1], you should return false, since we can't modify
+         * any one element to get a non-decreasing array.
+         */
+        System.out.println("========= Q34 ==========");
+        int[] nums1 = { 10, 5, 7 };
+        System.out.println(checkPossibility(nums1)); // Output: true
+
+        int[] nums2 = { 10, 5, 1 };
+        System.out.println(checkPossibility(nums2)); // Output: false
+
+        /*
+         * Q35.
+         * Invert a binary tree.
+         * For example, given the following tree:
+         * "    a      "
+         * "   / \     "
+         * "  b   c    "
+         * " / \  /    "
+         * "d   e f    "
+         * should become:
+         * "  a        "
+         * " / \       "
+         * " c  b      "
+         * " \  / \    "
+         * "  f e  d   "
+         */
+        System.out.println("========= Q35 ==========");
+        TreeNode<Character> a = new TreeNode<>('a');
+        TreeNode<Character> b = new TreeNode<>('b');
+        TreeNode<Character> c = new TreeNode<>('c');
+        TreeNode<Character> d = new TreeNode<>('d');
+        TreeNode<Character> e = new TreeNode<>('e');
+        TreeNode<Character> f = new TreeNode<>('f');
+
+        a.left = b;
+        a.right = c;
+        b.left = d;
+        b.right = e;
+        c.left = f;
+
+        TreeNode<Character> inverted = invertTree(a);
+
+        printTree(inverted);
+
+        /*
+         * Q36.
+         * Given a matrix of 1s and 0s, return the number of "islands" in the matrix. A
+         * 1 represents land and 0 represents water, so an island is a group of 1s that
+         * are neighboring whose perimeter is surrounded by water.
+         * For example, this matrix has 4 islands.
+         * 1 0 0 0 0
+         * 0 0 1 1 0
+         * 0 1 1 0 0
+         * 0 0 0 0 0
+         * 1 1 0 0 1
+         * 1 1 0 0 1
+         */
+        System.out.println("========= Q36 ==========");
+        int[][] matrix = {
+                { 1, 0, 0, 0, 0 },
+                { 0, 0, 1, 1, 0 },
+                { 0, 1, 1, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { 1, 1, 0, 0, 1 },
+                { 1, 1, 0, 0, 1 }
+        };
+
+        int islandCount = countIslands(matrix);
+        System.out.println("Number of islands: " + islandCount);
+
+        /*
+         * Q37.
+         * Given three 32-bit integers x, y, and b, return x if b is 1 and y if b is 0,
+         * using only mathematical or bit operations. You can assume b can only be 1 or
+         * 0.
+         */
+        System.out.println("========= Q37 ==========");
+        int xForOperation = 10;
+        int yForOperation = 20;
+        int bForOperation = 1;
+
+        int operationResult = select(xForOperation, yForOperation, bForOperation);
+        System.out.println(operationResult); // Output: 10
+
+        /*
+         * Q38.
+         * Given a string of parentheses, write a function to compute the minimum number
+         * of parentheses to be removed to make the string valid (i.e. each open
+         * parenthesis is eventually closed).
+         * For example, given the string "()())()", you should return 1. Given the
+         * string ")(", you should return 2, since we must remove all of them.
+         */
+        System.out.println("========= Q38 ==========");
+        String parentheses1 = "()())()";
+        System.out.println(minRemoval(parentheses1)); // Output: 1
+
+        String parentheses2 = ")(";
+        System.out.println(minRemoval(parentheses2)); // Output: 2
+
+        /*
+         * Q39.
+         * Implement division of two positive integers without using the division,
+         * multiplication, or modulus operators. Return the quotient as an integer,
+         * ignoring the remainder.
+         */
+        System.out.println("========= Q39 ==========");
+        int dividend = 20;
+        int divisor = 5;
+        System.out.println(divide(dividend, divisor)); // Output: 4
+
+        dividend = 30;
+        divisor = 6;
+        System.out.println(divide(dividend, divisor)); // Output: 5
+
+        /*
+         * Q40.
+         * Determine whether a tree is a valid binary search tree.
+         * A binary search tree is a tree with two children, left and right, and
+         * satisfies the constraint that the key in the left child must be less than or
+         * equal to the root and the key in the right child must be greater than or
+         * equal to the root.
+         */
+        System.out.println("========= Q40 ==========");
+        BinarySearchTree bst = new BinarySearchTree();
+
+        bst.insert(50);
+        bst.insert(30);
+        bst.insert(20);
+        bst.insert(40);
+        bst.insert(70);
+        bst.insert(60);
+        bst.insert(80);
+
+        System.out.println("Inorder traversal:");
+        bst.inorderTraversal();
+
+        int key = 40;
+        if (bst.search(key))
+            System.out.println("\n" + key + " is present in the BST");
+        else
+            System.out.println("\n" + key + " is not present in the BST");
+
+        key = 55;
+        if (bst.search(key))
+            System.out.println(key + " is present in the BST");
+        else
+            System.out.println(key + " is not present in the BST");
+
+        bst.delete(20);
+        System.out.println("\nInorder traversal after deleting 20:");
+        bst.inorderTraversal();
 
     }
 }

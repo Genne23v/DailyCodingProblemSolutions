@@ -1810,3 +1810,539 @@ const bishops = [
 ];
 console.log(`Number of attacking pairs: ${countAttackingPairs(bishops, M)}`);
 console.log('\n');
+
+/*
+* Q31.
+* Suppose you have a multiplication table that is N by N. That is, a 2D array
+* where the value at the i-th row and j-th column is (i + 1) * (j + 1) (if
+* 0-indexed) or i * j (if 1-indexed).
+* Given integers N and X, write a function that returns the number of times X
+* appears as a value in an N by N multiplication table.
+* For example, given N = 6 and X = 12, you should return 4, since the
+* multiplication table looks like this:
+* | 1 | 2 | 3 | 4 | 5 | 6 |
+* | 2 | 4 | 6 | 8 | 10 | 12 |
+* | 3 | 6 | 9 | 12 | 15 | 18 |
+* | 4 | 8 | 12 | 16 | 20 | 24 |
+* | 5 | 10 | 15 | 20 | 25 | 30 |
+* | 6 | 12 | 18 | 24 | 30 | 36 |
+* And there are 4 12's in the table.
+*/
+function countOccurrences(N, X) {
+    let count = 0;
+
+    for (let i = 1; i <= N; i++) {
+        if (X % i === 0 && X / i <= N) {
+            count++;
+        }
+    }
+
+    return count;
+}
+
+console.log('========= Q31 =========');
+const N = 6;
+const X = 12;
+console.log(`Number of occurrences of ${X} in ${N}x${N} multiplication table: ${countOccurrences(N, X)}`);
+console.log('\n');
+
+/*
+* Q32.
+* You are given an N by M 2D matrix of lowercase letters. Determine the minimum
+* number of columns that can be removed to ensure that each row is ordered from
+* top to bottom lexicographically. That is, the letter at each column is
+* lexicographically later as you go down each row. It does not matter whether
+* each row itself is ordered lexicographically.
+* For example, given the following table:
+* cba
+* daf
+* ghi
+* This is not ordered because of the a in the center. We can remove the second
+* column to make it ordered:
+* ca
+* df
+* gi
+* So your function should return 1, since we only needed to remove 1 column.
+* As another example, given the following table:
+* abcdef
+* Your function should return 0, since the rows are already ordered (there's
+* only one row).
+* As another example, given the following table:
+* zyx
+* wvu
+* tsr
+* Your function should return 3, since we would need to remove all the columns
+* to order it.
+*/
+function minColumnRemovals(matrix) {
+    if (!matrix || !matrix.length || matrix[0].length === 0) {
+        return 0;
+    }
+
+    let rowCount = matrix.length;
+    let colCount = matrix[0].length;
+    let removalCount = 0;
+
+    for (let col = 0; col < colCount; col++) {
+        for (let row = 1; row < rowCount; row++) {
+            if (matrix[row][col] < matrix[row - 1][col]) {
+                removalCount++;
+                break;
+            }
+        }
+    }
+    return removalCount
+}
+
+console.log('========= Q32 =========');
+const matrix1 = [
+    ['c', 'b', 'a'],
+    ['d', 'a', 'f'],
+    ['g', 'h', 'i'],
+];
+console.log(`Minimum column removals: ${minColumnRemovals(matrix1)}`);
+
+const matrix2 = [
+    ['a', 'b', 'c', 'd', 'e', 'f'],
+];
+console.log(`Minimum column removals: ${minColumnRemovals(matrix2)}`);
+
+const matrix3 = [
+    ['z', 'y', 'x'],
+    ['w', 'v', 'u'],
+    ['t', 's', 'r'],
+];
+console.log(`Minimum column removals: ${minColumnRemovals(matrix3)}`);
+console.log('\n');
+
+/*
+* Q33.
+* Given k sorted singly linked lists, write a function to merge all the lists
+* into one sorted singly linked list.
+*/
+function mergeKLists(lists) {
+    if (!lists || !lists.length) {
+        return null;
+    }
+
+    let queue = [];
+    for (const head of lists) {
+        if (head) {
+            queue.push(head);
+            queue.sort((a, b) => a.value - b.value);
+        }
+    }
+
+    let dummy = new ListNode(0);
+    let curr = dummy;
+
+    while (queue.length) {
+        let node = queue.shift();
+        curr.next = node;
+        curr = curr.next;
+
+        if (node.next) {
+            queue.push(node.next);
+            queue.sort((a, b) => a.value - b.value);
+        }
+    }
+
+    return dummy.next;
+}
+
+function printList(head) {
+    let curr = head;
+    let str = '';
+
+    while (curr) {
+        console.log(curr)
+        str += curr.value + ' -> ';
+        curr = curr.next;
+    }
+    console.log(str.substring(0, str.length - 3));
+}
+
+console.log('========= Q33 =========');
+const list1 = new ListNode(1);
+list1.next = new ListNode(4);
+list1.next.next = new ListNode(5);
+
+const list2 = new ListNode(1);
+list2.next = new ListNode(3);
+list2.next.next = new ListNode(4);
+
+const list3 = new ListNode(2);
+list3.next = new ListNode(6);
+
+const lists = [list1, list2, list3];
+const mergedList = mergeKLists(lists);
+printList(mergedList);
+console.log('\n');
+
+/*
+* Q34.
+* Given an array of integers, write a function to determine whether the array
+* could become non-decreasing by modifying at most 1 element.
+* For example, given the array [10, 5, 7], you should return true, since we can
+* modify the 10 into a 1 to make the array non-decreasing.
+* Given the array [10, 5, 1], you should return false, since we can't modify
+* any one element to get a non-decreasing array.
+*/
+function checkPossibility(nums) {
+    let count = 0;
+
+    for (let i = 0; i < nums.length - 1; i++) {
+        if (nums[i] > nums[i + 1]) {
+            count++;
+            if (count > 1) {
+                return false;
+            }
+            // Check if we can modify the current element or the next element
+            if (i > 0 && nums[i - 1] > nums[i + 1]) {
+                nums[i + 1] = nums[i];
+            } else {
+                nums[i] = nums[i + 1];
+            }
+        }
+    }
+    return true;
+}
+
+console.log('========= Q34 =========');
+const nums1 = [10, 5, 7];
+console.log(`Can be non-decreasing: ${checkPossibility(nums1)}`);
+
+const nums2 = [10, 5, 1];
+console.log(`Can be non-decreasing: ${checkPossibility(nums2)}`);
+console.log('\n');
+
+/*
+* Q35.
+* Invert a binary tree.
+* For example, given the following tree:
+* "    a      "
+* "   / \     "
+* "  b   c    "
+* " / \  /    "
+* "d   e f    "
+* should become:
+* "  a        "
+* " / \       "
+* " c  b      "
+* " \  / \    "
+* "  f e  d   "
+*/
+function invertTree(root) {
+    if (!root) {
+        return null;
+    }
+
+    // Swap the left and right children of the current node
+    let temp = root.left;
+    root.left = root.right;
+    root.right = temp;
+
+    invertTree(root.left);
+    invertTree(root.right);
+
+    return root;
+}
+
+function printTree(root) {
+    if (!root) {
+        return;
+    }
+
+    console.log(root.val);
+    printTree(root.left);
+    printTree(root.right);
+}
+
+console.log('========= Q35 =========');
+let a = new TreeNode('a');
+let b = new TreeNode('b');
+let c = new TreeNode('c');
+let d = new TreeNode('d');
+let e = new TreeNode('e');
+let f = new TreeNode('f');
+
+a.left = b;
+a.right = c;
+b.left = d;
+b.right = e;
+c.left = f;
+
+const inverted = invertTree(a);
+printTree(inverted);
+console.log('\n');
+
+/*
+* Q36.
+* Given a matrix of 1s and 0s, return the number of "islands" in the matrix. A
+* 1 represents land and 0 represents water, so an island is a group of 1s that
+* are neighboring whose perimeter is surrounded by water.
+* For example, this matrix has 4 islands.
+* 1 0 0 0 0
+* 0 0 1 1 0
+* 0 1 1 0 0
+* 0 0 0 0 0
+* 1 1 0 0 1
+* 1 1 0 0 1
+*/
+function countIslands(matrix) {
+    let count = 0;
+    const rows = matrix.length;
+    const cols = matrix[0].length;
+    let visited = new Array(rows).fill(false).map(() => new Array(cols).fill(false));
+
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            if (matrix[i][j] === 1 && !visited[i][j]) {
+                exploreIsland(matrix, visited, i, j);
+                count++;
+            }
+        }
+    }
+    return count;
+}
+
+function exploreIsland(matrix, visited, row, col) {
+    const rows = matrix.length;
+    const cols = matrix[0].length;
+
+    if (row < 0 || row >= rows || col < 0 || col >= cols || matrix[row][col] === 0 || visited[row][col]) {
+        return;
+    }
+
+    visited[row][col] = true;
+
+    exploreIsland(matrix, visited, row - 1, col);
+    exploreIsland(matrix, visited, row + 1, col);
+    exploreIsland(matrix, visited, row, col - 1);
+    exploreIsland(matrix, visited, row, col + 1);
+}
+
+console.log('========= Q36 =========');
+const matrix = [
+    [1, 0, 0, 0, 0],
+    [0, 0, 1, 1, 0],
+    [0, 1, 1, 0, 0],
+    [0, 0, 0, 0, 0],
+    [1, 1, 0, 0, 1],
+    [1, 1, 0, 0, 1],
+];
+console.log(`Number of islands: ${countIslands(matrix)}`);
+console.log('\n');
+
+/*
+* Q37.
+* Given three 32-bit integers x, y, and b, return x if b is 1 and y if b is 0,
+* using only mathematical or bit operations. You can assume b can only be 1 or
+* 0.
+*/
+function select(x, y, b) {
+    // If b = 1, all bits will be 1 and return x
+    // If b = 0, change all bits to 1 to return y
+    return (x & -b) | (y & -(b ^ 1));
+}
+
+console.log('========= Q37 =========');
+const xForOperation = 10;
+const yForOperation = 20;
+const bForOperation = 1;
+console.log(`${select(xForOperation, yForOperation, bForOperation)}`); // Output: 10
+console.log('\n');
+
+/*
+* Q38.
+* Given a string of parentheses, write a function to compute the minimum number
+* of parentheses to be removed to make the string valid (i.e. each open
+* parenthesis is eventually closed).
+* For example, given the string "()())()", you should return 1. Given the
+* string ")(", you should return 2, since we must remove all of them.
+*/
+function minRemoval(s) {
+    let count = 0;
+    let stack = [];
+
+    for (const c of s) {
+        if (c === '(') {
+            stack.push(c);
+        } else if (c === ')') {
+            if (stack.length > 0 && stack[stack.length - 1] === '(') {
+                stack.pop();
+
+            } else {
+                count++;
+            }
+        }
+    }
+    count += stack.length;
+    return count;
+}
+
+console.log('========= Q38 =========');
+const parenthesesStr1 = '()())()';
+console.log(`Minimum number of parentheses to be removed: ${minRemoval(parenthesesStr1)}`);
+
+const parenthesesStr2 = ')(';
+console.log(`Minimum number of parentheses to be removed: ${minRemoval(parenthesesStr2)}`);
+console.log('\n');
+
+/*
+* Q39.
+* Implement division of two positive integers without using the division,
+* multiplication, or modulus operators. Return the quotient as an integer,
+* ignoring the remainder.
+*/
+function divide(dividend, divisor) {
+    if (divisor == 0) {
+        throw new Error("Divisor cannot be zero.");
+    }
+
+    if (dividend == 0) {
+        return 0;
+    }
+
+    if (dividend < divisor) {
+        return 0;
+    }
+
+    let quotient = 0;
+    while (dividend >= divisor) {
+        dividend -= divisor;
+        quotient++;
+    }
+
+    return quotient;
+}
+
+console.log('========= Q39 =========');
+let dividend = 20;
+let divisor = 5;
+console.log(`Quotient for ${dividend}/${divisor}: ${divide(dividend, divisor)}`);
+
+dividend = 30;
+divisor = 6;
+console.log(`Quotient for ${dividend}/${divisor}: ${divide(dividend, divisor)}`);
+console.log('\n');
+
+/*
+* Q40.
+* Determine whether a tree is a valid binary search tree.
+* A binary search tree is a tree with two children, left and right, and
+* satisfies the constraint that the key in the left child must be less than or
+* equal to the root and the key in the right child must be greater than or
+* equal to the root.
+*/
+class BinarySearchTree {
+    constructor() {
+        this.root = null;
+    }
+
+    insert(key) {
+        this.root = this.insertRec(this.root, key);
+    }
+
+    insertRec(root, key) {
+        if (!root) {
+            root = new Node(key);
+            return root;
+        }
+
+        if (key < root.val) {
+            root.left = this.insertRec(root.left, key);
+        } else if (key > root.val) {
+            root.right = this.insertRec(root.right, key);
+        }
+
+        return root;
+    }
+
+    delete(key) {
+        this.root = this.deleteRec(this.root, key);
+    }
+
+    deleteRec(root, key) {
+        if (!root) {
+            return root;
+        }
+
+        if (key < root.val) {
+            root.left = this.deleteRec(root.left, key);
+        } else if (key > root.val) {
+            root.right = this.deleteRec(root.right, key);
+        } else {
+            if (!root.left) {
+                return root.right;
+            } else if (!root.right) {
+                return root.left;
+            }
+
+            root.val = this.minValue(root.right);
+            root.right = this.deleteRec(root.right, root.val);
+        }
+
+        return root;
+    }
+
+    minValue(root) {
+        let minv = root.val;
+        while (root.left) {
+            minv = root.left.val;
+            root = root.left;
+        }
+        return minv;
+    }
+
+    search(key) {
+        return this.searchRec(this.root, key);
+    }
+
+    searchRec(root, key) {
+        if (!root || root.val === key) {
+            return root !== null;
+        }
+
+        if (key < root.val) {
+            return this.searchRec(root.left, key);
+        }
+        return this.searchRec(root.right, key);
+    }
+
+    inorderTraversal() {
+        this.inorderTraversalRec(this.root);
+    }
+
+    inorderTraversalRec(root) {
+        if (root) {
+            this.inorderTraversalRec(root.left);
+            console.log(root.val);
+            this.inorderTraversalRec(root.right);
+        }
+    }
+}
+
+console.log('========= Q40 =========');
+const bst = new BinarySearchTree();
+bst.insert(50);
+bst.insert(30);
+bst.insert(20);
+bst.insert(40);
+bst.insert(70);
+bst.insert(60);
+bst.insert(80);
+
+console.log('Inorder traversal:');
+bst.inorderTraversal();
+
+let key = 40;
+console.log(`${key} is ${bst.search(key) ? '' : 'not '}present in the BST`);
+
+key = 55;
+console.log(`${key} is ${bst.search(key) ? '' : 'not '}present in the BST`);
+
+bst.delete(20);
+console.log('Inorder traversal after deleting 20:');
+bst.inorderTraversal();
+console.log('\n');
