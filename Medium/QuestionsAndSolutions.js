@@ -2346,3 +2346,386 @@ bst.delete(20);
 console.log('Inorder traversal after deleting 20:');
 bst.inorderTraversal();
 console.log('\n');
+
+/*
+* Q41.
+* Given an integer n and a list of integers l, write a function that randomly
+* generates a number from 0 to n-1 that isn't in l (uniform).
+*/
+function generateRandomNumber(n, l) {
+    let available = [];
+
+    for (let i = 0; i < n; i++) {
+        if (!l.includes(i)) {
+            available.push(i);
+        }
+    }
+    const index = Math.floor(Math.random() * available.length);
+
+    return available[index];
+}
+
+console.log('========= Q41 =========');
+const n = 10;
+const l = [2, 4, 6, 8];
+console.log(`Random number: ${generateRandomNumber(n, l)}`);
+console.log('\n');
+
+/*
+* Q42.
+* Write a map implementation with a get function that lets you retrieve the
+* value of a key at a particular time.
+* It should contain the following methods:
+* set(key, value, time): sets key to value for t = time.
+* get(key, time): gets the key at t = time.
+* The map should work like this. If we set a key at a particular time, it will
+* maintain that value forever or until it gets set at a later time. In other
+* words, when we get a key at a time, it should return the value that was set
+* for that key set at the most recent time.
+* Consider the following examples:
+* d.set(1, 1, 0) # set key 1 to value 1 at time 0
+* d.set(1, 2, 2) # set key 1 to value 2 at time 2
+* d.get(1, 1) # get key 1 at time 1 should be 1
+* d.get(1, 3) # get key 1 at time 3 should be 2
+* d.set(1, 1, 5) # set key 1 to value 1 at time 5
+* d.get(1, 0) # get key 1 at time 0 should be null
+* d.get(1, 10) # get key 1 at time 10 should be 1
+* d.set(1, 1, 0) # set key 1 to value 1 at time 0
+* d.set(1, 2, 0) # set key 1 to value 2 at time 0
+* d.get(1, 0) # get key 1 at time 0 should be 2
+*/
+class TimeMap {
+    #_map;
+
+    constructor() {
+        this.#_map = new Map();
+    }
+
+    set(key, value, time) {
+        if (!this.#_map.has(key)) {
+            this.#_map.set(key, new Map());
+        }
+        this.#_map.get(key).set(time, value);
+    }
+
+    get(key, time) {
+        if (this.#_map.has(key)) {
+            const values = this.#_map.get(key);
+
+            let floorTime = null;
+            for (const [key, value] of values.entries()) {
+                if (key <= time) {
+                    floorTime = key;
+                } else {
+                    break;
+                }
+            }
+
+            if (floorTime !== null) {
+                return values.get(floorTime);
+            }
+        }
+        return null;
+    }
+}
+
+console.log('========= Q42 =========');
+const timeMap1 = new TimeMap();
+timeMap1.set(1, 1, 0);
+timeMap1.set(1, 2, 2);
+console.log(`get(1, 1): ${timeMap1.get(1, 1)}`);
+console.log(`get(1, 3): ${timeMap1.get(1, 3)}`);
+
+const timeMap2 = new TimeMap();
+timeMap2.set(1, 1, 5);
+console.log(`get(1, 0): ${timeMap2.get(1, 0)}`);
+console.log(`get(1, 10): ${timeMap2.get(1, 10)}`);
+
+const timeMap3 = new TimeMap();
+timeMap3.set(1, 1, 0);
+timeMap3.set(1, 2, 0);
+console.log(`get(1, 0): ${timeMap3.get(1, 0)}`);
+console.log('\n');
+
+/*
+* Q43.
+* Given an unsorted array of integers, find the length of the longest
+* consecutive elements sequence.
+* For example, given [100, 4, 200, 1, 3, 2], the longest consecutive element
+* sequence is [1, 2, 3, 4]. Return its length: 4.
+* Your algorithm should run in O(n) complexity.
+*/
+function longestConsecutive(nums) {
+    const set = new Set(nums);
+    let maxLength = 0;
+
+    for (const num of nums) {
+        if (!set.has(num - 1)) {
+            let currentNum = num;
+            let currentLength = 1;
+
+            while (set.has(currentNum + 1)) {
+                currentNum++;
+                currentLength++;
+            }
+
+            maxLength = Math.max(maxLength, currentLength);
+        }
+    }
+
+    return maxLength;
+}
+
+console.log('========= Q43 =========');
+const numsToFindLongestConsecutive = [100, 4, 200, 1, 3, 2];
+console.log(`Longest consecutive sequence length: ${longestConsecutive(numsToFindLongestConsecutive)}`);
+console.log('\n');
+
+/*
+* Q44.
+* Given a list of integers and a number K, return which contiguous elements of
+* the list sum to K.
+* For example, if the list is [1, 2, 3, 4, 5] and K is 9, then it should return
+* [2, 3, 4], since 2 + 3 + 4 = 9.
+*/
+function findContiguousElementsSum(nums, k) {
+    let result = [];
+    let left = 0;
+    let right = 0;
+    let sum = 0;
+
+    while (right < nums.length) {
+        sum += nums[right];
+
+        while (sum > k) {
+            sum -= nums[left];
+            left++;
+        }
+
+        if (sum === k) {
+            for (let i = left; i <= right; i++) {
+                result.push(nums[i]);
+            }
+            return result;
+        }
+        right++;
+    }
+    return result;
+}
+
+console.log('========= Q44 =========');
+const numsToFindContiguousSum = [1, 2, 3, 4, 5];
+const targetContiguousSum = 9;
+console.log(`Contiguous elements sum: ${findContiguousElementsSum(numsToFindContiguousSum, targetContiguousSum)}`);
+console.log('\n');
+
+/*
+* Q45.
+* Given a string and a set of characters, return the shortest substring
+* containing all the characters in the set.
+* For example, given the string "figehaeci" and the set of characters {a, e,
+* i}, you should return "aeci".
+* If there is no substring containing all the characters in the set, return
+* null.
+*/
+function shortestSubstring(s, charSet) {
+    let charCounts = new Map();
+    for (const c of charSet) {
+        charCounts.set(c, charCounts.get(c) + 1 || 1);
+    }
+
+    let left = 0;
+    let right = 0;
+    let count = charSet.size;
+    let minLen = Number.MAX_SAFE_INTEGER;
+    let minStart = 0;
+
+    while (right < s.length) {
+        const c = s.charAt(right);
+        if (charCounts.has(c)) {
+            charCounts.set(c, charCounts.get(c) - 1);
+            if (charCounts.get(c) === 0) {
+                count--;
+            }
+        }
+
+        while (count === 0) {
+            if (right - left + 1 < minLen) {
+                minLen = right - left + 1;
+                minStart = left;
+            }
+
+            const leftChar = s.charAt(left);
+            if (charCounts.has(leftChar)) {
+                charCounts.set(leftChar, charCounts.get(leftChar) + 1);
+                if (charCounts.get(leftChar) > 0) {
+                    count++;
+                }
+            }
+            left++;
+        }
+        right++;
+    }
+
+    if (minLen === Number.MAX_SAFE_INTEGER) {
+        return null;
+    }
+    return s.substring(minStart, minStart + minLen);
+}
+
+console.log('========= Q45 =========');
+const str = 'figehaeci';
+const charSet = new Set(['a', 'e', 'i']);
+console.log(`Shortest substring: ${shortestSubstring(str, charSet)}`);
+console.log('\n');
+
+/*
+* Q46.
+* Given an integer list where each number represents the number of hops you can
+* make, determine whether you can reach to the last index starting at index 0.
+* For example, [2, 0, 1, 0] returns True while [1, 1, 0, 1] returns False.
+*/
+function canReachLastIndex(nums) {
+    let maxReach = 0;
+    const n = nums.length;
+
+    for (let i = 0; i < n; i++) {
+        if (i > maxReach) {
+            // If the current index is not reachable, return false
+            return false;
+        }
+        maxReach = Math.max(maxReach, i + nums[i]);
+
+        if (maxReach >= n - 1) {
+            // If the maximum reachable index is greater than or equal to the last index,
+            // we can reach the last index
+            return true;
+        }
+    }
+    return false;
+}
+
+console.log('========= Q46 =========');
+const numArr1 = [2, 0, 1, 0];
+console.log(`Can reach last index: ${canReachLastIndex(numArr1)}`);
+const numArr2 = [1, 1, 0, 1];
+console.log(`Can reach last index: ${canReachLastIndex(numArr2)}`);
+console.log('\n');
+
+/*
+* Q47.
+* Given an unsigned 8-bit integer, swap its even and odd bits. The 1st and 2nd
+* bit should be swapped, the 3rd and 4th bit should be swapped, and so on.
+* For example, 10101010 should be 01010101. 11100010 should be 11010001.
+* Bonus: Can you do this in one line?
+*/
+function swapEvenOddBits(num) {
+    return ((num & 0b10101010) >>> 1) | ((num & 0b01010101) << 1);
+}
+
+console.log('========= Q47 =========');
+const num1 = 0b10101010;
+console.log(`Swapped even and odd bits: ${swapEvenOddBits(num1).toString(2)}`);
+const num2 = 0b11100010;
+console.log(`Swapped even and odd bits: ${swapEvenOddBits(num2).toString(2)}`);
+console.log('\n');
+
+/*
+* Q48.
+* Given a binary tree, return all paths from the root to leaves.
+* For example, given the tree:
+* "   1       "
+* "  / \      "
+* " 2   3     "
+* "    / \    "
+* "   4   5   "
+* Return [[1, 2], [1, 3, 4], [1, 3, 5]].
+*/
+function binaryTreePaths(root) {
+    let paths = [];
+    let currentPath = [];
+    dfsForTreePath(root, currentPath, paths);
+    return paths;
+}
+
+function dfsForTreePath(node, currentPath, paths) {
+    if (!node) {
+        return;
+    }
+
+    currentPath.push(node.val);
+
+    if (!node.left && !node.right) {
+        paths.push(currentPath.slice());
+    } else {
+        dfsForTreePath(node.left, currentPath, paths);
+        dfsForTreePath(node.right, currentPath, paths);
+    }
+
+    currentPath.pop();
+}
+
+console.log('========= Q48 =========');
+let rootToFindAllLeafPaths = new TreeNode(1);
+rootToFindAllLeafPaths.left = new TreeNode(2);
+rootToFindAllLeafPaths.right = new TreeNode(3);
+rootToFindAllLeafPaths.right.left = new TreeNode(4);
+rootToFindAllLeafPaths.right.right = new TreeNode(5);
+
+const paths = binaryTreePaths(rootToFindAllLeafPaths);
+
+for (const path of paths) {
+    console.log(path);
+}
+console.log('\n');
+
+/*
+* Q49.
+* Given a string of words delimited by spaces, reverse the words in string. For
+* example, given "hello world here", return "here world hello"
+* Follow-up: given a mutable string representation, can you perform this
+* operation in-place?
+*/
+function reverseWords(input) {
+    const words = input.split(' ');
+
+    let left = 0;
+    let right = words.length - 1;
+
+    while (left < right) {
+        const temp = words[left];
+        words[left] = words[right];
+        words[right] = temp;
+        left++;
+        right--;
+    }
+
+    return words.join(' ');
+}
+
+console.log('========= Q49 =========');
+const input = 'hello world here';
+console.log(`Reversed words: ${reverseWords(input)}`);
+console.log('\n');
+
+/*
+* Q50.
+* Generate a finite, but an arbitrarily large binary tree quickly in O(1).
+* That is, generate() should return a tree whose size is unbounded but finite.
+*/
+class TreeGenerator {
+
+    generate() {
+        let root = new TreeNode(1);
+        root.left = this.createUnboundedNode();
+        root.right = this.createUnboundedNode();
+        return root;
+    }
+
+    createUnboundedNode() {
+        return new TreeNode(-1); // Use a special value to represent an unbounded node
+    }
+}
+
+console.log('========= Q50 =========');
+console.log('\n');

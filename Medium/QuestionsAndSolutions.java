@@ -3,6 +3,7 @@ package Medium;
 import java.util.Random;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -1452,6 +1453,233 @@ public class QuestionsAndSolutions {
         }
     }
 
+    // S41.
+    public static int generateRandomNumber(int n, List<Integer> l) {
+        List<Integer> available = new ArrayList<>();
+
+        for (int i = 0; i < n; i++) {
+            if (!l.contains(i)) {
+                available.add(i);
+            }
+        }
+
+        Random random = new Random();
+        int index = random.nextInt(available.size());
+
+        return available.get(index);
+    }
+
+    // S42.
+    static class TimeMap {
+        private Map<Integer, TreeMap<Integer, Integer>> map;
+
+        public TimeMap() {
+            map = new HashMap<>();
+        }
+
+        public void set(int key, int value, int time) {
+            if (!map.containsKey(key)) {
+                map.put(key, new TreeMap<>());
+            }
+            map.get(key).put(time, value);
+        }
+
+        public Integer get(int key, int time) {
+            if (map.containsKey(key)) {
+                TreeMap<Integer, Integer> values = map.get(key);
+                Integer floorTime = values.floorKey(time);
+                if (floorTime != null) {
+                    return values.get(floorTime);
+                }
+            }
+            return null;
+        }
+    }
+
+    // S43.
+    public static int longestConsecutive(int[] nums) {
+        HashSet<Integer> set = new HashSet<>();
+        int maxLength = 0;
+
+        for (int num : nums) {
+            set.add(num);
+        }
+
+        for (int num : nums) {
+            if (!set.contains(num - 1)) {
+                int currentNum = num;
+                int currentLength = 1;
+
+                while (set.contains(currentNum + 1)) {
+                    currentNum++;
+                    currentLength++;
+                }
+
+                maxLength = Math.max(maxLength, currentLength);
+            }
+        }
+        return maxLength;
+    }
+
+    // S44.
+    public static List<Integer> findContiguousElementsSum(int[] nums, int k) {
+        List<Integer> result = new ArrayList<>();
+        int left = 0;
+        int right = 0;
+        int sum = 0;
+
+        while (right < nums.length) {
+            sum += nums[right];
+
+            while (sum > k) {
+                sum -= nums[left];
+                left++;
+            }
+
+            if (sum == k) {
+                for (int i = left; i <= right; i++) {
+                    result.add(nums[i]);
+                }
+                return result;
+            }
+
+            right++;
+        }
+
+        return result;
+    }
+
+    // S45.
+    public static String shortestSubstring(String s, Set<Character> charSet) {
+        Map<Character, Integer> charCounts = new HashMap<>();
+        for (char c : charSet) {
+            charCounts.put(c, charCounts.getOrDefault(c, 0) + 1);
+        }
+
+        int left = 0;
+        int right = 0;
+        int count = charSet.size();
+        int minLen = Integer.MAX_VALUE;
+        int minStart = 0;
+
+        while (right < s.length()) {
+            char c = s.charAt(right);
+            if (charCounts.containsKey(c)) {
+                charCounts.put(c, charCounts.get(c) - 1);
+                if (charCounts.get(c) == 0) {
+                    count--;
+                }
+            }
+
+            while (count == 0) {
+                if (right - left + 1 < minLen) {
+                    minLen = right - left + 1;
+                    minStart = left;
+                }
+
+                char leftChar = s.charAt(left);
+                if (charCounts.containsKey(leftChar)) {
+                    charCounts.put(leftChar, charCounts.get(leftChar) + 1);
+                    if (charCounts.get(leftChar) > 0) {
+                        count++;
+                    }
+                }
+
+                left++;
+            }
+
+            right++;
+        }
+
+        if (minLen == Integer.MAX_VALUE) {
+            return null;
+        }
+
+        return s.substring(minStart, minStart + minLen);
+    }
+
+    // S46.
+    public static boolean canReachLastIndex(int[] nums) {
+        int maxReach = 0;
+        int n = nums.length;
+
+        for (int i = 0; i < n; i++) {
+            if (i > maxReach) {
+                // If the current index is not reachable, return false
+                return false;
+            }
+            maxReach = Math.max(maxReach, i + nums[i]);
+
+            if (maxReach >= n - 1) {
+                // If the maximum reachable index is greater than or equal to the last index,
+                // we can reach the last index
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // S47.
+    public static int swapEvenOddBits(int n) {
+        return ((n & 0xAA) >>> 1) | ((n & 0x55) << 1);
+    }
+
+    // S48.
+    public static List<List<Integer>> binaryTreePaths(TreeNode<Integer> root) {
+        List<List<Integer>> paths = new ArrayList<>();
+        List<Integer> currentPath = new ArrayList<>();
+        dfs(root, currentPath, paths);
+        return paths;
+    }
+
+    private static void dfs(TreeNode<Integer> node, List<Integer> currentPath, List<List<Integer>> paths) {
+        if (node == null) {
+            return;
+        }
+
+        currentPath.add(node.val);
+
+        if (node.left == null && node.right == null) {
+            paths.add(new ArrayList<>(currentPath));
+        } else {
+            dfs(node.left, currentPath, paths);
+            dfs(node.right, currentPath, paths);
+        }
+
+        currentPath.remove(currentPath.size() - 1);
+    }
+
+    // S49.
+    public static String reverseWords(String input) {
+        String[] words = input.split(" ");
+
+        int left = 0;
+        int right = words.length - 1;
+        while (left < right) {
+            String temp = words[left];
+            words[left] = words[right];
+            words[right] = temp;
+            left++;
+            right--;
+        }
+
+        return String.join(" ", words);
+    }
+
+    // S50.
+    static class TreeGenerator {
+        public static TreeNode<Integer> generate() {
+            TreeNode<Integer> root = new TreeNode<>(1);
+            root.left = createUnboundedNode();
+            root.right = createUnboundedNode();
+            return root;
+        }
+
+        private static TreeNode<Integer> createUnboundedNode() {
+            return new TreeNode<>(-1); // Use a special value to represent an unbounded node
+        }
+    }
+
     public static void main(String[] args) {
         /*
          * Q1.
@@ -2358,6 +2586,172 @@ public class QuestionsAndSolutions {
         bst.delete(20);
         System.out.println("\nInorder traversal after deleting 20:");
         bst.inorderTraversal();
+
+        /*
+         * Q41.
+         * Given an integer n and a list of integers l, write a function that randomly
+         * generates a number from 0 to n-1 that isn't in l (uniform).
+         */
+        System.out.println("========= Q41 ==========");
+        int n = 10;
+        List<Integer> l = List.of(2, 4, 6, 8);
+
+        int randomNum = generateRandomNumber(n, l);
+        System.out.println("Random number: " + randomNum);
+
+        /*
+         * Q42.
+         * Write a map implementation with a get function that lets you retrieve the
+         * value of a key at a particular time.
+         * It should contain the following methods:
+         * set(key, value, time): sets key to value for t = time.
+         * get(key, time): gets the key at t = time.
+         * The map should work like this. If we set a key at a particular time, it will
+         * maintain that value forever or until it gets set at a later time. In other
+         * words, when we get a key at a time, it should return the value that was set
+         * for that key set at the most recent time.
+         * Consider the following examples:
+         * d.set(1, 1, 0) # set key 1 to value 1 at time 0
+         * d.set(1, 2, 2) # set key 1 to value 2 at time 2
+         * d.get(1, 1) # get key 1 at time 1 should be 1
+         * d.get(1, 3) # get key 1 at time 3 should be 2
+         * d.set(1, 1, 5) # set key 1 to value 1 at time 5
+         * d.get(1, 0) # get key 1 at time 0 should be null
+         * d.get(1, 10) # get key 1 at time 10 should be 1
+         * d.set(1, 1, 0) # set key 1 to value 1 at time 0
+         * d.set(1, 2, 0) # set key 1 to value 2 at time 0
+         * d.get(1, 0) # get key 1 at time 0 should be 2
+         */
+        System.out.println("========= Q42 ==========");
+        TimeMap timeMap1 = new TimeMap();
+        timeMap1.set(1, 1, 0);
+        timeMap1.set(1, 2, 2);
+        System.out.println(timeMap1.get(1, 1)); // Output: 1
+        System.out.println(timeMap1.get(1, 3)); // Output: 2
+
+        TimeMap timeMap2 = new TimeMap();
+        timeMap2.set(1, 1, 5);
+        System.out.println(timeMap2.get(1, 0)); // Output: null
+        System.out.println(timeMap2.get(1, 10)); // Output: 1
+
+        TimeMap timeMap3 = new TimeMap();
+        timeMap3.set(1, 1, 0);
+        timeMap3.set(1, 2, 0);
+        System.out.println(timeMap3.get(1, 0)); // Output: 2
+
+        /*
+         * Q43.
+         * Given an unsorted array of integers, find the length of the longest
+         * consecutive elements sequence.
+         * For example, given [100, 4, 200, 1, 3, 2], the longest consecutive element
+         * sequence is [1, 2, 3, 4]. Return its length: 4.
+         * Your algorithm should run in O(n) complexity.
+         */
+        System.out.println("========= Q43 ==========");
+        int[] numsToFindLongestConsecutive = { 100, 4, 200, 1, 3, 2 };
+        int longestLength = longestConsecutive(numsToFindLongestConsecutive);
+        System.out.println("Longest consecutive sequence length: " + longestLength);
+
+        /*
+         * Q44.
+         * Given a list of integers and a number K, return which contiguous elements of
+         * the list sum to K.
+         * For example, if the list is [1, 2, 3, 4, 5] and K is 9, then it should return
+         * [2, 3, 4], since 2 + 3 + 4 = 9.
+         */
+        System.out.println("========= Q44 ==========");
+        int[] numsToFindContiguousSum = { 1, 2, 3, 4, 5 };
+        int targetContiguousSum = 9;
+        List<Integer> contiguousElements = findContiguousElementsSum(numsToFindContiguousSum, targetContiguousSum);
+        System.out.println(contiguousElements);
+
+        /*
+         * Q45.
+         * Given a string and a set of characters, return the shortest substring
+         * containing all the characters in the set.
+         * For example, given the string "figehaeci" and the set of characters {a, e,
+         * i}, you should return "aeci".
+         * If there is no substring containing all the characters in the set, return
+         * null.
+         */
+        System.out.println("========= Q45 ==========");
+        String str = "figehaeci";
+        Set<Character> charSet = new HashSet<>(Arrays.asList('a', 'e', 'i'));
+        String shortestSubstr = shortestSubstring(str, charSet);
+        System.out.println(shortestSubstr);
+
+        /*
+         * Q46.
+         * Given an integer list where each number represents the number of hops you can
+         * make, determine whether you can reach to the last index starting at index 0.
+         * For example, [2, 0, 1, 0] returns True while [1, 1, 0, 1] returns False.
+         */
+        System.out.println("========= Q46 ==========");
+        int[] numArr1 = { 2, 0, 1, 0 };
+        System.out.println(canReachLastIndex(numArr1)); // true
+
+        int[] numArr2 = { 1, 1, 0, 1 };
+        System.out.println(canReachLastIndex(numArr2)); // false
+
+        /*
+         * Q47.
+         * Given an unsigned 8-bit integer, swap its even and odd bits. The 1st and 2nd
+         * bit should be swapped, the 3rd and 4th bit should be swapped, and so on.
+         * For example, 10101010 should be 01010101. 11100010 should be 11010001.
+         * Bonus: Can you do this in one line?
+         */
+        System.out.println("========= Q47 ==========");
+        int num1 = 0b10101010;
+        int binarySwapResult1 = swapEvenOddBits(num1);
+        System.out.println(Integer.toBinaryString(binarySwapResult1)); // Output: 01010101
+
+        int num2 = 0b11100010;
+        int binarySwapResult2 = swapEvenOddBits(num2);
+        System.out.println(Integer.toBinaryString(binarySwapResult2)); // Output: 11010001
+
+        /*
+         * Q48.
+         * Given a binary tree, return all paths from the root to leaves.
+         * For example, given the tree:
+         * "   1       "
+         * "  / \      "
+         * " 2   3     "
+         * "    / \    "
+         * "   4   5   "
+         * Return [[1, 2], [1, 3, 4], [1, 3, 5]].
+         */
+        System.out.println("========= Q48 ==========");
+        TreeNode<Integer> rootToFindAllLeafPath = new TreeNode<>(1);
+        rootToFindAllLeafPath.left = new TreeNode<>(2);
+        rootToFindAllLeafPath.right = new TreeNode<>(3);
+        rootToFindAllLeafPath.right.left = new TreeNode<>(4);
+        rootToFindAllLeafPath.right.right = new TreeNode<>(5);
+
+        List<List<Integer>> paths = binaryTreePaths(rootToFindAllLeafPath);
+
+        for (List<Integer> path : paths) {
+            System.out.println(path);
+        }
+
+        /*
+         * Q49.
+         * Given a string of words delimited by spaces, reverse the words in string. For
+         * example, given "hello world here", return "here world hello"
+         * Follow-up: given a mutable string representation, can you perform this
+         * operation in-place?
+         */
+        System.out.println("========= Q49 ==========");
+        String input = "hello world here";
+        String reversed = reverseWords(input);
+        System.out.println(reversed);
+
+        /*
+         * Q50.
+         * Generate a finite, but an arbitrarily large binary tree quickly in O(1).
+         * That is, generate() should return a tree whose size is unbounded but finite.
+         */
+        System.out.println("========= Q50 ==========");
+        // Solution implemented in S50
 
     }
 }
