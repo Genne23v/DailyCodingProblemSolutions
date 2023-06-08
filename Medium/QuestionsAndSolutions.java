@@ -1,6 +1,7 @@
 package Medium;
 
 import java.util.Random;
+import java.util.Comparator;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
@@ -1680,6 +1681,277 @@ public class QuestionsAndSolutions {
         }
     }
 
+    // S51.
+    static class Interval {
+        int start;
+        int end;
+
+        public Interval(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        @Override
+        public String toString() {
+            return "[" + start + ", " + end + "]";
+        }
+    }
+
+    public static List<Integer> findCoveringSet(List<Interval> intervals) {
+        intervals.sort(Comparator.comparingInt(a -> a.start));
+        int end = Integer.MIN_VALUE;
+        List<Integer> coveringSet = new ArrayList<>();
+
+        for (Interval interval : intervals) {
+            if (interval.start > end + 1) {
+                coveringSet.add(end);
+            }
+            end = Math.max(end, interval.end);
+        }
+
+        coveringSet.add(end);
+
+        return coveringSet;
+    }
+
+    // S52.
+    static class TwistedSingleton {
+        private static TwistedSingleton instance1;
+        private static TwistedSingleton instance2;
+        private static int count;
+
+        private TwistedSingleton() {
+            // Private constructor to prevent instantiation
+        }
+
+        public static synchronized TwistedSingleton getInstance() {
+            count++;
+
+            if (count % 2 == 0) {
+                if (instance1 == null) {
+                    instance1 = new TwistedSingleton();
+                }
+                return instance1;
+            } else {
+                if (instance2 == null) {
+                    instance2 = new TwistedSingleton();
+                }
+                return instance2;
+            }
+        }
+    }
+
+    // S53.
+    public static int getMaxCoins(int[][] matrix) {
+        if (matrix == null || matrix.length == 0 || matrix[0].length == 0) {
+            return 0;
+        }
+
+        int m = matrix.length;
+        int n = matrix[0].length;
+
+        int[][] dp = new int[m][n];
+
+        dp[0][0] = matrix[0][0];
+        for (int i = 1; i < m; i++) {
+            dp[i][0] = dp[i - 1][0] + matrix[i][0];
+        }
+        for (int j = 1; j < n; j++) {
+            dp[0][j] = dp[0][j - 1] + matrix[0][j];
+        }
+
+        for (int i = 1; i < m; i++) {
+            for (int j = 1; j < n; j++) {
+                dp[i][j] = matrix[i][j] + Math.max(dp[i - 1][j], dp[i][j - 1]);
+            }
+        }
+
+        return dp[m - 1][n - 1];
+    }
+
+    // S54.
+    public static void rotateList(List<Integer> list, int k) {
+        int n = list.size();
+        k = k % n;
+
+        reverse(list, 0, n - 1);
+        reverse(list, 0, n - k - 1);
+        reverse(list, n - k, n - 1);
+    }
+
+    private static void reverse(List<Integer> list, int start, int end) {
+        while (start < end) {
+            int temp = list.get(start);
+            list.set(start, list.get(end));
+            list.set(end, temp);
+            start++;
+            end--;
+        }
+    }
+
+    // S55.
+    public static void solveTowerOfHanoi(int n, int source, int auxiliary, int destination) {
+        if (n == 1) {
+            System.out.println("Move disk 1 from rod " + source + " to rod " + destination);
+            return;
+        }
+
+        solveTowerOfHanoi(n - 1, source, destination, auxiliary);
+        System.out.println("Move disk " + n + " from rod " + source + " to rod " + destination);
+        solveTowerOfHanoi(n - 1, auxiliary, source, destination);
+    }
+
+    // S56.
+    public static double findSquareRoot(double n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("Cannot calculate square root of a negative number.");
+        }
+
+        if (n == 0) {
+            return 0;
+        }
+
+        double x = n;
+        double y = 0;
+
+        while (x != y) {
+            y = x;
+            x = (n / x + x) / 2;
+        }
+
+        return x;
+    }
+
+    // S57.
+    public static int getMaxProfit(int[] prices, int k) {
+        int n = prices.length;
+        int[][] dp = new int[k + 1][n];
+
+        for (int i = 1; i <= k; i++) {
+            int maxDiff = -prices[0];
+
+            for (int j = 1; j < n; j++) {
+                dp[i][j] = Math.max(dp[i][j - 1], prices[j] + maxDiff);
+                maxDiff = Math.max(maxDiff, dp[i - 1][j] - prices[j]);
+            }
+        }
+        return dp[k][n - 1];
+    }
+
+    // S58.
+    static class SinglyLinkedListNode {
+        int val;
+        SinglyLinkedListNode next;
+        SinglyLinkedListNode random;
+
+        public SinglyLinkedListNode(int val) {
+            this.val = val;
+        }
+    }
+
+    public static SinglyLinkedListNode cloneLinkedList(SinglyLinkedListNode head) {
+        if (head == null)
+            return null;
+
+        Map<SinglyLinkedListNode, SinglyLinkedListNode> map = new HashMap<>();
+
+        // First pass: create cloned nodes without random pointers
+        SinglyLinkedListNode curr = head;
+        while (curr != null) {
+            SinglyLinkedListNode clone = new SinglyLinkedListNode(curr.val);
+            map.put(curr, clone);
+            curr = curr.next;
+        }
+
+        // Second pass: set random pointers for cloned nodes
+        curr = head;
+        while (curr != null) {
+            SinglyLinkedListNode clone = map.get(curr);
+            clone.next = map.get(curr.next);
+            clone.random = map.get(curr.random);
+            curr = curr.next;
+        }
+
+        return map.get(head);
+    }
+
+    // S59.
+    public static int inorderSuccessor(Node<Integer> root, int target) {
+        if (root == null)
+            return -1;
+
+        Node<Integer> current = root;
+        Node<Integer> successor = null;
+
+        while (current != null) {
+            if (current.val > target) {
+                successor = current;
+                current = current.left;
+            } else {
+                current = current.right;
+            }
+        }
+
+        if (successor != null) {
+            return successor.val;
+        } else {
+            return -1;
+        }
+    }
+
+    // S60.
+    public static int largestRectangleArea(int[] heights) {
+        if (heights == null || heights.length == 0) {
+            return 0;
+        }
+
+        int n = heights.length;
+        int maxArea = 0;
+
+        // Array to store the indices of the histogram bars
+        Stack<Integer> stack = new Stack<>();
+
+        for (int i = 0; i <= n; i++) {
+            int height = (i == n) ? 0 : heights[i]; // 1 0 0 0 0 - 2 0 1 1 0 - 3 0 2 2 0 - 0 1 0 0 0
+
+            while (!stack.isEmpty() && height < heights[stack.peek()]) {
+                int h = heights[stack.pop()];
+                int w = stack.isEmpty() ? i : i - stack.peek() - 1;
+                int area = h * w;
+                maxArea = Math.max(maxArea, area);
+            }
+            stack.push(i);
+        }
+
+        return maxArea;
+    }
+
+    public static int maximalRectangle(int[][] matrix) {
+        if (matrix == null || matrix.length == 0 || matrix[0].length == 0) {
+            return 0;
+        }
+
+        int rows = matrix.length;
+        int cols = matrix[0].length;
+        int maxArea = 0;
+        int[] heights = new int[cols];
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (matrix[i][j] == 1) {
+                    heights[j] += 1;
+                } else {
+                    heights[j] = 0;
+                }
+            }
+
+            int area = largestRectangleArea(heights);
+            maxArea = Math.max(maxArea, area);
+        }
+
+        return maxArea;
+    }
+
     public static void main(String[] args) {
         /*
          * Q1.
@@ -2752,6 +3024,208 @@ public class QuestionsAndSolutions {
          */
         System.out.println("========= Q50 ==========");
         // Solution implemented in S50
+
+        /*
+         * Q51.
+         * Given a set of closed intervals, find the smallest set of numbers that covers
+         * all the intervals. If there are multiple smallest sets, return any of them.
+         * For example, given the intervals [0, 3], [2, 6], [3, 4], [6, 9], one set of
+         * numbers that covers all these intervals is {3, 6}.
+         */
+        System.out.println("========= Q51 ==========");
+        List<Interval> intervals = Arrays.asList(
+                new Interval(0, 3),
+                new Interval(2, 6),
+                new Interval(3, 4),
+                new Interval(6, 9));
+
+        List<Integer> coveringSet = findCoveringSet(intervals);
+        System.out.println(coveringSet); // Output: [3, 6]
+
+        /*
+         * Q52.
+         * Implement the singleton pattern with a twist. First, instead of storing one
+         * instance, store two instances. And in every even call of getInstance(),
+         * return the first instance and in every odd call of getInstance(), return the
+         * second instance.
+         */
+        System.out.println("========= Q52 ==========");
+        TwistedSingleton singleton1 = TwistedSingleton.getInstance();
+        TwistedSingleton singleton2 = TwistedSingleton.getInstance();
+        TwistedSingleton singleton3 = TwistedSingleton.getInstance();
+
+        System.out.println(singleton1); // Output: TwistedSingleton@hashcode
+        System.out.println(singleton2); // Output: TwistedSingleton@hashcode
+        System.out.println(singleton3); // Output: TwistedSingleton@hashcode
+
+        /*
+         * Q53.
+         * You are given a 2-d matrix where each cell represents number of coins in that
+         * cell. Assuming we start at matrix[0][0], and can only move right or down,
+         * find the maximum number of coins you can collect by the bottom right corner.
+         * For example, in this matrix
+         * 0 3 1 1
+         * 2 0 0 4
+         * 1 5 3 1
+         * The most we can collect is 0 + 2 + 1 + 5 + 3 + 1 = 12 coins.
+         */
+        System.out.println("========= Q53 ==========");
+        int[][] coinMatrix = {
+                { 0, 3, 1, 1 },
+                { 2, 0, 0, 4 },
+                { 1, 5, 3, 1 }
+        };
+
+        int maxCoins = getMaxCoins(coinMatrix);
+        System.out.println("Maximum number of coins collected: " + maxCoins);
+
+        /*
+         * Q54.
+         * Write a function that rotates a list by k elements. For example, [1, 2, 3, 4,
+         * 5, 6] rotated by two becomes [3, 4, 5, 6, 1, 2]. Try solving this without
+         * creating a copy of the list. How many swap or move operations do you need?
+         */
+        System.out.println("========= Q54 ==========");
+        List<Integer> list = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6));
+        int rotation = 2;
+
+        System.out.println("Original list: " + list);
+        rotateList(list, rotation);
+        System.out.println("Rotated list: " + list);
+
+        /*
+         * Q55.
+         * The Tower of Hanoi is a puzzle game with three rods and n disks, each a
+         * different size.
+         * All the disks start off on the first rod in a stack. They are ordered by
+         * size, with the largest disk on the bottom and the smallest one at the top.
+         * The goal of this puzzle is to move all the disks from the first rod to the
+         * last rod while following these rules:
+         * You can only move one disk at a time.
+         * A move consists of taking the uppermost disk from one of the stacks and
+         * placing it on top of another stack.
+         * You cannot place a larger disk on top of a smaller disk.
+         * Write a function that prints out all the steps necessary to complete the
+         * Tower of Hanoi. You should assume that the rods are numbered, with the first
+         * rod being 1, the second (auxiliary) rod being 2, and the last (goal) rod
+         * being 3.
+         * For example, with n = 3, we can do this in 7 moves:
+         * Move 1 to 3
+         * Move 1 to 2
+         * Move 3 to 2
+         * Move 1 to 3
+         * Move 2 to 1
+         * Move 2 to 3
+         * Move 1 to 3
+         */
+        System.out.println("========= Q55 ==========");
+        int disks = 3;
+        int sourceRod = 1;
+        int auxiliaryRod = 2;
+        int destinationRod = 3;
+
+        solveTowerOfHanoi(disks, sourceRod, auxiliaryRod, destinationRod);
+
+        /*
+         * Q56.
+         * Given a real number n, find the square root of n. For example, given n = 9,
+         * return 3.
+         */
+        System.out.println("========= Q56 ==========");
+        double nForSquareRoot = 9;
+        double squareRoot = findSquareRoot(nForSquareRoot);
+        System.out.println("The square root of " + n + " is: " + squareRoot);
+
+        /*
+         * Q57.
+         * Given an array of numbers representing the stock prices of a company in
+         * chronological order and an integer k, return the maximum profit you can make
+         * from k buys and sells. You must buy the stock before you can sell it, and you
+         * must sell the stock before you can buy it again.
+         * For example, given k = 2 and the array [5, 2, 4, 0, 1], you should return 3.
+         */
+        System.out.println("========= Q57 ==========");
+        int[] prices = { 5, 2, 4, 0, 1 };
+        int numOfBuy = 2;
+        int maxProfit = getMaxProfit(prices, numOfBuy);
+        System.out.println("Maximum profit: " + maxProfit);
+
+        /*
+         * Q58.
+         * Given the head to a singly linked list, where each node also has a “random”
+         * pointer that points to anywhere in the linked list, deep clone the list.
+         */
+        System.out.println("========= Q58 ==========");
+        SinglyLinkedListNode singlyListHead = new SinglyLinkedListNode(1);
+        singlyListHead.next = new SinglyLinkedListNode(2);
+        singlyListHead.next.next = new SinglyLinkedListNode(3);
+        singlyListHead.next.next.next = new SinglyLinkedListNode(4);
+        singlyListHead.next.next.next.next = new SinglyLinkedListNode(5);
+
+        singlyListHead.random = singlyListHead.next.next;
+        singlyListHead.next.random = singlyListHead;
+        singlyListHead.next.next.random = singlyListHead.next.next.next.next;
+        singlyListHead.next.next.next.random = singlyListHead.next.next;
+        singlyListHead.next.next.next.next.random = singlyListHead.next;
+
+        SinglyLinkedListNode clonedHead = cloneLinkedList(singlyListHead);
+
+        SinglyLinkedListNode curr = clonedHead;
+        while (curr != null) {
+            System.out.println("Node value: " + curr.val + " ");
+            System.out.println("Node random value: " + curr.random.val + " ");
+            curr = curr.next;
+        }
+
+        /*
+         * Q59.
+         * Given a node in a binary search tree, return the next bigger element, also
+         * known as the inorder successor.
+         * For example, the inorder successor of 22 is 30.
+         * "   10          "
+         * "  /  \         "
+         * " 5    30       "
+         * "     /  \      "
+         * "   22    35    "
+         * You can assume each node has a parent pointer.
+         */
+        System.out.println("========= Q59 ==========");
+        Node<Integer> bstRootToFindInorderSuccessor = new Node<>(10);
+        bstRootToFindInorderSuccessor.left = new Node<>(5);
+        bstRootToFindInorderSuccessor.right = new Node<>(30);
+        bstRootToFindInorderSuccessor.right.left = new Node<>(22);
+        bstRootToFindInorderSuccessor.right.right = new Node<>(35);
+
+        int targetForInorderSuccessor = 22;
+        int successor = inorderSuccessor(bstRootToFindInorderSuccessor, targetForInorderSuccessor);
+
+        if (successor != -1) {
+            System.out.println("The inorder successor of " + targetForInorderSuccessor + " is " + successor);
+        } else {
+            System.out.println("No inorder successor found for " + targetForInorderSuccessor);
+        }
+
+        /*
+         * Q60.
+         * Given an N by M matrix consisting only of 1's and 0's, find the largest
+         * rectangle containing only 1's and return its area.
+         * For example, given the following matrix:
+         * [[1, 0, 0, 0],
+         * [1, 0, 1, 1],
+         * [1, 0, 1, 1],
+         * [0, 1, 0, 0]]
+         * Return 4.
+         */
+        System.out.println("========= Q60 ==========");
+        int[][] rectangleMatrix = {
+                { 1, 0, 0, 0 },
+                { 1, 0, 1, 1 },
+                { 1, 0, 1, 1 },
+                { 0, 1, 0, 0 }
+        };
+
+        int maxArea = maximalRectangle(rectangleMatrix);
+        System.out.println("The largest rectangle area containing only 1's is: " + maxArea);
 
     }
 }

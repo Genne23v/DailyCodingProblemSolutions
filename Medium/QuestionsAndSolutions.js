@@ -2729,3 +2729,439 @@ class TreeGenerator {
 
 console.log('========= Q50 =========');
 console.log('\n');
+
+/*
+* Q51.
+* Given a set of closed intervals, find the smallest set of numbers that covers
+* all the intervals. If there are multiple smallest sets, return any of them.
+* For example, given the intervals [0, 3], [2, 6], [3, 4], [6, 9], one set of
+* numbers that covers all these intervals is {3, 6}.
+*/
+class Interval {
+    constructor(start, end) {
+        this.start = start;
+        this.end = end;
+    }
+}
+
+function findCoveringSet(intervals) {
+    intervals.sort((a, b) => a.start - b.start);
+    let end = Number.MIN_SAFE_INTEGER;
+    let coveringSet = [];
+
+    for (const interval of intervals) {
+        if (interval.start > end) {
+            coveringSet.push(end);
+        }
+        end = Math.max(end, interval.end);
+    }
+    coveringSet.push(end);
+
+    return coveringSet;
+}
+
+console.log('========= Q51 =========');
+const intervals = [new Interval(0, 3), new Interval(2, 6), new Interval(3, 4), new Interval(6, 9)];
+const coveringSet = findCoveringSet(intervals);
+console.log(`Covering set: ${coveringSet}`);
+console.log('\n');
+
+/*
+* Q52.
+* Implement the singleton pattern with a twist. First, instead of storing one
+* instance, store two instances. And in every even call of getInstance(),
+* return the first instance and in every odd call of getInstance(), return the
+* second instance.
+*/
+class TwistedSingleton {
+    static #_instance1;
+    static #_instance2;
+    static #_count = 0;
+
+    getInstance() {
+        TwistedSingleton.#_count += 1;
+
+        if (TwistedSingleton.#_count % 2 === 0) {
+            if (!TwistedSingleton.#_instance1) {
+                TwistedSingleton.#_instance1 = new TwistedSingleton();
+            }
+            return TwistedSingleton.#_instance1;
+        } else {
+            if (!TwistedSingleton.#_instance2) {
+                TwistedSingleton.#_instance2 = new TwistedSingleton();
+            }
+            return TwistedSingleton.#_instance2;
+        }
+    }
+}
+
+console.log('========= Q52 =========');
+const singleton1 = new TwistedSingleton().getInstance();
+const singleton2 = new TwistedSingleton().getInstance();
+const singleton3 = new TwistedSingleton().getInstance();
+
+console.log(`Singleton 1: ${singleton1}`);
+console.log(`Singleton 2: ${singleton1}`);
+console.log(`Singleton 3: ${singleton1}`);
+console.log('\n');
+
+/*
+* Q53.
+* You are given a 2-d matrix where each cell represents number of coins in that
+* cell. Assuming we start at matrix[0][0], and can only move right or down,
+* find the maximum number of coins you can collect by the bottom right corner.
+* For example, in this matrix
+* 0 3 1 1
+* 2 0 0 4
+* 1 5 3 1
+* The most we can collect is 0 + 2 + 1 + 5 + 3 + 1 = 12 coins.
+*/
+function getMaxCoins(matrix) {
+    if (!matrix || matrix.length === 0 || matrix[0].length === 0) {
+        return 0;
+    }
+
+    const m = matrix.length;
+    const n = matrix[0].length;
+
+    let dp = new Array(m).fill(0).map(() => new Array(n).fill(0));
+
+    dp[0][0] = matrix[0][0];
+    for (let i = 1; i < m; i++) {
+        dp[i][0] = dp[i - 1][0] + matrix[i][0];
+    }
+    for (let j = 1; j < n; j++) {
+        dp[0][j] = dp[0][j - 1] + matrix[0][j];
+    }
+
+    for (let i = 1; i < m; i++) {
+        for (let j = 1; j < n; j++) {
+            dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]) + matrix[i][j];
+        }
+    }
+
+    return dp[m - 1][n - 1];
+}
+
+console.log('========= Q53 =========');
+const coinMatrix = [[0, 3, 1, 1], [2, 0, 0, 4], [1, 5, 3, 1]];
+const maxCoins = getMaxCoins(coinMatrix);
+console.log(`Maximum number of coins collected: ${maxCoins}`);
+console.log('\n');
+
+/*
+* Q54.
+* Write a function that rotates a list by k elements. For example, [1, 2, 3, 4,
+* 5, 6] rotated by two becomes [3, 4, 5, 6, 1, 2]. Try solving this without
+* creating a copy of the list. How many swap or move operations do you need?
+*/
+function rotateList(list, k) {
+    const n = list.length;
+    k = k % n;
+
+    reverse(list, 0, n - 1);
+    reverse(list, 0, n - k - 1);
+    reverse(list, n - k, n - 1);
+}
+
+function reverse(list, start, end) {
+    while (start < end) {
+        let temp = list[start];
+        list[start] = list[end];
+        list[end] = temp;
+        start++;
+        end--;
+    }
+}
+
+console.log('========= Q54 =========');
+const list = [1, 2, 3, 4, 5, 6];
+rotateList(list, 2);
+console.log(`Rotated list: ${list}`);
+console.log('\n');
+
+/*
+* Q55.
+* The Tower of Hanoi is a puzzle game with three rods and n disks, each a
+* different size.
+* All the disks start off on the first rod in a stack. They are ordered by
+* size, with the largest disk on the bottom and the smallest one at the top.
+* The goal of this puzzle is to move all the disks from the first rod to the
+* last rod while following these rules:
+* You can only move one disk at a time.
+* A move consists of taking the uppermost disk from one of the stacks and
+* placing it on top of another stack.
+* You cannot place a larger disk on top of a smaller disk.
+* Write a function that prints out all the steps necessary to complete the
+* Tower of Hanoi. You should assume that the rods are numbered, with the first
+* rod being 1, the second (auxiliary) rod being 2, and the last (goal) rod
+* being 3.
+* For example, with n = 3, we can do this in 7 moves:
+* Move 1 to 3
+* Move 1 to 2
+* Move 3 to 2
+* Move 1 to 3
+* Move 2 to 1
+* Move 2 to 3
+* Move 1 to 3
+*/
+function solveTowerOfHanoi(n, source, auxiliary, destination) {
+    if (n === 1) {
+        console.log(`Move disk 1 from rod ${source} to rod ${destination}`);
+        return;
+    }
+
+    solveTowerOfHanoi(n - 1, source, destination, auxiliary);
+    console.log(`Move disk ${n} from rod ${source} to rod ${destination}`);
+    solveTowerOfHanoi(n - 1, auxiliary, source, destination);
+}
+
+console.log('========= Q55 =========');
+const disks = 3;
+const sourceRod = 1;
+const auxiliaryRod = 2;
+const destinationRod = 3;
+solveTowerOfHanoi(disks, sourceRod, auxiliaryRod, destinationRod);
+console.log('\n');
+
+/*
+* Q56.
+* Given a real number n, find the square root of n. For example, given n = 9,
+* return 3.
+*/
+function findSquareRoot(n) {
+    if (n < 0) {
+        throw new Error('Cannot calculate square root of a negative number');
+    }
+
+    if (n === 0) {
+        return 0;
+    }
+
+    let x = n;
+    let y = 0;
+
+    while (x != y) {
+        y = x;
+        x = (n / x + x) / 2;
+    }
+
+    return x;
+}
+
+console.log('========= Q56 =========');
+const nForSquareRoot = 9;
+const squareRoot = findSquareRoot(nForSquareRoot);
+console.log(`Square root of ${nForSquareRoot}: ${squareRoot}`);
+console.log('\n');
+
+/*
+* Q57.
+* Given an array of numbers representing the stock prices of a company in
+* chronological order and an integer k, return the maximum profit you can make
+* from k buys and sells. You must buy the stock before you can sell it, and you
+* must sell the stock before you can buy it again.
+* For example, given k = 2 and the array [5, 2, 4, 0, 1], you should return 3.
+*/
+function getMaxProfit(prices, k) {
+    const n = prices.length;
+    let dp = new Array(k + 1).fill(0).map(() => new Array(n).fill(0));
+
+    for (let i = 1; i <= k; i++) {
+        let maxDiff = -prices[0];
+
+        for (let j = 1; j < n; j++) {
+            dp[i][j] = Math.max(dp[i][j - 1], prices[j] + maxDiff);
+            maxDiff = Math.max(maxDiff, dp[i - 1][j] - prices[j]);
+        }
+    }
+    return dp[k][n - 1];
+}
+
+console.log('========= Q57 =========');
+const prices = [5, 2, 4, 0, 1];
+const numOfBuy = 2;
+const maxProfit = getMaxProfit(prices, numOfBuy);
+console.log(`Maximum profit: ${maxProfit}`);
+console.log('\n');
+
+/*
+* Q58.
+* Given the head to a singly linked list, where each node also has a “random”
+* pointer that points to anywhere in the linked list, deep clone the list.
+*/
+class SinglyLinkedList {
+    constructor(val) {
+        this.val = val;
+        this.next = null;
+        this.random = null;
+    }
+}
+
+function cloneLinkedList(head) {
+    if (!head) {
+        return null;
+    }
+
+    let map = new Map();
+
+    // First pass: create cloned nodes without random pointers
+    let curr = head;
+    while (curr) {
+        let clone = new SinglyLinkedList(curr.val);
+        map.set(curr, clone);
+        curr = curr.next;
+    }
+
+    // Second pass: set random pointers for cloned nodes
+    curr = head;
+    while (curr) {
+        let clone = map.get(curr);
+        clone.next = map.get(curr.next);
+        clone.random = map.get(curr.random);
+        curr = curr.next;
+    }
+
+    return map.get(head);
+}
+
+console.log('========= Q58 =========');
+const singlyListHead = new SinglyLinkedList(1);
+singlyListHead.next = new SinglyLinkedList(2);
+singlyListHead.next.next = new SinglyLinkedList(3);
+singlyListHead.next.next.next = new SinglyLinkedList(4);
+singlyListHead.next.next.next.next = new SinglyLinkedList(5);
+
+singlyListHead.random = singlyListHead.next.next;
+singlyListHead.next.random = singlyListHead;
+singlyListHead.next.next.random = singlyListHead.next.next.next.next;
+singlyListHead.next.next.next.random = singlyListHead.next.next;
+singlyListHead.next.next.next.next.random = singlyListHead.next;
+
+const clonedHead = cloneLinkedList(singlyListHead);
+
+let curr = clonedHead;
+while (curr) {
+    console.log(`Node value: ${curr.val}`);
+    console.log(`Node random value: ${curr.random.val}`);
+    curr = curr.next;
+}
+console.log('\n');
+
+/*
+* Q59.
+* Given a node in a binary search tree, return the next bigger element, also
+* known as the inorder successor.
+* For example, the inorder successor of 22 is 30.
+* "   10          "
+* "  /  \         "
+* " 5    30       "
+* "     /  \      "
+* "   22    35    "
+* You can assume each node has a parent pointer.
+*/
+function inorderSuccessor(root, target) {
+    if (!root) {
+        return -1;
+    }
+
+    let current = root;
+    let successor = null;
+
+    while (current) {
+        if (current.val > target) {
+            successor = current;
+            current = current.left;
+        } else {
+            current = current.right;
+        }
+    }
+
+    return successor ? successor.val : -1;
+}
+
+console.log('========= Q59 =========');
+let bstRootToFindInorderSuccessor = new Node(10);
+bstRootToFindInorderSuccessor.left = new Node(5);
+bstRootToFindInorderSuccessor.right = new Node(30);
+bstRootToFindInorderSuccessor.right.left = new Node(22);
+bstRootToFindInorderSuccessor.right.right = new Node(35);
+
+const targetToFindInorderSuccessor = 22;
+const successor = inorderSuccessor(bstRootToFindInorderSuccessor, targetToFindInorderSuccessor);
+
+if (successor !== -1) {
+    console.log(`Inorder successor of ${targetToFindInorderSuccessor} is ${successor}`);
+} else {
+    console.log(`No inorder successor found for ${targetToFindInorderSuccessor}`);
+}
+console.log('\n');
+
+/*
+* Q60.
+* Given an N by M matrix consisting only of 1's and 0's, find the largest
+* rectangle containing only 1's and return its area.
+* For example, given the following matrix:
+* [[1, 0, 0, 0],
+* [1, 0, 1, 1],
+* [1, 0, 1, 1],
+* [0, 1, 0, 0]]
+* Return 4.
+*/
+function largestRectangleArea(heights) {
+    if (!heights || heights.length === 0) {
+        return 0;
+    }
+
+    const n = heights.length;
+    let maxArea = 0;
+
+    let stack = [];
+    for (let i = 0; i <= n; i++) {
+        let height = (i === n) ? 0 : heights[i];
+
+        while(stack.length > 0 && height < heights[stack[stack.length - 1]]) {
+            const h = heights[stack.pop()];
+            const w = (stack.length === 0) ? i : i - stack[stack.length - 1] - 1;
+            const area = h * w;
+            maxArea = Math.max(maxArea, area);
+        }
+        stack.push(i);
+    }
+    return maxArea;
+}
+
+function maximalRectangle(matrix) {
+    if (!matrix || matrix.length === 0 || matrix[0].length === 0) {
+        return 0;
+    }
+
+    const rows = matrix.length;
+    const cols = matrix[0].length;
+    let maxArea = 0;
+    let heights = new Array(cols).fill(0);
+
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j ++) {
+            if (matrix[i][j] === 1) {
+                heights[j] += 1;
+            } else {
+                heights[j] = 0;
+            }
+        }
+        
+        const area = largestRectangleArea(heights);
+        maxArea = Math.max(maxArea, area);
+    }
+    return maxArea;
+}
+
+console.log('========= Q60 =========');
+const rectangleMatrix = [[1, 0, 0, 0],
+                [1, 0, 1, 1],
+                [1, 0, 1, 1],
+                [0, 1, 0, 0]];
+
+const maxArea = maximalRectangle(rectangleMatrix);
+console.log(`Maximum rectangle area containing only 1's is: ${maxArea}`);
+console.log('\n');
