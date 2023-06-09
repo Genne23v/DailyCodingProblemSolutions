@@ -2,6 +2,7 @@ package Medium;
 
 import java.util.Random;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.NoSuchElementException;
 
 public class QuestionsAndSolutions {
     // S1.
@@ -1952,6 +1954,293 @@ public class QuestionsAndSolutions {
         return maxArea;
     }
 
+    // S61.
+    static class BitArray {
+        private int[] arr;
+
+        public BitArray(int size) {
+            int length = (size + 31) / 32;
+            arr = new int[length];
+        }
+
+        public void set(int i, int val) {
+            if (val != 0 && val != 1) {
+                throw new IllegalArgumentException("Value must be either 0 or 1");
+            }
+
+            int index = i / 32; // Calculate the index of the integer
+            int bitIndex = i % 32; // Calculate the bit index within the integer
+
+            if (val == 1) {
+                arr[index] |= (1 << bitIndex); // Set the bit at the given index
+            } else {
+                arr[index] &= ~(1 << bitIndex); // Clear the bit at the given index
+            }
+        }
+
+        public int get(int i) {
+            int index = i / 32; // Calculate the index of the integer
+            int bitIndex = i % 32; // Calculate the bit index within the integer
+
+            return (arr[index] >> bitIndex) & 1; // Get the value of the bit at the given index
+        }
+    }
+
+    // S62.
+    static class PeekableInterface<T> implements Iterator<T> {
+        private Iterator<T> iterator;
+        private T nextElement;
+        private boolean hasNext;
+
+        public PeekableInterface(Iterator<T> iterator) {
+            this.iterator = iterator;
+            this.nextElement = null;
+            this.hasNext = iterator.hasNext();
+            if (hasNext) {
+                this.nextElement = iterator.next();
+            }
+        }
+
+        public T peek() {
+            if (!hasNext) {
+                throw new NoSuchElementException("No more elements to peek");
+            }
+            return nextElement;
+        }
+
+        @Override
+        public T next() {
+            if (!hasNext) {
+                throw new NoSuchElementException("No more elements");
+            }
+            T currentElement = nextElement;
+            if (iterator.hasNext()) {
+                nextElement = iterator.next();
+            } else {
+                nextElement = null;
+                hasNext = false;
+            }
+            return currentElement;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return hasNext;
+        }
+    }
+
+    // S63.
+    public static int[] findTwoSingleElements(int[] nums) {
+        int xor = 0;
+
+        for (int num : nums) {
+            xor ^= num;
+        }
+
+        // Find the rightmost set bit indicating a difference between two single
+        // elements
+        int rightmostSetBit = xor & -xor;
+
+        int num1 = 0;
+        int num2 = 0;
+
+        // Divide the numbers into two groups based on the rightmost set bit
+        for (int num : nums) {
+            if ((num & rightmostSetBit) != 0) {
+                num1 ^= num;
+            } else {
+                num2 ^= num;
+            }
+        }
+
+        return new int[] { num1, num2 };
+    }
+
+    // S64.
+    public static void partitionList(int[] lst, int x) {
+        int low = 0;
+        int high = lst.length - 1;
+        int i = 0;
+
+        while (i <= high) {
+            if (lst[i] < x) {
+                swap(lst, i, low);
+                i++;
+                low++;
+            } else if (lst[i] > x) {
+                swap(lst, i, high);
+                high--;
+            } else {
+                i++;
+            }
+        }
+    }
+
+    // S65.
+    public static Integer findNearestLarger(int[] nums, int index) {
+        int left = index - 1;
+        int right = index + 1;
+        int n = nums.length;
+        Integer nearestLargerIndex = null;
+
+        while (left >= 0 || right < n) {
+            if (left >= 0 && nums[left] > nums[index]) {
+                nearestLargerIndex = left;
+                break;
+            }
+            if (right < n && nums[right] > nums[index]) {
+                nearestLargerIndex = right;
+                break;
+            }
+            left--;
+            right++;
+        }
+
+        return nearestLargerIndex;
+    }
+
+    // S66.
+    public static TreeNode<Integer> pruneTree(TreeNode<Integer> root) {
+        if (root == null) {
+            return null;
+        }
+
+        root.left = pruneTree(root.left);
+        root.right = pruneTree(root.right);
+
+        if (root.left == null && root.right == null && root.val == 0) {
+            return null;
+        }
+
+        return root;
+    }
+
+    // S67.
+    public static List<String> generateGrayCode(int n) {
+        if (n <= 0) {
+            return new ArrayList<>();
+        }
+
+        List<String> grayCode = new ArrayList<>();
+        grayCode.add("0");
+        grayCode.add("1");
+
+        for (int i = 2; i <= n; i++) {
+            int size = grayCode.size();
+
+            for (int j = size - 1; j >= 0; j--) {
+                grayCode.add(grayCode.get(j));
+            }
+
+            for (int j = 0; j < size; j++) {
+                grayCode.set(j, "0" + grayCode.get(j));
+                grayCode.set(j + size, "1" + grayCode.get(j + size));
+            }
+        }
+
+        return grayCode;
+    }
+
+    // S68.
+    public static void replaceColor(char[][] image, int x, int y, char newColor) {
+        int rows = image.length;
+        if (rows == 0) {
+            return;
+        }
+
+        int cols = image[0].length;
+        char originalColor = image[x][y];
+
+        if (originalColor == newColor) {
+            return;
+        }
+
+        replaceColorDFS(image, x, y, originalColor, newColor, rows, cols);
+    }
+
+    private static void replaceColorDFS(char[][] image, int x, int y, char originalColor, char newColor, int rows,
+            int cols) {
+        if (x < 0 || x >= rows || y < 0 || y >= cols || image[x][y] != originalColor) {
+            return;
+        }
+
+        image[x][y] = newColor;
+
+        replaceColorDFS(image, x - 1, y, originalColor, newColor, rows, cols);
+        replaceColorDFS(image, x + 1, y, originalColor, newColor, rows, cols);
+        replaceColorDFS(image, x, y - 1, originalColor, newColor, rows, cols);
+        replaceColorDFS(image, x, y + 1, originalColor, newColor, rows, cols);
+    }
+
+    // S69.
+    static class NumberGenerator {
+        private int[] numbers;
+        private double[] cumulativeProbabilities;
+        private Random random;
+
+        public NumberGenerator(int[] numbers, double[] probabilities) {
+            if (numbers.length != probabilities.length) {
+                throw new IllegalArgumentException("Number of numbers and probabilities must be the same");
+            }
+            this.numbers = numbers;
+            this.cumulativeProbabilities = calculateCumulativeProbabilities(probabilities);
+            this.random = new Random();
+        }
+
+        public int generateNumberWithProbability() {
+            double randomValue = random.nextDouble();
+            int index = binarySearch(cumulativeProbabilities, randomValue);
+            return numbers[index];
+        }
+
+        private double[] calculateCumulativeProbabilities(double[] probabilities) {
+            double[] cumulativeProbabilities = new double[probabilities.length];
+            cumulativeProbabilities[0] = probabilities[0];
+            for (int i = 1; i < probabilities.length; i++) {
+                cumulativeProbabilities[i] = cumulativeProbabilities[i - 1] + probabilities[i];
+            }
+            return cumulativeProbabilities;
+        }
+
+        private int binarySearch(double[] arr, double target) {
+            int left = 0;
+            int right = arr.length - 1;
+            while (left < right) {
+                int mid = (left + right) / 2;
+                if (arr[mid] < target) {
+                    left = mid + 1;
+                } else {
+                    right = mid;
+                }
+            }
+            return left;
+        }
+    }
+
+    // S70.
+    public static int findMajorityElement(List<Integer> nums) {
+        Map<Integer, Integer> countMap = new HashMap<>();
+
+        for (int num : nums) {
+            countMap.put(num, countMap.getOrDefault(num, 0) + 1);
+        }
+
+        int majorityElement = 0;
+        int majorityCount = 0;
+
+        for (Map.Entry<Integer, Integer> entry : countMap.entrySet()) {
+            int element = entry.getKey();
+            int count = entry.getValue();
+
+            if (count > majorityCount) {
+                majorityElement = element;
+                majorityCount = count;
+            }
+        }
+
+        return majorityElement;
+    }
+
     public static void main(String[] args) {
         /*
          * Q1.
@@ -3226,6 +3515,227 @@ public class QuestionsAndSolutions {
 
         int maxArea = maximalRectangle(rectangleMatrix);
         System.out.println("The largest rectangle area containing only 1's is: " + maxArea);
+
+        /*
+         * Q61.
+         * Implement a bit array.
+         * A bit array is a space efficient array that holds a value of 1 or 0 at each
+         * index.
+         * init(size): initialize the array with size
+         * set(i, val): updates index at i with val where val is either 1 or 0.
+         * get(i): gets the value at index i.
+         */
+        System.out.println("========= Q61 ==========");
+        BitArray bitArray = new BitArray(10);
+        bitArray.set(3, 1);
+        bitArray.set(7, 1);
+        bitArray.set(9, 1);
+
+        System.out.println(bitArray.get(3)); // Output: 1
+        System.out.println(bitArray.get(7)); // Output: 1
+        System.out.println(bitArray.get(9)); // Output: 1
+        System.out.println(bitArray.get(0)); // Output: 0
+        System.out.println(bitArray.get(5)); // Output: 0
+
+        /*
+         * Q62.
+         * Given an iterator with methods next() and hasNext(), create a wrapper
+         * iterator, PeekableInterface, which also implements peek(). peek shows the
+         * next element that would be returned on next().
+         * Here is the interface:
+         * "class PeekableInterface(object):   "
+         * "    def __init__(self, iterator):  "
+         * "        pass                       "
+         * "    def peek(self):                "
+         * "        pass                       "
+         * "    def next(self):                "
+         * "        pass                       "
+         * "    def hasNext(self):             "
+         * "        pass                       "
+         */
+        System.out.println("========= Q62 ==========");
+        Integer[] arr = { 1, 2, 3, 4, 5 };
+        Iterator<Integer> iterator = Arrays.asList(arr).iterator();
+
+        PeekableInterface<Integer> peekable = new PeekableInterface<>(iterator);
+        System.out.println(peekable.peek()); // Output: 1
+        System.out.println(peekable.next()); // Output: 1
+        System.out.println(peekable.next()); // Output: 2
+        System.out.println(peekable.peek()); // Output: 3
+        System.out.println(peekable.next()); // Output: 3
+        System.out.println(peekable.hasNext()); // Output: true
+
+        /*
+         * Q63.
+         * Given an array of integers in which two elements appear exactly once and all
+         * other elements appear exactly twice, find the two elements that appear only
+         * once.
+         * For example, given the array [2, 4, 6, 8, 10, 2, 6, 10], return 4 and 8. The
+         * order does not matter.
+         * Follow-up: Can you do this in linear time and constant space?
+         */
+        System.out.println("========= Q63 ==========");
+        int[] numArr = { 2, 4, 6, 8, 10, 2, 6, 10 };
+        int[] singleAppearances = findTwoSingleElements(numArr);
+        System.out.println("Single elements: " + Arrays.toString(singleAppearances));
+
+        /*
+         * Q64.
+         * Given a pivot x, and a list lst, partition the list into three parts.
+         * The first part contains all elements in lst that are less than x
+         * The second part contains all elements in lst that are equal to x
+         * The third part contains all elements in lst that are larger than x
+         * Ordering within a part can be arbitrary.
+         * For example, given x = 10 and lst = [9, 12, 3, 5, 14, 10, 10], one partition
+         * may be [9, 3, 5, 10, 10, 12, 14].
+         */
+        System.out.println("========= Q64 ==========");
+        int pivot = 10;
+        int[] lst = { 9, 12, 3, 5, 14, 10, 10 };
+        partitionList(lst, pivot);
+        System.out.println("Partitioned List: " + Arrays.toString(lst));
+
+        /*
+         * Q65.
+         * Given an array of numbers and an index i, return the index of the nearest
+         * larger number of the number at index i, where distance is measured in array
+         * indices.
+         * For example, given [4, 1, 3, 5, 6] and index 0, you should return 3.
+         * If two distances to larger numbers are the equal, then return any one of
+         * them. If the array at i doesn't have a nearest larger integer, then return
+         * null.
+         * Follow-up: If you can preprocess the array, can you do this in constant time?
+         */
+        System.out.println("========= Q65 ==========");
+        int[] numsToFindNearestLarger = { 4, 1, 3, 5, 6 };
+        int idx = 0;
+
+        Integer nearestLargerIndex = findNearestLarger(numsToFindNearestLarger, idx);
+        if (nearestLargerIndex != null) {
+            System.out.println("Nearest larger number index: " + nearestLargerIndex);
+        } else {
+            System.out.println("No nearest larger number found.");
+        }
+
+        /*
+         * Q66.
+         * Given a binary tree where all nodes are either 0 or 1, prune the tree so that
+         * subtrees containing all 0s are removed.
+         * For example, given the following tree:
+         * "   0       "
+         * "  / \      "
+         * " 1   0     "
+         * "    / \    "
+         * "   1   0   "
+         * "  / \      "
+         * " 0   0     "
+         * should be pruned to:
+         * "   0       "
+         * "  / \      "
+         * " 1   0     "
+         * "    /      "
+         * "   1       "
+         * We do not remove the tree at the root or its left child because it still has
+         * a 1 as a descendant.
+         */
+        System.out.println("========= Q66 ==========");
+        TreeNode<Integer> rootToPrune = new TreeNode<>(0);
+        rootToPrune.left = new TreeNode<>(1);
+        rootToPrune.right = new TreeNode<>(0);
+        rootToPrune.right.left = new TreeNode<>(1);
+        rootToPrune.right.right = new TreeNode<>(0);
+        rootToPrune.right.left.left = new TreeNode<>(0);
+        rootToPrune.right.left.right = new TreeNode<>(0);
+
+        TreeNode<Integer> prunedTree = pruneTree(rootToPrune);
+
+        printTree(prunedTree);
+
+        /*
+         * Q67.
+         * https://en.wikipedia.org/wiki/Gray_code
+         * Gray code is a binary code where each successive value differ in only one
+         * bit, as well as when wrapping around. Gray code is common in hardware so that
+         * we don't see temporary spurious values during transitions.
+         * Given a number of bits n, generate a possible gray code for it.
+         * For example, for n = 2, one gray code would be [00, 01, 11, 10].
+         */
+        System.out.println("========= Q67 ==========");
+        int nForGrayCode = 2;
+        List<String> grayCode = generateGrayCode(nForGrayCode);
+
+        for (String code : grayCode) {
+            System.out.println(code);
+        }
+
+        /*
+         * Q68.
+         * Given a 2-D matrix representing an image, a location of a pixel in the screen
+         * and a color C, replace the color of the given pixel and all adjacent same
+         * colored pixels with C.
+         * For example, given the following matrix, and location pixel of (2, 2), and
+         * 'G' for green:
+         * B B W
+         * W W W
+         * W W W
+         * B B B
+         * Becomes
+         * B B G
+         * G G G
+         * G G G
+         * B B B
+         */
+        System.out.println("========= Q68 ==========");
+        char[][] image = {
+                { 'B', 'B', 'W' },
+                { 'W', 'W', 'W' },
+                { 'W', 'W', 'W' },
+                { 'B', 'B', 'B' }
+        };
+
+        int[] pxLocation = { 2, 2 };
+        char newColor = 'G';
+
+        replaceColor(image, pxLocation[0], pxLocation[1], newColor);
+
+        for (char[] row : image) {
+            for (char pixel : row) {
+                System.out.print(pixel + " ");
+            }
+            System.out.println();
+        }
+
+        /*
+         * Q69.
+         * You are given n numbers as well as n probabilities that sum up to 1. Write a
+         * function to generate one of the numbers with its corresponding probability.
+         * For example, given the numbers [1, 2, 3, 4] and probabilities [0.1, 0.5, 0.2,
+         * 0.2], your function should return 1 10% of the time, 2 50% of the time, and 3
+         * and 4 20% of the time.
+         * You can generate random numbers between 0 and 1 uniformly.
+         */
+        System.out.println("========= Q69 ==========");
+        int[] numbers = { 1, 2, 3, 4 };
+        double[] probabilities = { 0.1, 0.5, 0.2, 0.2 };
+
+        NumberGenerator generator = new NumberGenerator(numbers, probabilities);
+
+        for (int i = 0; i < 10; i++) {
+            int number = generator.generateNumberWithProbability();
+            System.out.println("Generated number: " + number);
+        }
+
+        /*
+         * Q70.
+         * Given a list of elements, find the majority element, which appears more than
+         * half the time (> floor(len(lst) / 2.0)).
+         * You can assume that such element exists.
+         * For example, given [1, 2, 1, 1, 3, 4, 0], return 1.
+         */
+        System.out.println("========= Q70 ==========");
+        List<Integer> numsToFindMajority = List.of(1, 2, 1, 1, 3, 4, 0);
+        int majorityElement = findMajorityElement(numsToFindMajority);
+        System.out.println("Majority Element: " + majorityElement);
 
     }
 }

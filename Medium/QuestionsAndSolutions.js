@@ -3118,11 +3118,11 @@ function largestRectangleArea(heights) {
 
     let stack = [];
     for (let i = 0; i <= n; i++) {
-        let height = (i === n) ? 0 : heights[i];
+        let height = i === n ? 0 : heights[i];
 
-        while(stack.length > 0 && height < heights[stack[stack.length - 1]]) {
+        while (stack.length > 0 && height < heights[stack[stack.length - 1]]) {
             const h = heights[stack.pop()];
-            const w = (stack.length === 0) ? i : i - stack[stack.length - 1] - 1;
+            const w = stack.length === 0 ? i : i - stack[stack.length - 1] - 1;
             const area = h * w;
             maxArea = Math.max(maxArea, area);
         }
@@ -3142,14 +3142,14 @@ function maximalRectangle(matrix) {
     let heights = new Array(cols).fill(0);
 
     for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < cols; j ++) {
+        for (let j = 0; j < cols; j++) {
             if (matrix[i][j] === 1) {
                 heights[j] += 1;
             } else {
                 heights[j] = 0;
             }
         }
-        
+
         const area = largestRectangleArea(heights);
         maxArea = Math.max(maxArea, area);
     }
@@ -3157,11 +3157,538 @@ function maximalRectangle(matrix) {
 }
 
 console.log('========= Q60 =========');
-const rectangleMatrix = [[1, 0, 0, 0],
-                [1, 0, 1, 1],
-                [1, 0, 1, 1],
-                [0, 1, 0, 0]];
+const rectangleMatrix = [
+    [1, 0, 0, 0],
+    [1, 0, 1, 1],
+    [1, 0, 1, 1],
+    [0, 1, 0, 0],
+];
 
 const maxArea = maximalRectangle(rectangleMatrix);
 console.log(`Maximum rectangle area containing only 1's is: ${maxArea}`);
+console.log('\n');
+
+/*
+ * Q61.
+ * Implement a bit array.
+ * A bit array is a space efficient array that holds a value of 1 or 0 at each
+ * index.
+ * init(size): initialize the array with size
+ * set(i, val): updates index at i with val where val is either 1 or 0.
+ * get(i): gets the value at index i.
+ */
+class BitArray {
+    #_arr;
+
+    constructor(size) {
+        const length = Math.floor((size + 31) / 32);
+        this.#_arr = new Array(length);
+    }
+
+    set(i, val) {
+        if (val !== 0 && val !== 1) {
+            throw new Error('Value must be either 0 or 1');
+        }
+
+        const index = Math.floor(i / 32); // Calculate the index of the integer
+        const bitIndex = i % 32; // Calculate the bit index within the integer
+
+        if (val === 1) {
+            this.#_arr[index] |= 1 << bitIndex; // Set the bit at given index
+        } else {
+            this.#_arr[index] &= ~(1 << bitIndex); // Clear the bit at the given index
+        }
+    }
+
+    get(i) {
+        const index = Math.floor(i / 32); // Calculate the index of the integer
+        const bitIndex = i % 32; // Calculate the bit index within the integer
+        return (this.#_arr[index] >> bitIndex) & 1; // Get the value of the bit at the given index
+    }
+}
+
+console.log('========= Q61 =========');
+const bitArray = new BitArray(10);
+bitArray.set(3, 1);
+bitArray.set(7, 1);
+bitArray.set(9, 1);
+
+console.log(`Value at index 3: ${bitArray.get(3)}`); // Output: 1
+console.log(`Value at index 7: ${bitArray.get(7)}`); // Output: 1
+console.log(`Value at index 9: ${bitArray.get(9)}`); // Output: 1
+console.log(`Value at index 0: ${bitArray.get(0)}`); // Output: 0
+console.log(`Value at index 5: ${bitArray.get(5)}`); // Output: 0
+console.log('\n');
+
+/*
+ * Q62.
+ * Given an iterator with methods next() and hasNext(), create a wrapper
+ * iterator, PeekableInterface, which also implements peek(). peek shows the
+ * next element that would be returned on next().
+ * Here is the interface:
+ * "class PeekableInterface(object):   "
+ * "    def __init__(self, iterator):  "
+ * "        pass                       "
+ * "    def peek(self):                "
+ * "        pass                       "
+ * "    def next(self):                "
+ * "        pass                       "
+ * "    def hasNext(self):             "
+ * "        pass                       "
+ */
+class PeekableInterface {
+    #_iterator;
+    #_nextElement;
+    #_hasNext;
+
+    constructor(iterator) {
+        this.#_iterator = iterator;
+        this.#_nextElement = null;
+        this.#_hasNext = iterator.hasNext();
+
+        if (this.#_hasNext) {
+            this.#_nextElement = iterator.next();
+        }
+    }
+
+    peek() {
+        if (!this.#_hasNext) {
+            throw new Error('No more element to peek');
+        }
+        return this.#_nextElement;
+    }
+
+    next() {
+        if (!this.#_hasNext) {
+            throw new Error('No more elements');
+        }
+
+        const currentElement = this.#_nextElement;
+        if (this.#_iterator.hasNext()) {
+            this.#_nextElement = this.#_iterator.next();
+        } else {
+            this.#_nextElement = null;
+            this.#_hasNext = false;
+        }
+        return currentElement;
+    }
+
+    hasNext() {
+        return this.#_hasNext;
+    }
+}
+
+console.log('========= Q62 =========');
+const arr = [1, 2, 3, 4, 5];
+const iterator = {
+    index: 0,
+    next() {
+        if (this.index < arr.length) {
+            return arr[this.index++];
+        }
+        return null;
+    },
+    hasNext() {
+        return this.index < arr.length;
+    },
+};
+const peekable = new PeekableInterface(iterator);
+
+console.log(peekable.peek()); // Output: 1
+console.log(peekable.next()); // Output: 1
+console.log(peekable.next()); // Output: 2
+console.log(peekable.peek()); // Output: 3
+console.log(peekable.next()); // Output: 3
+console.log(peekable.hasNext()); // Output: true
+console.log('\n');
+
+/*
+ * Q63.
+ * Given an array of integers in which two elements appear exactly once and all
+ * other elements appear exactly twice, find the two elements that appear only
+ * once.
+ * For example, given the array [2, 4, 6, 8, 10, 2, 6, 10], return 4 and 8. The
+ * order does not matter.
+ * Follow-up: Can you do this in linear time and constant space?
+ */
+function findTwoSingleElements(nums) {
+    let xor = 0;
+
+    for (const num of nums) {
+        xor ^= num;
+    }
+
+    // Find the rightmost set bit indicating a difference between two single elements
+    const rightmostSetBit = xor & -xor;
+
+    let num1 = 0;
+    let num2 = 0;
+
+    // Divide the numbers into two groups based on the rightmost set bit
+    for (const num of nums) {
+        if ((num & rightmostSetBit) !== 0) {
+            num1 ^= num;
+        } else {
+            num2 ^= num;
+        }
+    }
+
+    return [num1, num2];
+}
+
+console.log('========= Q63 =========');
+const numArr = [2, 4, 6, 8, 10, 2, 6, 10];
+const singleAppearances = findTwoSingleElements(numArr);
+console.log(`Single elements: ${singleAppearances}`);
+console.log('\n');
+
+/*
+ * Q64.
+ * Given a pivot x, and a list lst, partition the list into three parts.
+ * The first part contains all elements in lst that are less than x
+ * The second part contains all elements in lst that are equal to x
+ * The third part contains all elements in lst that are larger than x
+ * Ordering within a part can be arbitrary.
+ * For example, given x = 10 and lst = [9, 12, 3, 5, 14, 10, 10], one partition
+ * may be [9, 3, 5, 10, 10, 12, 14].
+ */
+function partitionList(lst, x) {
+    let low = 0;
+    let high = lst.length - 1;
+    let i = 0;
+
+    while (i <= high) {
+        if (lst[i] < x) {
+            swap(lst, i, low);
+            i++;
+            low++;
+        } else if (lst[i] > x) {
+            swap(lst, i, high);
+            high--;
+        } else {
+            i++;
+        }
+    }
+}
+
+console.log('========= Q64 =========');
+const pivot = 10;
+const lst = [9, 12, 3, 5, 14, 10, 10];
+
+partitionList(lst, pivot);
+console.log(`Partitioned list: ${lst}`);
+console.log('\n');
+
+/*
+ * Q65.
+ * Given an array of numbers and an index i, return the index of the nearest
+ * larger number of the number at index i, where distance is measured in array
+ * indices.
+ * For example, given [4, 1, 3, 5, 6] and index 0, you should return 3.
+ * If two distances to larger numbers are the equal, then return any one of
+ * them. If the array at i doesn't have a nearest larger integer, then return
+ * null.
+ * Follow-up: If you can preprocess the array, can you do this in constant time?
+ */
+function findNearestLarger(nums, index) {
+    let left = index - 1;
+    let right = index + 1;
+    const n = nums.length;
+    let nearestLargerIndex = null;
+
+    while (left >= 0 || right < n) {
+        if (left >= 0 && nums[left] > nums[index]) {
+            nearestLargerIndex = left;
+            break;
+        }
+        if (right < n && nums[right] > nums[index]) {
+            nearestLargerIndex = right;
+            break;
+        }
+        left--;
+        right++;
+    }
+
+    return nearestLargerIndex;
+}
+
+console.log('========= Q65 =========');
+const numsToFindNearestLarger = [4, 1, 3, 5, 6];
+const idx = 0;
+
+const nearestLargerIndex = findNearestLarger(numsToFindNearestLarger, idx);
+if (nearestLargerIndex !== null) {
+    console.log(`Nearest larger number index: ${nearestLargerIndex}`);
+} else {
+    console.log('No nearest larger number found.');
+}
+console.log('\n');
+
+/*
+ * Q66.
+ * Given a binary tree where all nodes are either 0 or 1, prune the tree so that
+ * subtrees containing all 0s are removed.
+ * For example, given the following tree:
+ * "   0       "
+ * "  / \      "
+ * " 1   0     "
+ * "    / \    "
+ * "   1   0   "
+ * "  / \      "
+ * " 0   0     "
+ * should be pruned to:
+ * "   0       "
+ * "  / \      "
+ * " 1   0     "
+ * "    /      "
+ * "   1       "
+ * We do not remove the tree at the root or its left child because it still has
+ * a 1 as a descendant.
+ */
+function pruneTree(root) {
+    if (!root) {
+        return null;
+    }
+
+    root.left = pruneTree(root.left);
+    root.right = pruneTree(root.right);
+
+    if (!root.left && !root.right && root.val === 0) {
+        return null;
+    }
+
+    return root;
+}
+
+console.log('========= Q66 =========');
+const rootToPrune = new TreeNode(0);
+rootToPrune.left = new TreeNode(1);
+rootToPrune.right = new TreeNode(0);
+rootToPrune.right.left = new TreeNode(1);
+rootToPrune.right.right = new TreeNode(0);
+rootToPrune.right.left.left = new TreeNode(0);
+rootToPrune.right.left.right = new TreeNode(0);
+
+const prunedTree = pruneTree(rootToPrune);
+printTree(prunedTree);
+console.log('\n');
+
+/*
+ * Q67.
+ * https://en.wikipedia.org/wiki/Gray_code
+ * Gray code is a binary code where each successive value differ in only one
+ * bit, as well as when wrapping around. Gray code is common in hardware so that
+ * we don't see temporary spurious values during transitions.
+ * Given a number of bits n, generate a possible gray code for it.
+ * For example, for n = 2, one gray code would be [00, 01, 11, 10].
+ */
+function generateGrayCode(n) {
+    if (n <= 0) {
+        return [];
+    }
+
+    let grayCode = [];
+    grayCode.push('0');
+    grayCode.push('1');
+
+    for (let i = 2; i <= n; i++) {
+        const size = grayCode.length;
+
+        for (let j = size - 1; j >= 0; j--) {
+            grayCode.push(grayCode[j]);
+        }
+
+        for (let j = 0; j < size; j++) {
+            grayCode[j] = '0' + grayCode[j];
+            grayCode[j + size] = '1' + grayCode[j + size];
+        }
+    }
+    return grayCode;
+}
+
+console.log('========= Q67 =========');
+const nForGrayCode = 3;
+const grayCode = generateGrayCode(nForGrayCode);
+console.log(`Gray code for ${nForGrayCode} bits: ${grayCode}`);
+console.log('\n');
+
+/*
+ * Q68.
+ * Given a 2-D matrix representing an image, a location of a pixel in the screen
+ * and a color C, replace the color of the given pixel and all adjacent same
+ * colored pixels with C.
+ * For example, given the following matrix, and location pixel of (2, 2), and
+ * 'G' for green:
+ * B B W
+ * W W W
+ * W W W
+ * B B B
+ * Becomes
+ * B B G
+ * G G G
+ * G G G
+ * B B B
+ */
+function replaceColour(image, x, y, newColour) {
+    const rows = image.length;
+    if (rows === 0) {
+        return;
+    }
+
+    const cols = image[0].length;
+    const originalColour = image[x][y];
+
+    if (originalColour === newColour) {
+        return;
+    }
+
+    replaceColourDFS(image, x, y, originalColour, newColour, rows, cols);
+}
+
+function replaceColourDFS(image, x, y, originalColour, newColour, rows, cols) {
+    if (
+        x < 0 ||
+        x >= rows ||
+        y < 0 ||
+        y >= cols ||
+        image[x][y] !== originalColour
+    ) {
+        return;
+    }
+
+    image[x][y] = newColour;
+
+    replaceColourDFS(image, x - 1, y, originalColour, newColour, rows, cols);
+    replaceColourDFS(image, x + 1, y, originalColour, newColour, rows, cols);
+    replaceColourDFS(image, x, y - 1, originalColour, newColour, rows, cols);
+    replaceColourDFS(image, x, y + 1, originalColour, newColour, rows, cols);
+}
+
+console.log('========= Q68 =========');
+const image = [
+    ['B', 'B', 'W'],
+    ['W', 'W', 'W'],
+    ['W', 'W', 'W'],
+    ['B', 'B', 'B'],
+];
+
+const pxLocation = [2, 2];
+const newColour = 'G';
+
+replaceColour(image, pxLocation[0], pxLocation[1], newColour);
+
+let imageToPrint = '';
+for (const row of image) {
+    for (const pixel of row) {
+        imageToPrint += pixel + ' ';
+    }
+    imageToPrint += '\n';
+}
+console.log(imageToPrint);
+console.log('\n');
+
+/*
+ * Q69.
+ * You are given n numbers as well as n probabilities that sum up to 1. Write a
+ * function to generate one of the numbers with its corresponding probability.
+ * For example, given the numbers [1, 2, 3, 4] and probabilities [0.1, 0.5, 0.2,
+ * 0.2], your function should return 1 10% of the time, 2 50% of the time, and 3
+ * and 4 20% of the time.
+ * You can generate random numbers between 0 and 1 uniformly.
+ */
+class NumberGenerator {
+    #_numbers;
+    #_cumulativeProbabilities;
+
+    constructor(numbers, probabilities) {
+        if (numbers.length !== probabilities.length) {
+            throw new Error(
+                'Number of numbers and probabilities must be the same'
+            );
+        }
+
+        this.#_numbers = numbers;
+        this.#_cumulativeProbabilities =
+            this.calculateCumulativeProbabilities(probabilities);
+    }
+
+    generateNumberWithProbability() {
+        const index = this.binarySearch(
+            this.#_cumulativeProbabilities,
+            Math.random()
+        );
+
+        return this.#_numbers[index];
+    }
+
+    calculateCumulativeProbabilities(probabilities) {
+        const cumulativeProbabilities = new Array(probabilities.length);
+        cumulativeProbabilities[0] = probabilities[0];
+
+        for (let i = 1; i < probabilities.length; i++) {
+            cumulativeProbabilities[i] =
+                cumulativeProbabilities[i - 1] + probabilities[i];
+        }
+        return cumulativeProbabilities;
+    }
+
+    binarySearch(arr, target) {
+        let left = 0;
+        let right = arr.length - 1;
+
+        while (left < right) {
+            const mid = Math.floor((left + right) / 2);
+
+            if (arr[mid] < target) {
+                left = mid + 1;
+            } else {
+                right = mid;
+            }
+        }
+        return left;
+    }
+}
+
+console.log('========= Q69 =========');
+const numbers = [1, 2, 3, 4];
+const probabilities = [0.1, 0.5, 0.2, 0.2];
+const generator = new NumberGenerator(numbers, probabilities);
+
+for (let i = 0; i < 10; i++) {
+    console.log(generator.generateNumberWithProbability());
+}
+console.log('\n');
+
+/*
+ * Q70.
+ * Given a list of elements, find the majority element, which appears more than
+ * half the time (> floor(len(lst) / 2.0)).
+ * You can assume that such element exists.
+ * For example, given [1, 2, 1, 1, 3, 4, 0], return 1.
+ */
+function findMajorityElement(nums) {
+    let countMap = new Map();
+
+    for (const num of nums) {
+        countMap.set(num, (countMap.get(num) || 0) + 1);
+    }
+
+    let majorityElement = 0;
+    let majorityCount = 0;
+
+    for (const entry of countMap.entries()) {
+        const element = entry[0];
+        const count = entry[1];
+
+        if (count > majorityCount) {
+            majorityElement = element;
+            majorityCount = count;
+        }
+    }
+    return majorityElement;
+}
+
+console.log('========= Q70 =========');
+const numsForMajorityElement = [1, 2, 1, 1, 3, 4, 0];
+console.log(`Majority element: ${findMajorityElement(numsForMajorityElement)}`);
 console.log('\n');
