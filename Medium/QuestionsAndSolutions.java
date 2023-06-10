@@ -2241,6 +2241,433 @@ public class QuestionsAndSolutions {
         return majorityElement;
     }
 
+    // S71.
+    public static int findSmallestSquaredSum(int n) {
+        int[] dp = new int[n + 1];
+
+        for (int i = 1; i <= n; i++) {
+            dp[i] = Integer.MAX_VALUE;
+
+            for (int j = 1; j * j <= i; j++) {
+                // Update dp[i] by considering the minimum of dp[i - j*j] + 1
+                dp[i] = Math.min(dp[i], dp[i - j * j] + 1);
+            }
+        }
+
+        return dp[n];
+    }
+
+    // S72.
+    public static int countPaths(int[][] matrix) {
+        int m = matrix.length;
+        int n = matrix[0].length;
+
+        int[][] dp = new int[m][n];
+
+        // Initialize the first row and first column
+        dp[0][0] = 1;
+        for (int i = 1; i < m; i++) {
+            if (matrix[i][0] == 1) {
+                break;
+            }
+            dp[i][0] = 1;
+        }
+        for (int j = 1; j < n; j++) {
+            if (matrix[0][j] == 1) {
+                break;
+            }
+            dp[0][j] = 1;
+        }
+
+        for (int i = 1; i < m; i++) {
+            for (int j = 1; j < n; j++) {
+                if (matrix[i][j] == 1) {
+                    continue;
+                }
+                dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+            }
+        }
+
+        return dp[m - 1][n - 1];
+    }
+
+    // S73.
+    static class WordTrieNode {
+        Map<Character, WordTrieNode> children;
+        int count;
+
+        public WordTrieNode() {
+            this.children = new HashMap<>();
+            this.count = 0;
+        }
+    }
+
+    public static List<String> findShortestUniquePrefix(String[] words) {
+        WordTrieNode root = new WordTrieNode();
+        buildTrie(root, words);
+
+        List<String> result = new ArrayList<>();
+        for (String word : words) {
+            String prefix = findPrefix(root, word);
+            result.add(prefix);
+        }
+        return result;
+    }
+
+    private static void buildTrie(WordTrieNode root, String[] words) {
+        for (String word : words) {
+            WordTrieNode current = root;
+            for (char c : word.toCharArray()) {
+                current.count++;
+                current.children.putIfAbsent(c, new WordTrieNode());
+                current = current.children.get(c);
+            }
+            current.count++;
+        }
+    }
+
+    private static String findPrefix(WordTrieNode root, String word) {
+        StringBuilder prefix = new StringBuilder();
+        WordTrieNode current = root;
+        for (char c : word.toCharArray()) {
+            prefix.append(c);
+            current = current.children.get(c);
+            if (current.count == 1) {
+                break;
+            }
+        }
+        return prefix.toString();
+    }
+
+    // S74.
+    public static int findDuplicate(int[] nums) {
+        int slow = nums[0];
+        int fast = nums[0];
+
+        // Move slow pointer by one step and fast pointer by two steps
+        do {
+            slow = nums[slow];
+            fast = nums[nums[fast]];
+        } while (slow != fast);
+
+        return slow;
+    }
+
+    // S75.
+    static class Element {
+        int value;
+        int index;
+
+        public Element(int value, int index) {
+            this.value = value;
+            this.index = index;
+        }
+    }
+
+    private static void mergeSort(Element[] elements, int start, int end, int[] counts) {
+        if (start >= end) {
+            return;
+        }
+
+        int mid = start + (end - start) / 2;
+
+        mergeSort(elements, start, mid, counts);
+        mergeSort(elements, mid + 1, end, counts);
+
+        merge(elements, start, mid, end, counts);
+    }
+
+    private static void merge(Element[] elements, int start, int mid, int end, int[] counts) {
+        int leftSize = mid - start + 1;
+        Element[] leftElements = new Element[leftSize];
+        System.arraycopy(elements, start, leftElements, 0, leftSize);
+
+        int rightSize = end - mid;
+        Element[] rightElements = new Element[rightSize];
+        System.arraycopy(elements, mid + 1, rightElements, 0, rightSize);
+
+        int i = 0, j = 0, k = start, smallerCount = 0;
+
+        while (i < leftSize && j < rightSize) {
+            if (leftElements[i].value <= rightElements[j].value) {
+                elements[k] = leftElements[i];
+                counts[leftElements[i].index] += smallerCount;
+                i++;
+            } else {
+                elements[k] = rightElements[j];
+                smallerCount++;
+                j++;
+            }
+            k++;
+        }
+
+        while (i < leftSize) {
+            elements[k] = leftElements[i];
+            counts[leftElements[i].index] += smallerCount;
+            i++;
+            k++;
+        }
+
+        while (j < rightSize) {
+            elements[k] = rightElements[j];
+            j++;
+            k++;
+        }
+    }
+
+    public static int[] countSmallerElements(int[] nums) {
+        int[] counts = new int[nums.length];
+        Element[] elements = new Element[nums.length];
+
+        for (int i = 0; i < nums.length; i++) {
+            elements[i] = new Element(nums[i], i);
+        }
+
+        mergeSort(elements, 0, nums.length - 1, counts);
+
+        return counts;
+    }
+
+    // S76.
+    static class TwoDIterator<T> {
+        private Iterator<List<T>> rowIterator;
+        private Iterator<T> colIterator;
+
+        public TwoDIterator(List<List<T>> arrays) {
+            rowIterator = arrays.iterator();
+            colIterator = null;
+        }
+
+        public boolean hasNext() {
+            if (colIterator == null || !colIterator.hasNext()) {
+                while (rowIterator.hasNext()) {
+                    List<T> row = rowIterator.next();
+                    if (!row.isEmpty()) {
+                        colIterator = row.iterator();
+                        return true;
+                    }
+                }
+                return false;
+            }
+            return true;
+        }
+
+        public T next() {
+            if (hasNext()) {
+                return colIterator.next();
+            }
+            throw new RuntimeException("No more elements");
+        }
+    }
+
+    // S77.
+    public static void rotateMatrix(int[][] matrix) {
+        int n = matrix.length;
+
+        // Transpose the matrix
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                int temp = matrix[i][j];
+                matrix[i][j] = matrix[j][i];
+                matrix[j][i] = temp;
+            }
+        }
+
+        // Reverse each row
+        for (int i = 0; i < n; i++) {
+            int start = 0;
+            int end = n - 1;
+            while (start < end) {
+                int temp = matrix[i][start];
+                matrix[i][start] = matrix[i][end];
+                matrix[i][end] = temp;
+                start++;
+                end--;
+            }
+        }
+    }
+
+    // S78.
+    public static ListNode sortList(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+
+        ListNode middle = getMiddle(head);
+        ListNode nextOfMiddle = middle.next;
+
+        // Split the list into two halves
+        middle.next = null;
+
+        ListNode left = sortList(head);
+        ListNode right = sortList(nextOfMiddle);
+
+        ListNode sortedList = merge(left, right);
+
+        return sortedList;
+    }
+
+    private static ListNode getMiddle(ListNode head) {
+        if (head == null) {
+            return null;
+        }
+
+        ListNode slow = head;
+        ListNode fast = head.next;
+
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+
+        return slow;
+    }
+
+    private static ListNode merge(ListNode l1, ListNode l2) {
+        ListNode dummy = new ListNode(0);
+        ListNode curr = dummy;
+
+        while (l1 != null && l2 != null) {
+            if (l1.val <= l2.val) {
+                curr.next = l1;
+                l1 = l1.next;
+            } else {
+                curr.next = l2;
+                l2 = l2.next;
+            }
+            curr = curr.next;
+        }
+
+        if (l1 != null) {
+            curr.next = l1;
+        } else if (l2 != null) {
+            curr.next = l2;
+        }
+
+        return dummy.next;
+    }
+
+    // S79.
+    static class WordTransformation {
+        public List<String> findTransformation(String start, String end, Set<String> dictionary) {
+            dictionary.add(start);
+
+            // Build the adjacency graph
+            Map<String, List<String>> graph = buildGraph(dictionary);
+
+            // Perform BFS traversal
+            Map<String, String> parentMap = new HashMap<>();
+            Queue<String> queue = new LinkedList<>();
+            Set<String> visited = new HashSet<>();
+
+            queue.offer(start);
+            visited.add(start);
+
+            while (!queue.isEmpty()) {
+                String current = queue.poll();
+
+                if (current.equals(end)) {
+                    return constructPath(parentMap, start, end);
+                }
+
+                List<String> transformations = graph.getOrDefault(current, new ArrayList<>());
+
+                for (String word : transformations) {
+                    if (!visited.contains(word)) {
+                        parentMap.put(word, current);
+                        visited.add(word);
+                        queue.offer(word);
+                    }
+                }
+            }
+            return null;
+        }
+
+        private Map<String, List<String>> buildGraph(Set<String> dictionary) {
+            Map<String, List<String>> graph = new HashMap<>();
+
+            for (String word : dictionary) {
+                graph.put(word, new ArrayList<>());
+
+                char[] chars = word.toCharArray();
+                for (int i = 0; i < chars.length; i++) {
+                    char originalChar = chars[i];
+
+                    for (char c = 'a'; c <= 'z'; c++) {
+                        if (c == originalChar) {
+                            continue;
+                        }
+
+                        chars[i] = c;
+                        String transformedWord = String.valueOf(chars);
+
+                        if (dictionary.contains(transformedWord)) {
+                            graph.get(word).add(transformedWord);
+                        }
+                    }
+
+                    chars[i] = originalChar;
+                }
+            }
+
+            return graph;
+        }
+
+        private List<String> constructPath(Map<String, String> parentMap, String start, String end) {
+            List<String> path = new ArrayList<>();
+            String current = end;
+
+            while (current != null) {
+                path.add(0, current);
+                current = parentMap.get(current);
+            }
+
+            return path;
+        }
+    }
+
+    // S80.
+    public static List<Integer> findSubstring(String s, String[] words) {
+        List<Integer> result = new ArrayList<>();
+        if (s == null || s.length() == 0 || words == null || words.length == 0) {
+            return result;
+        }
+
+        int wordLength = words[0].length();
+        int totalLength = wordLength * words.length;
+
+        Map<String, Integer> wordCount = new HashMap<>();
+        for (String word : words) {
+            wordCount.put(word, wordCount.getOrDefault(word, 0) + 1);
+        }
+
+        for (int i = 0; i <= s.length() - totalLength; i++) {
+            Map<String, Integer> currentCount = new HashMap<>();
+            int j = 0;
+
+            while (j < words.length) {
+                String word = s.substring(i + j * wordLength, i + (j + 1) * wordLength);
+                if (!wordCount.containsKey(word)) {
+                    break;
+                }
+
+                currentCount.put(word, currentCount.getOrDefault(word, 0) + 1);
+
+                if (currentCount.get(word) > wordCount.get(word)) {
+                    break;
+                }
+
+                j++;
+            }
+
+            if (j == words.length) {
+                result.add(i);
+            }
+        }
+
+        return result;
+    }
+
     public static void main(String[] args) {
         /*
          * Q1.
@@ -3736,6 +4163,231 @@ public class QuestionsAndSolutions {
         List<Integer> numsToFindMajority = List.of(1, 2, 1, 1, 3, 4, 0);
         int majorityElement = findMajorityElement(numsToFindMajority);
         System.out.println("Majority Element: " + majorityElement);
+
+        /*
+         * Q71.
+         * Given a positive integer n, find the smallest number of squared integers
+         * which sum to n.
+         * For example, given n = 13, return 2 since 13 = 3^2 + 2^2 = 9 + 4.
+         * Given n = 27, return 3 since 27 = 3^2 + 3^2 + 3^2 = 9 + 9 + 9.
+         */
+        System.out.println("========= Q71 ==========");
+        int nToFindSquaredInt = 13;
+        int smallestSum = findSmallestSquaredSum(nToFindSquaredInt);
+        System.out.println("Smallest number of squared integers for " + n + ": " + smallestSum);
+
+        nToFindSquaredInt = 27;
+        smallestSum = findSmallestSquaredSum(nToFindSquaredInt);
+        System.out.println("Smallest number of squared integers for " + n + ": " + smallestSum);
+
+        /*
+         * Q72.
+         * You are given an N by M matrix of 0s and 1s. Starting from the top left
+         * corner, how many ways are there to reach the bottom right corner?
+         * You can only move right and down. 0 represents an empty space while 1
+         * represents a wall you cannot walk through.
+         * For example, given the following matrix:
+         * [[0, 0, 1],
+         * [0, 0, 1],
+         * [1, 0, 0]]
+         * Return two, as there are only two ways to get to the bottom right:
+         * Right, down, down, right
+         * Down, right, down, right
+         * The top left corner and bottom right corner will always be 0.
+         */
+        System.out.println("========= Q72 ==========");
+        int[][] matrixOf01 = {
+                { 0, 0, 1 },
+                { 0, 0, 1 },
+                { 1, 0, 0 }
+        };
+        int numPaths = countPaths(matrixOf01);
+        System.out.println("Number of paths: " + numPaths);
+
+        /*
+         * Q73.
+         * Given a list of words, return the shortest unique prefix of each word. For
+         * example, given the list:
+         * dog
+         * cat
+         * apple
+         * apricot
+         * fish
+         * Return the list:
+         * d
+         * c
+         * app
+         * apr
+         * f
+         */
+        System.out.println("========= Q73 ==========");
+        String[] wordList = { "dog", "cat", "apple", "apricot", "fish" };
+        List<String> prefixes = findShortestUniquePrefix(wordList);
+        for (String prefix : prefixes) {
+            System.out.println(prefix);
+        }
+
+        /*
+         * Q74.
+         * You are given an array of length n + 1 whose elements belong to the set {1,
+         * 2, ..., n}. By the pigeonhole principle, there must be a duplicate. Find it
+         * in linear time and space.
+         */
+        System.out.println("========= Q74 ==========");
+        int[] arrWithDuplicate = { 1, 3, 4, 2, 2 };
+        int duplicate = findDuplicate(arrWithDuplicate);
+        System.out.println("Duplicate element: " + duplicate);
+
+        /*
+         * Q75.
+         * Given an array of integers, return a new array where each element in the new
+         * array is the number of smaller elements to the right of that element in the
+         * original input array.
+         * For example, given the array [3, 4, 9, 6, 1], return [1, 1, 2, 1, 0], since:
+         * There is 1 smaller element to the right of 3
+         * There is 1 smaller element to the right of 4
+         * There are 2 smaller elements to the right of 9
+         * There is 1 smaller element to the right of 6
+         * There are no smaller elements to the right of 1
+         */
+        System.out.println("========= Q75 ==========");
+        int[] numsToFindSmallerRightElements = { 3, 4, 9, 6, 1 };
+        int[] numsOfSmallerRightElements = countSmallerElements(numsToFindSmallerRightElements);
+
+        System.out.println(Arrays.toString(numsOfSmallerRightElements));
+
+        /*
+         * Q76.
+         * Implement a 2D iterator class. It will be initialized with an array of
+         * arrays, and should implement the following methods:
+         * next(): returns the next element in the array of arrays. If there are no more
+         * elements, raise an exception.
+         * has_next(): returns whether or not the iterator still has elements left.
+         * For example, given the input [[1, 2], [3], [], [4, 5, 6]], calling next()
+         * repeatedly should output 1, 2, 3, 4, 5, 6.
+         * Do not use flatten or otherwise clone the arrays. Some of the arrays can be
+         * empty.
+         */
+        System.out.println("========= Q76 ==========");
+        List<List<Integer>> arrays = List.of(
+                List.of(1, 2),
+                List.of(3),
+                List.of(),
+                List.of(4, 5, 6));
+
+        TwoDIterator<Integer> twoDIterator = new TwoDIterator<>(arrays);
+
+        while (twoDIterator.hasNext()) {
+            System.out.println(twoDIterator.next());
+        }
+
+        /*
+         * Q77.
+         * Given an N by N matrix, rotate it by 90 degrees clockwise.
+         * For example, given the following matrix:
+         * [[1, 2, 3],
+         * [4, 5, 6],
+         * [7, 8, 9]]
+         * you should return:
+         * [[7, 4, 1],
+         * [8, 5, 2],
+         * [9, 6, 3]]
+         * Follow-up: What if you couldn't use any extra space?
+         */
+        System.out.println("========= Q77 ==========");
+        int[][] matrixToRotate = {
+                { 1, 2, 3 },
+                { 4, 5, 6 },
+                { 7, 8, 9 }
+        };
+
+        rotateMatrix(matrixToRotate);
+
+        for (int[] row : matrixToRotate) {
+            for (int num : row) {
+                System.out.print(num + " ");
+            }
+            System.out.println();
+        }
+
+        /*
+         * Q78.
+         * Given a linked list, sort it in O(n log n) time and constant space.
+         * For example, the linked list 4 -> 1 -> -3 -> 99 should become -3 -> 1 -> 4 ->
+         * 99.
+         */
+        System.out.println("========= Q78 ==========");
+        ListNode listToSort = new ListNode(4);
+        listToSort.next = new ListNode(1);
+        listToSort.next.next = new ListNode(-3);
+        listToSort.next.next.next = new ListNode(99);
+
+        ListNode sortedList = sortList(listToSort);
+
+        while (sortedList != null) {
+            System.out.print(sortedList.val + " ");
+            sortedList = sortedList.next;
+        }
+        System.out.println();
+
+        /*
+         * Q79.
+         * Given a start word, an end word, and a dictionary of valid words, find the
+         * shortest transformation sequence from start to end such that only one letter
+         * is changed at each step of the sequence, and each transformed word exists in
+         * the dictionary. If there is no possible transformation, return null. Each
+         * word in the dictionary have the same length as start and end and is
+         * lowercase.
+         * For example, given start = "dog", end = "cat", and dictionary = {"dot",
+         * "dop", "dat", "cat"}, return ["dog", "dot", "dat", "cat"].
+         * Given start = "dog", end = "cat", and dictionary = {"dot", "tod", "dat",
+         * "dar"}, return null as there is no possible transformation from dog to cat.
+         */
+        System.out.println("========= Q79 ==========");
+        String start = "dog";
+        String end = "cat";
+        Set<String> dictionary1 = new HashSet<>(Arrays.asList("dot", "dop", "dat", "cat"));
+
+        WordTransformation transformer = new WordTransformation();
+        List<String> transformation = transformer.findTransformation(start, end, dictionary1);
+
+        if (transformation != null) {
+            System.out.println(transformation);
+        } else {
+            System.out.println("No transformation sequence found.");
+        }
+
+        Set<String> dictionary2 = new HashSet<>(Arrays.asList("dot", "tod", "dat", "dar"));
+        transformation = transformer.findTransformation(start, end, dictionary2);
+
+        if (transformation != null) {
+            System.out.println(transformation);
+        } else {
+            System.out.println("No transformation sequence found.");
+        }
+
+        /*
+         * Q80.
+         * Given a string s and a list of words words, where each word is the same
+         * length, find all starting indices of substrings in s that is a concatenation
+         * of every word in words exactly once.
+         * For example, given s = "dogcatcatcodecatdog" and words = ["cat", "dog"],
+         * return [0, 13], since "dogcat" starts at index 0 and "catdog" starts at index
+         * 13.
+         * Given s = "barfoobazbitbyte" and words = ["dog", "cat"], return [] since
+         * there are no substrings composed of "dog" and "cat" in s.
+         * The order of the indices does not matter.
+         */
+        System.out.println("========= Q80 ==========");
+        String s1 = "dogcatcatcodecatdog";
+        String[] words1 = { "cat", "dog" };
+        List<Integer> substringResult1 = findSubstring(s1, words1);
+        System.out.println(substringResult1); // Output: [0, 13]
+
+        String s2 = "barfoobazbitbyte";
+        String[] words2 = { "dog", "cat" };
+        List<Integer> substringResult2 = findSubstring(s2, words2);
+        System.out.println(substringResult2); // Output: []
 
     }
 }

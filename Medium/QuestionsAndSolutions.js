@@ -3692,3 +3692,629 @@ console.log('========= Q70 =========');
 const numsForMajorityElement = [1, 2, 1, 1, 3, 4, 0];
 console.log(`Majority element: ${findMajorityElement(numsForMajorityElement)}`);
 console.log('\n');
+
+/*
+* Q71.
+* Given a positive integer n, find the smallest number of squared integers
+* which sum to n.
+* For example, given n = 13, return 2 since 13 = 3^2 + 2^2 = 9 + 4.
+* Given n = 27, return 3 since 27 = 3^2 + 3^2 + 3^2 = 9 + 9 + 9.
+*/
+function findSmallestSquaredSum(n) {
+    let dp = new Array(n + 1);
+
+    for (let i = 0; i < n; i++) {
+        dp[i] = Number.MAX_SAFE_INTEGER;
+
+        for (let j = 1; j * j <= i; j++) {
+            // Update dp[i] by considering the minimum of dp[i - j*j] + 1
+            dp[i] = Math.min(dp[i], dp[i - j * j] + 1);
+        }
+    }
+
+    return dp[n];
+}
+
+console.log('========= Q71 =========');
+let nToFindSquaredInt = 13;
+console.log(`Smallest number of squared integers for ${nToFindSquaredInt}: ${findSmallestSquaredSum(nToFindSquaredInt)}`);
+
+nToFindSquaredInt = 27;
+console.log(`Smallest number of squared integers for ${nToFindSquaredInt}: ${findSmallestSquaredSum(nToFindSquaredInt)}`);
+console.log('\n');
+
+/*
+* Q72.
+* You are given an N by M matrix of 0s and 1s. Starting from the top left
+* corner, how many ways are there to reach the bottom right corner?
+* You can only move right and down. 0 represents an empty space while 1
+* represents a wall you cannot walk through.
+* For example, given the following matrix:
+* [[0, 0, 1],
+* [0, 0, 1],
+* [1, 0, 0]]
+* Return two, as there are only two ways to get to the bottom right:
+* Right, down, down, right
+* Down, right, down, right
+* The top left corner and bottom right corner will always be 0.
+*/
+function countPaths(matrix) {
+    const m = matrix.length;
+    const n = matrix[0].length;
+
+    let dp = new Array(m).fill(0).map(() => new Array(n).fill(0));
+
+    // Initialize the first row and first column
+    dp[0][0] = 1;
+    for (let i = 1; i < m; i++) {
+        if (matrix[i][0] === 1) {
+            break;
+        }
+        dp[i][0] = 1;
+    }
+    for (let j = 1; j < n; j++) {
+        if (matrix[0][j] === 1) {
+            break;
+        }
+        dp[0][j] = 1;
+    }
+
+    for (let i = 1; i < m; i++) {
+        for (let j = 1; j < n; j++) {
+            if (matrix[i][j] === 1) {
+                continue;
+            }
+            dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+        }
+    }
+    return dp[m - 1][n - 1];
+}
+
+console.log('========= Q72 =========');
+const matrixOf01 = [
+    [0, 0, 1],
+    [0, 0, 1],
+    [1, 0, 0]
+];
+
+console.log(`Number of paths: ${countPaths(matrixOf01)}`);
+console.log('\n');
+
+/*
+* Q73.
+* Given a list of words, return the shortest unique prefix of each word. For
+* example, given the list:
+* dog
+* cat
+* apple
+* apricot
+* fish
+* Return the list:
+* d
+* c
+* app
+* apr
+* f
+*/
+class WordTrieNode {
+    #_children;
+    #_count;
+
+    constructor() {
+        this.#_children = new Map();
+        this.#_count = 0;
+    }
+
+    get count() {
+        return this.#_count;
+    }
+
+    set count(value) {
+        this.#_count = value;
+    }
+
+    get children() {
+        return this.#_children;
+    }
+
+}
+
+function findShortestUniquePrefix(words) {
+    let root = new WordTrieNode();
+    buildTrie(root, words);
+
+    let result = [];
+    for (const word of words) {
+        const prefix = findPrefix(root, word);
+        result.push(prefix);
+    }
+
+    return result;
+}
+
+function buildTrie(root, words) {
+    for (const word of words) {
+        let current = root;
+
+        for (const c of word) {
+            current.count += 1;
+            if (!current.children.has(c)) {
+                current.children.set(c, new WordTrieNode());
+            }
+            current = current.children.get(c);
+        }
+        current.count += 1;
+    }
+}
+
+function findPrefix(root, word) {
+    let prefix = '';
+    let current = root;
+
+    for (const c of word) {
+        prefix += c;
+        current = current.children.get(c);
+
+        if (current.count === 1) {
+            break;
+        }
+    }
+    return prefix;
+}
+
+console.log('========= Q73 =========');
+const wordList = ['dog', 'cat', 'apple', 'apricot', 'fish'];
+const prefixes = findShortestUniquePrefix(wordList);
+
+for (const prefix of prefixes) {
+    console.log(prefix);
+}
+console.log('\n');
+
+/*
+* Q74.
+* You are given an array of length n + 1 whose elements belong to the set {1,
+* 2, ..., n}. By the pigeonhole principle, there must be a duplicate. Find it
+* in linear time and space.
+*/
+function findDuplicate(nums) {
+    let slow = nums[0];
+    let fast = nums[0];
+
+    // Move slow pointer by one step and fast pointer by two steps
+    do {
+        slow = nums[slow];
+        fast = nums[nums[fast]];
+    } while (slow !== fast);
+
+    return slow;
+}
+
+console.log('========= Q74 =========');
+const arrWithDuplicate = [1, 3, 4, 2, 2];
+console.log(`Duplicate element: ${findDuplicate(arrWithDuplicate)}`);
+console.log('\n');
+
+/*
+* Q75.
+* Given an array of integers, return a new array where each element in the new
+* array is the number of smaller elements to the right of that element in the
+* original input array.
+* For example, given the array [3, 4, 9, 6, 1], return [1, 1, 2, 1, 0], since:
+* There is 1 smaller element to the right of 3
+* There is 1 smaller element to the right of 4
+* There are 2 smaller elements to the right of 9
+* There is 1 smaller element to the right of 6
+* There are no smaller elements to the right of 1
+*/
+class Element {
+    constructor(value, index) {
+        this.value = value;
+        this.index = index;
+    }
+}
+
+function countSmallerElements(nums) {
+    let counts = new Array(nums.length).fill(0);
+    let elements = new Array(nums.length).fill(0).map((_, i) => new Element(nums[i], i));
+
+    mergeSort(elements, 0, nums.length - 1, counts);
+
+    return counts;
+}
+
+function mergeSort(elements, start, end, counts) {
+    if (start >= end) {
+        return;
+    }
+
+    let mid = Math.floor((start + end) / 2);
+    mergeSort(elements, start, mid, counts);
+    mergeSort(elements, mid + 1, end, counts);
+
+    mergeElements(elements, start, mid, end, counts);
+}
+
+function mergeElements(elements, start, mid, end, counts) {
+    const leftSize = mid - start + 1;
+    let leftElements = new Array(leftSize);
+    for (let i = 0; i < leftSize; i++) {
+        leftElements[i] = elements[start + i];
+    }
+
+    const rightSize = end - mid;
+    let rightElements = new Array(rightSize);
+    for (let i = 0; i < rightSize; i++) {
+        rightElements[i] = elements[mid + 1 + i];
+    }
+
+    let i = 0, j = 0, k = start, smallerCount = 0;
+
+    while (i < leftSize && j < rightSize) {
+        if (leftElements[i].value <= rightElements[j].value) {
+            elements[k] = leftElements[i];
+            counts[leftElements[i].index] += smallerCount;
+            i++;
+        } else {
+            elements[k] = rightElements[j];
+            smallerCount++;
+            j++;
+        }
+        k++;
+    }
+
+    while (i < leftSize) {
+        elements[k] = leftElements[i];
+        counts[leftElements[i].index] += smallerCount;
+        i++;
+        k++;
+    }
+
+    while (j < rightSize) {
+        elements[k] = rightElements[j];
+        j++;
+        k++;
+    }
+}
+
+console.log('========= Q75 =========');
+const numsToFindSmallerRightElements = [3, 4, 9, 6, 1];
+console.log(`Smaller elements to the right: ${countSmallerElements(numsToFindSmallerRightElements)}`);
+console.log('\n');
+
+/*
+* Q76.
+* Implement a 2D iterator class. It will be initialized with an array of
+* arrays, and should implement the following methods:
+* next(): returns the next element in the array of arrays. If there are no more
+* elements, raise an exception.
+* has_next(): returns whether or not the iterator still has elements left.
+* For example, given the input [[1, 2], [3], [], [4, 5, 6]], calling next()
+* repeatedly should output 1, 2, 3, 4, 5, 6.
+* Do not use flatten or otherwise clone the arrays. Some of the arrays can be
+* empty.
+*/
+class TwoDIterator {
+    constructor(arrays) {
+        this.arrays = arrays;
+        this.row = 0;
+        this.col = 0;
+    }
+
+    hasNext() {
+        while (this.row < this.arrays.length) {
+            if (this.col < this.arrays[this.row].length) {
+                return true;
+            }
+            this.row++;
+            this.col = 0;
+        }
+        return false;
+    }
+
+    next() {
+        if (this.hasNext()) {
+            const value = this.arrays[this.row][this.col];
+            this.col++;
+            return value;
+        }
+        throw new Error('No more elements');
+    }
+}
+
+console.log('========= Q76 =========');
+const arrays = [[1, 2], [3], [], [4, 5, 6]];
+const twoDIterator = new TwoDIterator(arrays);
+
+while (twoDIterator.hasNext()) {
+    console.log(twoDIterator.next());
+}
+console.log('\n');
+
+/*
+* Q77.
+* Given an N by N matrix, rotate it by 90 degrees clockwise.
+* For example, given the following matrix:
+* [[1, 2, 3],
+* [4, 5, 6],
+* [7, 8, 9]]
+* you should return:
+* [[7, 4, 1],
+* [8, 5, 2],
+* [9, 6, 3]]
+* Follow-up: What if you couldn't use any extra space?
+*/
+function rotateMatrix(matrix) {
+    const n = matrix.length;
+
+    // Transpose the matrix
+    for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+            let temp = matrix[i][j];
+            matrix[i][j] = matrix[j][i];
+            matrix[j][i] = temp;
+        }
+    }
+
+    // Reverse each row
+    for (let i = 0; i < n; i++) {
+        let start = 0;
+        let end = n - 1;
+        while (start < end) {
+            let temp = matrix[i][start];
+            matrix[i][start] = matrix[i][end];
+            matrix[i][end] = temp;
+            start++;
+            end--;
+        }
+    }
+}
+
+console.log('========= Q77 =========');
+const matrixToRotate = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+rotateMatrix(matrixToRotate);
+console.log(matrixToRotate);
+console.log('\n');
+
+/*
+* Q78.
+* Given a linked list, sort it in O(n log n) time and constant space.
+* For example, the linked list 4 -> 1 -> -3 -> 99 should become -3 -> 1 -> 4 ->
+* 99.
+*/
+function sortList(head) {
+    if (!head || !head.next) {
+        return head;
+    }
+
+    const middle = getMiddle(head);
+    const nextToMiddle = middle.next;
+
+    middle.next = null;
+
+    const left = sortList(head);
+    const right = sortList(nextToMiddle);
+
+    const sortedList = mergeLists(left, right);
+
+    return sortedList;
+}
+
+function getMiddle(head) {
+    if (!head) {
+        return null;
+    }
+
+    let slow = head;
+    let fast = head.next;
+
+    while (fast && fast.next) {
+        slow = slow.next;
+        fast = fast.next.next;
+    }
+
+    return slow;
+}
+
+function mergeLists(l1, l2) {
+    let dummy = new ListNode(0);
+    let curr = dummy;
+
+    while (l1 && l2) {
+        if (l1.value <= l2.value) {
+            curr.next = l1;
+            l1 = l1.next;
+        } else {
+            curr.next = l2
+            l2 = l2.next;
+        }
+        curr = curr.next;
+    }
+
+    if (l1) {
+        curr.next = l1;
+    } else if (l2) {
+        curr.next = l2;
+    }
+
+    return dummy.next;
+}
+
+console.log('========= Q78 =========');
+let listToSort = new ListNode(4);
+listToSort.next = new ListNode(1);
+listToSort.next.next = new ListNode(-3);
+listToSort.next.next.next = new ListNode(99);
+
+let sortedList = sortList(listToSort);
+
+while (sortedList) {
+    console.log(sortedList.value + ' ');
+    sortedList = sortedList.next;
+}
+console.log('\n');
+
+/*
+* Q79.
+* Given a start word, an end word, and a dictionary of valid words, find the
+* shortest transformation sequence from start to end such that only one letter
+* is changed at each step of the sequence, and each transformed word exists in
+* the dictionary. If there is no possible transformation, return null. Each
+* word in the dictionary have the same length as start and end and is
+* lowercase.
+* For example, given start = "dog", end = "cat", and dictionary = {"dot",
+* "dop", "dat", "cat"}, return ["dog", "dot", "dat", "cat"].
+* Given start = "dog", end = "cat", and dictionary = {"dot", "tod", "dat",
+* "dar"}, return null as there is no possible transformation from dog to cat.
+*/
+function findTransformation(start, end, dictionary) {
+    dictionary.push(start);
+
+    //Build the adjacency graph
+    const graph = buildGraph(dictionary);
+
+    //Perform BFS traversal
+    let parentMap = new Map();
+    let queue = [];
+    let visited = new Set();
+
+    queue.push(start);
+    visited.add(start);
+
+    while (queue.length > 0) {
+        const current = queue.shift();
+
+        if (current === end) {
+            return constructPath(parentMap, end);
+        }
+
+        const transformations = graph.get(current);
+
+        for (const word of transformations) {
+            if (!visited.has(word)) {
+                parentMap.set(word, current);
+                visited.add(word);
+                queue.push(word);
+            }
+        }
+    }
+    return null;
+}
+
+function buildGraph(dictionary) {
+    let graph = new Map();
+
+    for (let word of dictionary) {
+        graph.set(word, []);
+
+        for (let i = 0; i < word.length; i++) {
+            const originalChar = word[i];
+
+            for (let c = 'a'.charCodeAt(0); c <= 'z'.charCodeAt(0); c++) {
+                if (c === originalChar.charCodeAt(0)) {
+                    continue;
+                }
+
+                let transformedWord = ''
+                for (let j = 0; j < word.length; j++) {
+                    if (i === j) {
+                        transformedWord += String.fromCharCode(c);
+                    } else {
+                        transformedWord += word[j];
+                    }
+                }
+
+                if (dictionary.includes(transformedWord)) {
+                    graph.get(word).push(transformedWord);
+                }
+            }
+            word[i] = originalChar;
+        }
+    }
+    return graph;
+}
+
+function constructPath(parentMap, end) {
+    let path = [];
+    let current = end;
+
+    while (current) {
+        path.unshift(current);
+        current = parentMap.get(current);
+    }
+
+    return path;
+}
+
+console.log('========= Q79 =========');
+const start = 'dog';
+const end = 'cat';
+const dictionary1 = ['dot', 'dop', 'dat', 'cat'];
+let transformation = findTransformation(start, end, dictionary1);
+console.log(`${transformation ? transformation.join(' -> ') : 'No transformation sequence found'}`);
+
+const dictionary2 = ['dot', 'tod', 'dat', 'dar'];
+transformation = findTransformation(start, end, dictionary2);
+console.log(`${transformation ? transformation.join(' -> ') : 'No transformation sequence found'}`);
+console.log('\n');
+
+/*
+* Q80.
+* Given a string s and a list of words words, where each word is the same
+* length, find all starting indices of substrings in s that is a concatenation
+* of every word in words exactly once.
+* For example, given s = "dogcatcatcodecatdog" and words = ["cat", "dog"],
+* return [0, 13], since "dogcat" starts at index 0 and "catdog" starts at index
+* 13.
+* Given s = "barfoobazbitbyte" and words = ["dog", "cat"], return [] since
+* there are no substrings composed of "dog" and "cat" in s.
+* The order of the indices does not matter.
+*/
+function findSubstring(s, words) {
+    let result = [];
+    if (!s || s.length === 0 || !words || words.length === 0) {
+        return result;
+    }
+
+    const wordLength = words[0].length;
+    const totalLength = wordLength * words.length;
+
+    let wordCount = new Map();
+    for (const word of words) {
+        wordCount.set(word, wordCount.get(word) + 1 || 1);
+    }
+
+    for (let i = 0; i <= s.length - totalLength; i++) {
+        let currentCount = new Map();
+        let j = 0;
+
+        while (j < words.length) {
+            const word = s.substring(i + j * wordLength, i + (j + 1) * wordLength);
+            if (!wordCount.has(word)) {
+                break;
+            }
+
+            currentCount.set(word, currentCount.get(word) + 1 || 1);
+
+            if (currentCount.get(word) > wordCount.get(word)) {
+                break;
+            }
+            j++;
+        }
+
+        if (j === words.length) {
+            result.push(i);
+        }
+    }
+    return result;
+}
+
+console.log('========= Q80 =========');
+const s1 = 'dogcatcatcodecatdog';
+const words1 = ['cat', 'dog'];
+console.log(findSubstring(s1, words1));
+
+const s2 = 'barfoobazbitbyte';
+const words2 = ['dog', 'cat'];
+console.log(findSubstring(s2, words2));
+console.log('\n');
