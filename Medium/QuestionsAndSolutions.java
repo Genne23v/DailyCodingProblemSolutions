@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.EmptyStackException;
 import java.util.NoSuchElementException;
 
 public class QuestionsAndSolutions {
@@ -2668,6 +2669,325 @@ public class QuestionsAndSolutions {
         return result;
     }
 
+    // S81.
+    // Ad-hoc polymorphism through function overloading (or operator overloading)
+    class Calculator {
+        public int add(int a, int b) {
+            return a + b;
+        }
+
+        public double add(double a, double b) {
+            return a + b;
+        }
+
+        public String add(String a, String b) {
+            return a.concat(b);
+        }
+    }
+
+    // Parametric polymorphism through generics
+    class GenericStack<T> {
+        private List<T> elements = new ArrayList<>();
+
+        public void push(T element) {
+            elements.add(element);
+        }
+
+        public T pop() {
+            if (elements.isEmpty()) {
+                throw new EmptyStackException();
+            }
+            return elements.remove(elements.size() - 1);
+        }
+    }
+
+    // Subtype polymorphism through inheritance and method overriding
+    class Animal {
+        public void makeSound() {
+            System.out.println("Animal is making a sound");
+        }
+    }
+
+    class Dog extends Animal {
+        @Override
+        public void makeSound() {
+            System.out.println("Dog is barking");
+        }
+    }
+
+    class Cat extends Animal {
+        @Override
+        public void makeSound() {
+            System.out.println("Cat is meowing");
+        }
+    }
+
+    // S82.
+    public static TreeNode<Integer> buildTree(int[] postorder, int start, int end) {
+        if (start > end) {
+            return null;
+        }
+
+        int rootVal = postorder[end];
+        TreeNode<Integer> root = new TreeNode<>(rootVal);
+
+        // Find the index of the last element smaller than the root value
+        int i;
+        for (i = end - 1; i >= start; i--) {
+            if (postorder[i] < rootVal) {
+                break;
+            }
+        }
+
+        root.left = buildTree(postorder, start, i);
+        root.right = buildTree(postorder, i + 1, end - 1);
+
+        return root;
+    }
+
+    public static TreeNode<Integer> buildTreeFromPostorder(int[] postorder) {
+        if (postorder == null || postorder.length == 0) {
+            return null;
+        }
+
+        return buildTree(postorder, 0, postorder.length - 1);
+    }
+
+    public static void inorderTraversal(TreeNode<Integer> node) {
+        if (node == null) {
+            return;
+        }
+
+        inorderTraversal(node.left);
+        System.out.print(node.val + " ");
+        inorderTraversal(node.right);
+    }
+
+    // S83.
+    public static void interleaveStack(Stack<Integer> stack) {
+        int size = stack.size();
+        int halfSize = size / 2;
+
+        Queue<Integer> queue = new LinkedList<>();
+        Stack<Integer> tempStack = new Stack<>();
+
+        for (int i = 0; i < halfSize; i++) {
+            queue.add(stack.pop());
+        }
+
+        while (!stack.isEmpty()) {
+            tempStack.push(stack.pop());
+        }
+
+        while (!queue.isEmpty()) {
+            stack.push(tempStack.pop());
+            stack.push(queue.poll());
+        }
+
+        while (!tempStack.isEmpty()) {
+            stack.push(tempStack.pop());
+        }
+    }
+
+    // S84.
+    static class Graph {
+        private int numVertices;
+        private List<List<Integer>> adjList;
+
+        public Graph(int numVertices) {
+            this.numVertices = numVertices;
+            adjList = new ArrayList<>(numVertices);
+            for (int i = 0; i < numVertices; i++) {
+                adjList.add(new ArrayList<>());
+            }
+        }
+
+        public void addEdge(int u, int v) {
+            adjList.get(u).add(v);
+            adjList.get(v).add(u);
+        }
+
+        public boolean isMinimallyConnected() {
+            boolean[] visited = new boolean[numVertices];
+
+            return dfs(0, visited, -1) && allVisited(visited);
+        }
+
+        private boolean dfs(int vertex, boolean[] visited, int parent) {
+            visited[vertex] = true;
+
+            for (int neighbor : adjList.get(vertex)) {
+                if (!visited[neighbor]) {
+                    if (!dfs(neighbor, visited, vertex)) {
+                        return false;
+                    }
+                } else if (neighbor != parent) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private boolean allVisited(boolean[] visited) {
+            for (boolean v : visited) {
+                if (!v) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // S90.
+        public boolean isBipartite() {
+            int[] colors = new int[numVertices];
+            Arrays.fill(colors, -1);
+
+            for (int i = 0; i < numVertices; i++) {
+                if (colors[i] == -1) {
+                    if (!isBipartiteUtil(i, colors)) {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private boolean isBipartiteUtil(int src, int[] colors) {
+            Queue<Integer> queue = new LinkedList<>();
+            queue.offer(src);
+            colors[src] = 1;
+
+            while (!queue.isEmpty()) {
+                int curr = queue.poll();
+
+                for (int neighbor : adjList.get(curr)) {
+                    if (colors[neighbor] == -1) {
+                        colors[neighbor] = 1 - colors[curr];
+                        queue.offer(neighbor);
+                    } else if (colors[neighbor] == colors[curr]) {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+    }
+
+    // S85.
+    // Solution in Q85
+
+    // S86.
+    public static int getMaxSubarraySum(int[] nums) {
+        int maxSum = nums[0];
+        int currentMax = nums[0];
+        int minSum = nums[0];
+        int currentMin = nums[0];
+        int totalSum = nums[0];
+
+        for (int i = 1; i < nums.length; i++) {
+            totalSum += nums[i];
+
+            currentMax = Math.max(nums[i], currentMax + nums[i]);
+            maxSum = Math.max(maxSum, currentMax);
+
+            currentMin = Math.min(nums[i], currentMin + nums[i]);
+            minSum = Math.min(minSum, currentMin);
+        }
+
+        // If the total sum equals the minimum subarray sum,
+        // it means all elements in the array are negative, so return the maximum
+        // subarray sum
+        if (totalSum == minSum) {
+            return maxSum;
+        }
+
+        // Otherwise, return the maximum of the maximum subarray sum and the difference
+        // between the total sum and the minimum subarray sum
+        return Math.max(maxSum, totalSum - minSum);
+    }
+
+    // S87.
+    public static boolean canReachEnd(int[] nums) {
+        int lastReachableIndex = nums.length - 1;
+
+        for (int i = nums.length - 2; i >= 0; i--) {
+            if (i + nums[i] >= lastReachableIndex) {
+                lastReachableIndex = i;
+            }
+        }
+
+        return lastReachableIndex == 0;
+    }
+
+    // S88.
+    public static List<Integer> largestDivisibleSubset(int[] nums) {
+        if (nums == null || nums.length == 0) {
+            return new ArrayList<>();
+        }
+
+        Arrays.sort(nums);
+
+        int n = nums.length;
+        int[] dp = new int[n]; // Stores the size of the largest subset ending at index i
+        int[] prev = new int[n]; // Stores the index of the previous element in the subset
+
+        int maxSize = 0;
+        int maxIdx = 0;
+
+        for (int i = 0; i < n; i++) {
+            dp[i] = 1;
+            prev[i] = -1;
+
+            for (int j = 0; j < i; j++) {
+                if (nums[i] % nums[j] == 0 && dp[j] + 1 > dp[i]) {
+                    dp[i] = dp[j] + 1;
+                    prev[i] = j;
+                }
+            }
+
+            if (dp[i] > maxSize) {
+                maxSize = dp[i];
+                maxIdx = i;
+            }
+        }
+
+        List<Integer> result = new ArrayList<>();
+        while (maxIdx != -1) {
+            result.add(nums[maxIdx]);
+            maxIdx = prev[maxIdx];
+        }
+
+        return result;
+    }
+
+    // S89.
+    public static int findMin(int[] nums) {
+        int left = 0;
+        int right = nums.length - 1;
+
+        while (left < right) {
+            int mid = left + (right - left) / 2;
+
+            // Check if the mid element is greater than the rightmost element
+            // If true, the minimum element is on the right side of mid
+            if (nums[mid] > nums[right]) {
+                left = mid + 1;
+            }
+            // If false, the minimum element is on the left side of mid
+            else {
+                right = mid;
+            }
+        }
+
+        // left and right will converge to the minimum element
+        return nums[left];
+    }
+
+    // S90.
+    // Solution added to Graph class in S84
+
     public static void main(String[] args) {
         /*
          * Q1.
@@ -4388,6 +4708,197 @@ public class QuestionsAndSolutions {
         String[] words2 = { "dog", "cat" };
         List<Integer> substringResult2 = findSubstring(s2, words2);
         System.out.println(substringResult2); // Output: []
+
+        /*
+         * Q81.
+         * Describe and give an example of each of the following types of polymorphism:
+         * Ad-hoc polymorphism
+         * Parametric polymorphism
+         * Subtype polymorphism
+         */
+        System.out.println("========= Q81 ==========");
+        // Solution implemented in S81
+
+        /*
+         * Q82.
+         * Given the sequence of keys visited by a postorder traversal of a binary
+         * search tree, reconstruct the tree.
+         * For example, given the sequence 2, 4, 3, 8, 7, 5, you should construct the
+         * following tree:
+         * "    5      "
+         * "   / \     "
+         * "  3   7    "
+         * " / \   \   "
+         * "2   4   8  "
+         */
+        System.out.println("========= Q82 ==========");
+        int[] postorder = { 2, 4, 3, 8, 7, 5 };
+
+        TreeNode<Integer> treeRootFromPostorder = buildTreeFromPostorder(postorder);
+
+        System.out.println("Inorder traversal:");
+        inorderTraversal(treeRootFromPostorder);
+        System.out.println();
+
+        /*
+         * Q83.
+         * Given a stack of N elements, interleave the first half of the stack with the
+         * second half reversed using only one other queue. This should be done
+         * in-place.
+         * Recall that you can only push or pop from a stack, and enqueue or dequeue
+         * from a queue.
+         * For example, if the stack is [1, 2, 3, 4, 5], it should become [1, 5, 2, 4,
+         * 3]. If the stack is [1, 2, 3, 4], it should become [1, 4, 2, 3].
+         * Hint: Try working backwards from the end state.
+         */
+        System.out.println("========= Q83 ==========");
+        Stack<Integer> stack1 = new Stack<>();
+        stack1.push(1);
+        stack1.push(2);
+        stack1.push(3);
+        stack1.push(4);
+        stack1.push(5);
+        interleaveStack(stack1);
+        System.out.println(stack1); // Output: [1, 5, 2, 4, 3]
+
+        Stack<Integer> stack2 = new Stack<>();
+        stack2.push(1);
+        stack2.push(2);
+        stack2.push(3);
+        stack2.push(4);
+        interleaveStack(stack2);
+        System.out.println(stack2); // Output: [1, 4, 2, 3]
+
+        /*
+         * Q84.
+         * A graph is minimally-connected if it is connected and there is no edge that
+         * can be removed while still leaving the graph connected. For example, any
+         * binary tree is minimally-connected.
+         * Given an undirected graph, check if the graph is minimally-connected. You can
+         * choose to represent the graph as either an adjacency matrix or adjacency
+         * list.
+         */
+        System.out.println("========= Q84 ==========");
+        Graph minimalGraph = new Graph(5);
+        minimalGraph.addEdge(0, 1);
+        minimalGraph.addEdge(0, 2);
+        minimalGraph.addEdge(2, 3);
+        minimalGraph.addEdge(2, 4);
+
+        boolean isMinimallyConnected = minimalGraph.isMinimallyConnected();
+        System.out.println("Is the graph minimally-connected? " + isMinimallyConnected);
+
+        /*
+         * Q85.
+         * What will this code print out?
+         * "def make_functions():          "
+         * "    flist = []                 "
+         * "                               "
+         * "    for i in [1, 2, 3]:        "
+         * "        def print_i():         "
+         * "            print(i)           "
+         * "        flist.append(print_i)  "
+         * "                               "
+         * "    return flist               "
+         * "                               "
+         * "functions = make_functions()   "
+         * "for f in functions:            "
+         * "    f()                        "
+         * How can we make it print out what we apparently want?
+         */
+        /*
+         * It will print '3' three times since make_functions() refers to 'i' in its
+         * enclosing scope. It should be corrected by using default argument x=i in
+         * print_i as below.
+         * "def make_functions():          "
+         * "    flist = []                 "
+         * "                               "
+         * "    for i in [1, 2, 3]:        "
+         * "        def print_i(x=i):      "
+         * "            print(i)           "
+         * "        flist.append(print_i)  "
+         * "                               "
+         * "    return flist               "
+         * "                               "
+         * "functions = make_functions()   "
+         * "for f in functions:            "
+         * "    f()                        "
+         */
+        System.out.println("========= Q85 ==========");
+
+        /*
+         * Q86.
+         * Given a circular array, compute its maximum subarray sum in O(n) time. A
+         * subarray can be empty, and in this case the sum is 0.
+         * For example, given [8, -1, 3, 4], return 15 as we choose the numbers 3, 4,
+         * and 8 where the 8 is obtained from wrapping around.
+         * Given [-4, 5, 1, 0], return 6 as we choose the numbers 5 and 1.
+         */
+        System.out.println("========= Q86 ==========");
+        int[] circularArr1 = { 8, -1, 3, 4 };
+        System.out.println(getMaxSubarraySum(circularArr1)); // Output: 15
+
+        int[] circularArr2 = { -4, 5, 1, 0 };
+        System.out.println(getMaxSubarraySum(circularArr2)); // Output: 6
+
+        /*
+         * Q87.
+         * You are given an array of nonnegative integers. Let's say you start at the
+         * beginning of the array and are trying to advance to the end. You can advance
+         * at most, the number of steps that you're currently on. Determine whether you
+         * can get to the end of the array.
+         * For example, given the array [1, 3, 1, 2, 0, 1], we can go from indices 0 ->
+         * 1 -> 3 -> 5, so return true.
+         * Given the array [1, 2, 1, 0, 0], we can't reach the end, so return false.
+         */
+        System.out.println("========= Q87 ==========");
+        int[] stepsArr1 = { 1, 3, 1, 2, 0, 1 };
+        System.out.println(canReachEnd(stepsArr1)); // Output: true
+
+        int[] stepsArr2 = { 1, 2, 1, 0, 0 };
+        System.out.println(canReachEnd(stepsArr2)); // Output: false
+
+        /*
+         * Q88.
+         * Given a set of distinct positive integers, find the largest subset such that
+         * every pair of elements in the subset (i, j) satisfies either i % j = 0 or j %
+         * i = 0.
+         * For example, given the set [3, 5, 10, 20, 21], you should return [5, 10, 20].
+         * Given [1, 3, 6, 24], return [1, 3, 6, 24].
+         */
+        System.out.println("========= Q88 ==========");
+        int[] numsArr1 = { 3, 5, 10, 20, 21 };
+        System.out.println(largestDivisibleSubset(numsArr1)); // Output: [5, 10, 20]
+
+        int[] numsArr2 = { 1, 3, 6, 24 };
+        System.out.println(largestDivisibleSubset(numsArr2)); // Output: [1, 3, 6, 24]
+
+        /*
+         * Q89.
+         * Suppose an array sorted in ascending order is rotated at some pivot unknown
+         * to you beforehand. Find the minimum element in O(log N) time. You may assume
+         * the array does not contain duplicates.
+         * For example, given [5, 7, 10, 3, 4], return 3.
+         */
+        System.out.println("========= Q89 ==========");
+        int[] numsToFindPivot = { 5, 7, 10, 3, 4 };
+        System.out.println(findMin(numsToFindPivot)); // Output: 3
+
+        /*
+         * Q90.
+         * Given an undirected graph G, check whether it is bipartite. Recall that a
+         * graph is bipartite if its vertices can be divided into two independent sets,
+         * U and V, such that no edge connects vertices of the same set.
+         */
+        System.out.println("========= Q90 ==========");
+        Graph bipartiteGraph = new Graph(4);
+        bipartiteGraph.addEdge(0, 1);
+        bipartiteGraph.addEdge(1, 2);
+        bipartiteGraph.addEdge(2, 3);
+        bipartiteGraph.addEdge(3, 0);
+
+        boolean isBipartite = bipartiteGraph.isBipartite();
+        System.out.println("Is the graph bipartite? " + isBipartite);
 
     }
 }

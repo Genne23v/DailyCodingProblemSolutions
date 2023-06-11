@@ -1373,6 +1373,14 @@ class Stack {
     isEmpty() {
         return this.#_stack.length === 0;
     }
+
+    get length() {
+        return this.#_stack.length;
+    }
+
+    get elements() {
+        return this.#_stack;
+    }
 }
 
 class QueueUsingStack {
@@ -1812,22 +1820,22 @@ console.log(`Number of attacking pairs: ${countAttackingPairs(bishops, M)}`);
 console.log('\n');
 
 /*
-* Q31.
-* Suppose you have a multiplication table that is N by N. That is, a 2D array
-* where the value at the i-th row and j-th column is (i + 1) * (j + 1) (if
-* 0-indexed) or i * j (if 1-indexed).
-* Given integers N and X, write a function that returns the number of times X
-* appears as a value in an N by N multiplication table.
-* For example, given N = 6 and X = 12, you should return 4, since the
-* multiplication table looks like this:
-* | 1 | 2 | 3 | 4 | 5 | 6 |
-* | 2 | 4 | 6 | 8 | 10 | 12 |
-* | 3 | 6 | 9 | 12 | 15 | 18 |
-* | 4 | 8 | 12 | 16 | 20 | 24 |
-* | 5 | 10 | 15 | 20 | 25 | 30 |
-* | 6 | 12 | 18 | 24 | 30 | 36 |
-* And there are 4 12's in the table.
-*/
+ * Q31.
+ * Suppose you have a multiplication table that is N by N. That is, a 2D array
+ * where the value at the i-th row and j-th column is (i + 1) * (j + 1) (if
+ * 0-indexed) or i * j (if 1-indexed).
+ * Given integers N and X, write a function that returns the number of times X
+ * appears as a value in an N by N multiplication table.
+ * For example, given N = 6 and X = 12, you should return 4, since the
+ * multiplication table looks like this:
+ * | 1 | 2 | 3 | 4 | 5 | 6 |
+ * | 2 | 4 | 6 | 8 | 10 | 12 |
+ * | 3 | 6 | 9 | 12 | 15 | 18 |
+ * | 4 | 8 | 12 | 16 | 20 | 24 |
+ * | 5 | 10 | 15 | 20 | 25 | 30 |
+ * | 6 | 12 | 18 | 24 | 30 | 36 |
+ * And there are 4 12's in the table.
+ */
 function countOccurrences(N, X) {
     let count = 0;
 
@@ -1843,37 +1851,42 @@ function countOccurrences(N, X) {
 console.log('========= Q31 =========');
 const N = 6;
 const X = 12;
-console.log(`Number of occurrences of ${X} in ${N}x${N} multiplication table: ${countOccurrences(N, X)}`);
+console.log(
+    `Number of occurrences of ${X} in ${N}x${N} multiplication table: ${countOccurrences(
+        N,
+        X
+    )}`
+);
 console.log('\n');
 
 /*
-* Q32.
-* You are given an N by M 2D matrix of lowercase letters. Determine the minimum
-* number of columns that can be removed to ensure that each row is ordered from
-* top to bottom lexicographically. That is, the letter at each column is
-* lexicographically later as you go down each row. It does not matter whether
-* each row itself is ordered lexicographically.
-* For example, given the following table:
-* cba
-* daf
-* ghi
-* This is not ordered because of the a in the center. We can remove the second
-* column to make it ordered:
-* ca
-* df
-* gi
-* So your function should return 1, since we only needed to remove 1 column.
-* As another example, given the following table:
-* abcdef
-* Your function should return 0, since the rows are already ordered (there's
-* only one row).
-* As another example, given the following table:
-* zyx
-* wvu
-* tsr
-* Your function should return 3, since we would need to remove all the columns
-* to order it.
-*/
+ * Q32.
+ * You are given an N by M 2D matrix of lowercase letters. Determine the minimum
+ * number of columns that can be removed to ensure that each row is ordered from
+ * top to bottom lexicographically. That is, the letter at each column is
+ * lexicographically later as you go down each row. It does not matter whether
+ * each row itself is ordered lexicographically.
+ * For example, given the following table:
+ * cba
+ * daf
+ * ghi
+ * This is not ordered because of the a in the center. We can remove the second
+ * column to make it ordered:
+ * ca
+ * df
+ * gi
+ * So your function should return 1, since we only needed to remove 1 column.
+ * As another example, given the following table:
+ * abcdef
+ * Your function should return 0, since the rows are already ordered (there's
+ * only one row).
+ * As another example, given the following table:
+ * zyx
+ * wvu
+ * tsr
+ * Your function should return 3, since we would need to remove all the columns
+ * to order it.
+ */
 function minColumnRemovals(matrix) {
     if (!matrix || !matrix.length || matrix[0].length === 0) {
         return 0;
@@ -1891,7 +1904,7 @@ function minColumnRemovals(matrix) {
             }
         }
     }
-    return removalCount
+    return removalCount;
 }
 
 console.log('========= Q32 =========');
@@ -1902,9 +1915,7 @@ const matrix1 = [
 ];
 console.log(`Minimum column removals: ${minColumnRemovals(matrix1)}`);
 
-const matrix2 = [
-    ['a', 'b', 'c', 'd', 'e', 'f'],
-];
+const matrix2 = [['a', 'b', 'c', 'd', 'e', 'f']];
 console.log(`Minimum column removals: ${minColumnRemovals(matrix2)}`);
 
 const matrix3 = [
@@ -1916,10 +1927,10 @@ console.log(`Minimum column removals: ${minColumnRemovals(matrix3)}`);
 console.log('\n');
 
 /*
-* Q33.
-* Given k sorted singly linked lists, write a function to merge all the lists
-* into one sorted singly linked list.
-*/
+ * Q33.
+ * Given k sorted singly linked lists, write a function to merge all the lists
+ * into one sorted singly linked list.
+ */
 function mergeKLists(lists) {
     if (!lists || !lists.length) {
         return null;
@@ -1955,7 +1966,7 @@ function printList(head) {
     let str = '';
 
     while (curr) {
-        console.log(curr)
+        console.log(curr);
         str += curr.value + ' -> ';
         curr = curr.next;
     }
@@ -1980,14 +1991,14 @@ printList(mergedList);
 console.log('\n');
 
 /*
-* Q34.
-* Given an array of integers, write a function to determine whether the array
-* could become non-decreasing by modifying at most 1 element.
-* For example, given the array [10, 5, 7], you should return true, since we can
-* modify the 10 into a 1 to make the array non-decreasing.
-* Given the array [10, 5, 1], you should return false, since we can't modify
-* any one element to get a non-decreasing array.
-*/
+ * Q34.
+ * Given an array of integers, write a function to determine whether the array
+ * could become non-decreasing by modifying at most 1 element.
+ * For example, given the array [10, 5, 7], you should return true, since we can
+ * modify the 10 into a 1 to make the array non-decreasing.
+ * Given the array [10, 5, 1], you should return false, since we can't modify
+ * any one element to get a non-decreasing array.
+ */
 function checkPossibility(nums) {
     let count = 0;
 
@@ -2017,21 +2028,21 @@ console.log(`Can be non-decreasing: ${checkPossibility(nums2)}`);
 console.log('\n');
 
 /*
-* Q35.
-* Invert a binary tree.
-* For example, given the following tree:
-* "    a      "
-* "   / \     "
-* "  b   c    "
-* " / \  /    "
-* "d   e f    "
-* should become:
-* "  a        "
-* " / \       "
-* " c  b      "
-* " \  / \    "
-* "  f e  d   "
-*/
+ * Q35.
+ * Invert a binary tree.
+ * For example, given the following tree:
+ * "    a      "
+ * "   / \     "
+ * "  b   c    "
+ * " / \  /    "
+ * "d   e f    "
+ * should become:
+ * "  a        "
+ * " / \       "
+ * " c  b      "
+ * " \  / \    "
+ * "  f e  d   "
+ */
 function invertTree(root) {
     if (!root) {
         return null;
@@ -2077,23 +2088,25 @@ printTree(inverted);
 console.log('\n');
 
 /*
-* Q36.
-* Given a matrix of 1s and 0s, return the number of "islands" in the matrix. A
-* 1 represents land and 0 represents water, so an island is a group of 1s that
-* are neighboring whose perimeter is surrounded by water.
-* For example, this matrix has 4 islands.
-* 1 0 0 0 0
-* 0 0 1 1 0
-* 0 1 1 0 0
-* 0 0 0 0 0
-* 1 1 0 0 1
-* 1 1 0 0 1
-*/
+ * Q36.
+ * Given a matrix of 1s and 0s, return the number of "islands" in the matrix. A
+ * 1 represents land and 0 represents water, so an island is a group of 1s that
+ * are neighboring whose perimeter is surrounded by water.
+ * For example, this matrix has 4 islands.
+ * 1 0 0 0 0
+ * 0 0 1 1 0
+ * 0 1 1 0 0
+ * 0 0 0 0 0
+ * 1 1 0 0 1
+ * 1 1 0 0 1
+ */
 function countIslands(matrix) {
     let count = 0;
     const rows = matrix.length;
     const cols = matrix[0].length;
-    let visited = new Array(rows).fill(false).map(() => new Array(cols).fill(false));
+    let visited = new Array(rows)
+        .fill(false)
+        .map(() => new Array(cols).fill(false));
 
     for (let i = 0; i < rows; i++) {
         for (let j = 0; j < cols; j++) {
@@ -2110,7 +2123,14 @@ function exploreIsland(matrix, visited, row, col) {
     const rows = matrix.length;
     const cols = matrix[0].length;
 
-    if (row < 0 || row >= rows || col < 0 || col >= cols || matrix[row][col] === 0 || visited[row][col]) {
+    if (
+        row < 0 ||
+        row >= rows ||
+        col < 0 ||
+        col >= cols ||
+        matrix[row][col] === 0 ||
+        visited[row][col]
+    ) {
         return;
     }
 
@@ -2135,11 +2155,11 @@ console.log(`Number of islands: ${countIslands(matrix)}`);
 console.log('\n');
 
 /*
-* Q37.
-* Given three 32-bit integers x, y, and b, return x if b is 1 and y if b is 0,
-* using only mathematical or bit operations. You can assume b can only be 1 or
-* 0.
-*/
+ * Q37.
+ * Given three 32-bit integers x, y, and b, return x if b is 1 and y if b is 0,
+ * using only mathematical or bit operations. You can assume b can only be 1 or
+ * 0.
+ */
 function select(x, y, b) {
     // If b = 1, all bits will be 1 and return x
     // If b = 0, change all bits to 1 to return y
@@ -2154,13 +2174,13 @@ console.log(`${select(xForOperation, yForOperation, bForOperation)}`); // Output
 console.log('\n');
 
 /*
-* Q38.
-* Given a string of parentheses, write a function to compute the minimum number
-* of parentheses to be removed to make the string valid (i.e. each open
-* parenthesis is eventually closed).
-* For example, given the string "()())()", you should return 1. Given the
-* string ")(", you should return 2, since we must remove all of them.
-*/
+ * Q38.
+ * Given a string of parentheses, write a function to compute the minimum number
+ * of parentheses to be removed to make the string valid (i.e. each open
+ * parenthesis is eventually closed).
+ * For example, given the string "()())()", you should return 1. Given the
+ * string ")(", you should return 2, since we must remove all of them.
+ */
 function minRemoval(s) {
     let count = 0;
     let stack = [];
@@ -2171,7 +2191,6 @@ function minRemoval(s) {
         } else if (c === ')') {
             if (stack.length > 0 && stack[stack.length - 1] === '(') {
                 stack.pop();
-
             } else {
                 count++;
             }
@@ -2183,21 +2202,29 @@ function minRemoval(s) {
 
 console.log('========= Q38 =========');
 const parenthesesStr1 = '()())()';
-console.log(`Minimum number of parentheses to be removed: ${minRemoval(parenthesesStr1)}`);
+console.log(
+    `Minimum number of parentheses to be removed: ${minRemoval(
+        parenthesesStr1
+    )}`
+);
 
 const parenthesesStr2 = ')(';
-console.log(`Minimum number of parentheses to be removed: ${minRemoval(parenthesesStr2)}`);
+console.log(
+    `Minimum number of parentheses to be removed: ${minRemoval(
+        parenthesesStr2
+    )}`
+);
 console.log('\n');
 
 /*
-* Q39.
-* Implement division of two positive integers without using the division,
-* multiplication, or modulus operators. Return the quotient as an integer,
-* ignoring the remainder.
-*/
+ * Q39.
+ * Implement division of two positive integers without using the division,
+ * multiplication, or modulus operators. Return the quotient as an integer,
+ * ignoring the remainder.
+ */
 function divide(dividend, divisor) {
     if (divisor == 0) {
-        throw new Error("Divisor cannot be zero.");
+        throw new Error('Divisor cannot be zero.');
     }
 
     if (dividend == 0) {
@@ -2220,21 +2247,25 @@ function divide(dividend, divisor) {
 console.log('========= Q39 =========');
 let dividend = 20;
 let divisor = 5;
-console.log(`Quotient for ${dividend}/${divisor}: ${divide(dividend, divisor)}`);
+console.log(
+    `Quotient for ${dividend}/${divisor}: ${divide(dividend, divisor)}`
+);
 
 dividend = 30;
 divisor = 6;
-console.log(`Quotient for ${dividend}/${divisor}: ${divide(dividend, divisor)}`);
+console.log(
+    `Quotient for ${dividend}/${divisor}: ${divide(dividend, divisor)}`
+);
 console.log('\n');
 
 /*
-* Q40.
-* Determine whether a tree is a valid binary search tree.
-* A binary search tree is a tree with two children, left and right, and
-* satisfies the constraint that the key in the left child must be less than or
-* equal to the root and the key in the right child must be greater than or
-* equal to the root.
-*/
+ * Q40.
+ * Determine whether a tree is a valid binary search tree.
+ * A binary search tree is a tree with two children, left and right, and
+ * satisfies the constraint that the key in the left child must be less than or
+ * equal to the root and the key in the right child must be greater than or
+ * equal to the root.
+ */
 class BinarySearchTree {
     constructor() {
         this.root = null;
@@ -2348,10 +2379,10 @@ bst.inorderTraversal();
 console.log('\n');
 
 /*
-* Q41.
-* Given an integer n and a list of integers l, write a function that randomly
-* generates a number from 0 to n-1 that isn't in l (uniform).
-*/
+ * Q41.
+ * Given an integer n and a list of integers l, write a function that randomly
+ * generates a number from 0 to n-1 that isn't in l (uniform).
+ */
 function generateRandomNumber(n, l) {
     let available = [];
 
@@ -2372,28 +2403,28 @@ console.log(`Random number: ${generateRandomNumber(n, l)}`);
 console.log('\n');
 
 /*
-* Q42.
-* Write a map implementation with a get function that lets you retrieve the
-* value of a key at a particular time.
-* It should contain the following methods:
-* set(key, value, time): sets key to value for t = time.
-* get(key, time): gets the key at t = time.
-* The map should work like this. If we set a key at a particular time, it will
-* maintain that value forever or until it gets set at a later time. In other
-* words, when we get a key at a time, it should return the value that was set
-* for that key set at the most recent time.
-* Consider the following examples:
-* d.set(1, 1, 0) # set key 1 to value 1 at time 0
-* d.set(1, 2, 2) # set key 1 to value 2 at time 2
-* d.get(1, 1) # get key 1 at time 1 should be 1
-* d.get(1, 3) # get key 1 at time 3 should be 2
-* d.set(1, 1, 5) # set key 1 to value 1 at time 5
-* d.get(1, 0) # get key 1 at time 0 should be null
-* d.get(1, 10) # get key 1 at time 10 should be 1
-* d.set(1, 1, 0) # set key 1 to value 1 at time 0
-* d.set(1, 2, 0) # set key 1 to value 2 at time 0
-* d.get(1, 0) # get key 1 at time 0 should be 2
-*/
+ * Q42.
+ * Write a map implementation with a get function that lets you retrieve the
+ * value of a key at a particular time.
+ * It should contain the following methods:
+ * set(key, value, time): sets key to value for t = time.
+ * get(key, time): gets the key at t = time.
+ * The map should work like this. If we set a key at a particular time, it will
+ * maintain that value forever or until it gets set at a later time. In other
+ * words, when we get a key at a time, it should return the value that was set
+ * for that key set at the most recent time.
+ * Consider the following examples:
+ * d.set(1, 1, 0) # set key 1 to value 1 at time 0
+ * d.set(1, 2, 2) # set key 1 to value 2 at time 2
+ * d.get(1, 1) # get key 1 at time 1 should be 1
+ * d.get(1, 3) # get key 1 at time 3 should be 2
+ * d.set(1, 1, 5) # set key 1 to value 1 at time 5
+ * d.get(1, 0) # get key 1 at time 0 should be null
+ * d.get(1, 10) # get key 1 at time 10 should be 1
+ * d.set(1, 1, 0) # set key 1 to value 1 at time 0
+ * d.set(1, 2, 0) # set key 1 to value 2 at time 0
+ * d.get(1, 0) # get key 1 at time 0 should be 2
+ */
 class TimeMap {
     #_map;
 
@@ -2448,13 +2479,13 @@ console.log(`get(1, 0): ${timeMap3.get(1, 0)}`);
 console.log('\n');
 
 /*
-* Q43.
-* Given an unsorted array of integers, find the length of the longest
-* consecutive elements sequence.
-* For example, given [100, 4, 200, 1, 3, 2], the longest consecutive element
-* sequence is [1, 2, 3, 4]. Return its length: 4.
-* Your algorithm should run in O(n) complexity.
-*/
+ * Q43.
+ * Given an unsorted array of integers, find the length of the longest
+ * consecutive elements sequence.
+ * For example, given [100, 4, 200, 1, 3, 2], the longest consecutive element
+ * sequence is [1, 2, 3, 4]. Return its length: 4.
+ * Your algorithm should run in O(n) complexity.
+ */
 function longestConsecutive(nums) {
     const set = new Set(nums);
     let maxLength = 0;
@@ -2478,16 +2509,20 @@ function longestConsecutive(nums) {
 
 console.log('========= Q43 =========');
 const numsToFindLongestConsecutive = [100, 4, 200, 1, 3, 2];
-console.log(`Longest consecutive sequence length: ${longestConsecutive(numsToFindLongestConsecutive)}`);
+console.log(
+    `Longest consecutive sequence length: ${longestConsecutive(
+        numsToFindLongestConsecutive
+    )}`
+);
 console.log('\n');
 
 /*
-* Q44.
-* Given a list of integers and a number K, return which contiguous elements of
-* the list sum to K.
-* For example, if the list is [1, 2, 3, 4, 5] and K is 9, then it should return
-* [2, 3, 4], since 2 + 3 + 4 = 9.
-*/
+ * Q44.
+ * Given a list of integers and a number K, return which contiguous elements of
+ * the list sum to K.
+ * For example, if the list is [1, 2, 3, 4, 5] and K is 9, then it should return
+ * [2, 3, 4], since 2 + 3 + 4 = 9.
+ */
 function findContiguousElementsSum(nums, k) {
     let result = [];
     let left = 0;
@@ -2516,18 +2551,23 @@ function findContiguousElementsSum(nums, k) {
 console.log('========= Q44 =========');
 const numsToFindContiguousSum = [1, 2, 3, 4, 5];
 const targetContiguousSum = 9;
-console.log(`Contiguous elements sum: ${findContiguousElementsSum(numsToFindContiguousSum, targetContiguousSum)}`);
+console.log(
+    `Contiguous elements sum: ${findContiguousElementsSum(
+        numsToFindContiguousSum,
+        targetContiguousSum
+    )}`
+);
 console.log('\n');
 
 /*
-* Q45.
-* Given a string and a set of characters, return the shortest substring
-* containing all the characters in the set.
-* For example, given the string "figehaeci" and the set of characters {a, e,
-* i}, you should return "aeci".
-* If there is no substring containing all the characters in the set, return
-* null.
-*/
+ * Q45.
+ * Given a string and a set of characters, return the shortest substring
+ * containing all the characters in the set.
+ * For example, given the string "figehaeci" and the set of characters {a, e,
+ * i}, you should return "aeci".
+ * If there is no substring containing all the characters in the set, return
+ * null.
+ */
 function shortestSubstring(s, charSet) {
     let charCounts = new Map();
     for (const c of charSet) {
@@ -2580,11 +2620,11 @@ console.log(`Shortest substring: ${shortestSubstring(str, charSet)}`);
 console.log('\n');
 
 /*
-* Q46.
-* Given an integer list where each number represents the number of hops you can
-* make, determine whether you can reach to the last index starting at index 0.
-* For example, [2, 0, 1, 0] returns True while [1, 1, 0, 1] returns False.
-*/
+ * Q46.
+ * Given an integer list where each number represents the number of hops you can
+ * make, determine whether you can reach to the last index starting at index 0.
+ * For example, [2, 0, 1, 0] returns True while [1, 1, 0, 1] returns False.
+ */
 function canReachLastIndex(nums) {
     let maxReach = 0;
     const n = nums.length;
@@ -2613,12 +2653,12 @@ console.log(`Can reach last index: ${canReachLastIndex(numArr2)}`);
 console.log('\n');
 
 /*
-* Q47.
-* Given an unsigned 8-bit integer, swap its even and odd bits. The 1st and 2nd
-* bit should be swapped, the 3rd and 4th bit should be swapped, and so on.
-* For example, 10101010 should be 01010101. 11100010 should be 11010001.
-* Bonus: Can you do this in one line?
-*/
+ * Q47.
+ * Given an unsigned 8-bit integer, swap its even and odd bits. The 1st and 2nd
+ * bit should be swapped, the 3rd and 4th bit should be swapped, and so on.
+ * For example, 10101010 should be 01010101. 11100010 should be 11010001.
+ * Bonus: Can you do this in one line?
+ */
 function swapEvenOddBits(num) {
     return ((num & 0b10101010) >>> 1) | ((num & 0b01010101) << 1);
 }
@@ -2631,16 +2671,16 @@ console.log(`Swapped even and odd bits: ${swapEvenOddBits(num2).toString(2)}`);
 console.log('\n');
 
 /*
-* Q48.
-* Given a binary tree, return all paths from the root to leaves.
-* For example, given the tree:
-* "   1       "
-* "  / \      "
-* " 2   3     "
-* "    / \    "
-* "   4   5   "
-* Return [[1, 2], [1, 3, 4], [1, 3, 5]].
-*/
+ * Q48.
+ * Given a binary tree, return all paths from the root to leaves.
+ * For example, given the tree:
+ * "   1       "
+ * "  / \      "
+ * " 2   3     "
+ * "    / \    "
+ * "   4   5   "
+ * Return [[1, 2], [1, 3, 4], [1, 3, 5]].
+ */
 function binaryTreePaths(root) {
     let paths = [];
     let currentPath = [];
@@ -2680,12 +2720,12 @@ for (const path of paths) {
 console.log('\n');
 
 /*
-* Q49.
-* Given a string of words delimited by spaces, reverse the words in string. For
-* example, given "hello world here", return "here world hello"
-* Follow-up: given a mutable string representation, can you perform this
-* operation in-place?
-*/
+ * Q49.
+ * Given a string of words delimited by spaces, reverse the words in string. For
+ * example, given "hello world here", return "here world hello"
+ * Follow-up: given a mutable string representation, can you perform this
+ * operation in-place?
+ */
 function reverseWords(input) {
     const words = input.split(' ');
 
@@ -2709,12 +2749,11 @@ console.log(`Reversed words: ${reverseWords(input)}`);
 console.log('\n');
 
 /*
-* Q50.
-* Generate a finite, but an arbitrarily large binary tree quickly in O(1).
-* That is, generate() should return a tree whose size is unbounded but finite.
-*/
+ * Q50.
+ * Generate a finite, but an arbitrarily large binary tree quickly in O(1).
+ * That is, generate() should return a tree whose size is unbounded but finite.
+ */
 class TreeGenerator {
-
     generate() {
         let root = new TreeNode(1);
         root.left = this.createUnboundedNode();
@@ -2731,12 +2770,12 @@ console.log('========= Q50 =========');
 console.log('\n');
 
 /*
-* Q51.
-* Given a set of closed intervals, find the smallest set of numbers that covers
-* all the intervals. If there are multiple smallest sets, return any of them.
-* For example, given the intervals [0, 3], [2, 6], [3, 4], [6, 9], one set of
-* numbers that covers all these intervals is {3, 6}.
-*/
+ * Q51.
+ * Given a set of closed intervals, find the smallest set of numbers that covers
+ * all the intervals. If there are multiple smallest sets, return any of them.
+ * For example, given the intervals [0, 3], [2, 6], [3, 4], [6, 9], one set of
+ * numbers that covers all these intervals is {3, 6}.
+ */
 class Interval {
     constructor(start, end) {
         this.start = start;
@@ -2761,18 +2800,23 @@ function findCoveringSet(intervals) {
 }
 
 console.log('========= Q51 =========');
-const intervals = [new Interval(0, 3), new Interval(2, 6), new Interval(3, 4), new Interval(6, 9)];
+const intervals = [
+    new Interval(0, 3),
+    new Interval(2, 6),
+    new Interval(3, 4),
+    new Interval(6, 9),
+];
 const coveringSet = findCoveringSet(intervals);
 console.log(`Covering set: ${coveringSet}`);
 console.log('\n');
 
 /*
-* Q52.
-* Implement the singleton pattern with a twist. First, instead of storing one
-* instance, store two instances. And in every even call of getInstance(),
-* return the first instance and in every odd call of getInstance(), return the
-* second instance.
-*/
+ * Q52.
+ * Implement the singleton pattern with a twist. First, instead of storing one
+ * instance, store two instances. And in every even call of getInstance(),
+ * return the first instance and in every odd call of getInstance(), return the
+ * second instance.
+ */
 class TwistedSingleton {
     static #_instance1;
     static #_instance2;
@@ -2806,16 +2850,16 @@ console.log(`Singleton 3: ${singleton1}`);
 console.log('\n');
 
 /*
-* Q53.
-* You are given a 2-d matrix where each cell represents number of coins in that
-* cell. Assuming we start at matrix[0][0], and can only move right or down,
-* find the maximum number of coins you can collect by the bottom right corner.
-* For example, in this matrix
-* 0 3 1 1
-* 2 0 0 4
-* 1 5 3 1
-* The most we can collect is 0 + 2 + 1 + 5 + 3 + 1 = 12 coins.
-*/
+ * Q53.
+ * You are given a 2-d matrix where each cell represents number of coins in that
+ * cell. Assuming we start at matrix[0][0], and can only move right or down,
+ * find the maximum number of coins you can collect by the bottom right corner.
+ * For example, in this matrix
+ * 0 3 1 1
+ * 2 0 0 4
+ * 1 5 3 1
+ * The most we can collect is 0 + 2 + 1 + 5 + 3 + 1 = 12 coins.
+ */
 function getMaxCoins(matrix) {
     if (!matrix || matrix.length === 0 || matrix[0].length === 0) {
         return 0;
@@ -2844,17 +2888,21 @@ function getMaxCoins(matrix) {
 }
 
 console.log('========= Q53 =========');
-const coinMatrix = [[0, 3, 1, 1], [2, 0, 0, 4], [1, 5, 3, 1]];
+const coinMatrix = [
+    [0, 3, 1, 1],
+    [2, 0, 0, 4],
+    [1, 5, 3, 1],
+];
 const maxCoins = getMaxCoins(coinMatrix);
 console.log(`Maximum number of coins collected: ${maxCoins}`);
 console.log('\n');
 
 /*
-* Q54.
-* Write a function that rotates a list by k elements. For example, [1, 2, 3, 4,
-* 5, 6] rotated by two becomes [3, 4, 5, 6, 1, 2]. Try solving this without
-* creating a copy of the list. How many swap or move operations do you need?
-*/
+ * Q54.
+ * Write a function that rotates a list by k elements. For example, [1, 2, 3, 4,
+ * 5, 6] rotated by two becomes [3, 4, 5, 6, 1, 2]. Try solving this without
+ * creating a copy of the list. How many swap or move operations do you need?
+ */
 function rotateList(list, k) {
     const n = list.length;
     k = k % n;
@@ -2881,30 +2929,30 @@ console.log(`Rotated list: ${list}`);
 console.log('\n');
 
 /*
-* Q55.
-* The Tower of Hanoi is a puzzle game with three rods and n disks, each a
-* different size.
-* All the disks start off on the first rod in a stack. They are ordered by
-* size, with the largest disk on the bottom and the smallest one at the top.
-* The goal of this puzzle is to move all the disks from the first rod to the
-* last rod while following these rules:
-* You can only move one disk at a time.
-* A move consists of taking the uppermost disk from one of the stacks and
-* placing it on top of another stack.
-* You cannot place a larger disk on top of a smaller disk.
-* Write a function that prints out all the steps necessary to complete the
-* Tower of Hanoi. You should assume that the rods are numbered, with the first
-* rod being 1, the second (auxiliary) rod being 2, and the last (goal) rod
-* being 3.
-* For example, with n = 3, we can do this in 7 moves:
-* Move 1 to 3
-* Move 1 to 2
-* Move 3 to 2
-* Move 1 to 3
-* Move 2 to 1
-* Move 2 to 3
-* Move 1 to 3
-*/
+ * Q55.
+ * The Tower of Hanoi is a puzzle game with three rods and n disks, each a
+ * different size.
+ * All the disks start off on the first rod in a stack. They are ordered by
+ * size, with the largest disk on the bottom and the smallest one at the top.
+ * The goal of this puzzle is to move all the disks from the first rod to the
+ * last rod while following these rules:
+ * You can only move one disk at a time.
+ * A move consists of taking the uppermost disk from one of the stacks and
+ * placing it on top of another stack.
+ * You cannot place a larger disk on top of a smaller disk.
+ * Write a function that prints out all the steps necessary to complete the
+ * Tower of Hanoi. You should assume that the rods are numbered, with the first
+ * rod being 1, the second (auxiliary) rod being 2, and the last (goal) rod
+ * being 3.
+ * For example, with n = 3, we can do this in 7 moves:
+ * Move 1 to 3
+ * Move 1 to 2
+ * Move 3 to 2
+ * Move 1 to 3
+ * Move 2 to 1
+ * Move 2 to 3
+ * Move 1 to 3
+ */
 function solveTowerOfHanoi(n, source, auxiliary, destination) {
     if (n === 1) {
         console.log(`Move disk 1 from rod ${source} to rod ${destination}`);
@@ -2925,10 +2973,10 @@ solveTowerOfHanoi(disks, sourceRod, auxiliaryRod, destinationRod);
 console.log('\n');
 
 /*
-* Q56.
-* Given a real number n, find the square root of n. For example, given n = 9,
-* return 3.
-*/
+ * Q56.
+ * Given a real number n, find the square root of n. For example, given n = 9,
+ * return 3.
+ */
 function findSquareRoot(n) {
     if (n < 0) {
         throw new Error('Cannot calculate square root of a negative number');
@@ -2956,13 +3004,13 @@ console.log(`Square root of ${nForSquareRoot}: ${squareRoot}`);
 console.log('\n');
 
 /*
-* Q57.
-* Given an array of numbers representing the stock prices of a company in
-* chronological order and an integer k, return the maximum profit you can make
-* from k buys and sells. You must buy the stock before you can sell it, and you
-* must sell the stock before you can buy it again.
-* For example, given k = 2 and the array [5, 2, 4, 0, 1], you should return 3.
-*/
+ * Q57.
+ * Given an array of numbers representing the stock prices of a company in
+ * chronological order and an integer k, return the maximum profit you can make
+ * from k buys and sells. You must buy the stock before you can sell it, and you
+ * must sell the stock before you can buy it again.
+ * For example, given k = 2 and the array [5, 2, 4, 0, 1], you should return 3.
+ */
 function getMaxProfit(prices, k) {
     const n = prices.length;
     let dp = new Array(k + 1).fill(0).map(() => new Array(n).fill(0));
@@ -2986,10 +3034,10 @@ console.log(`Maximum profit: ${maxProfit}`);
 console.log('\n');
 
 /*
-* Q58.
-* Given the head to a singly linked list, where each node also has a “random”
-* pointer that points to anywhere in the linked list, deep clone the list.
-*/
+ * Q58.
+ * Given the head to a singly linked list, where each node also has a “random”
+ * pointer that points to anywhere in the linked list, deep clone the list.
+ */
 class SinglyLinkedList {
     constructor(val) {
         this.val = val;
@@ -3049,17 +3097,17 @@ while (curr) {
 console.log('\n');
 
 /*
-* Q59.
-* Given a node in a binary search tree, return the next bigger element, also
-* known as the inorder successor.
-* For example, the inorder successor of 22 is 30.
-* "   10          "
-* "  /  \         "
-* " 5    30       "
-* "     /  \      "
-* "   22    35    "
-* You can assume each node has a parent pointer.
-*/
+ * Q59.
+ * Given a node in a binary search tree, return the next bigger element, also
+ * known as the inorder successor.
+ * For example, the inorder successor of 22 is 30.
+ * "   10          "
+ * "  /  \         "
+ * " 5    30       "
+ * "     /  \      "
+ * "   22    35    "
+ * You can assume each node has a parent pointer.
+ */
 function inorderSuccessor(root, target) {
     if (!root) {
         return -1;
@@ -3088,26 +3136,33 @@ bstRootToFindInorderSuccessor.right.left = new Node(22);
 bstRootToFindInorderSuccessor.right.right = new Node(35);
 
 const targetToFindInorderSuccessor = 22;
-const successor = inorderSuccessor(bstRootToFindInorderSuccessor, targetToFindInorderSuccessor);
+const successor = inorderSuccessor(
+    bstRootToFindInorderSuccessor,
+    targetToFindInorderSuccessor
+);
 
 if (successor !== -1) {
-    console.log(`Inorder successor of ${targetToFindInorderSuccessor} is ${successor}`);
+    console.log(
+        `Inorder successor of ${targetToFindInorderSuccessor} is ${successor}`
+    );
 } else {
-    console.log(`No inorder successor found for ${targetToFindInorderSuccessor}`);
+    console.log(
+        `No inorder successor found for ${targetToFindInorderSuccessor}`
+    );
 }
 console.log('\n');
 
 /*
-* Q60.
-* Given an N by M matrix consisting only of 1's and 0's, find the largest
-* rectangle containing only 1's and return its area.
-* For example, given the following matrix:
-* [[1, 0, 0, 0],
-* [1, 0, 1, 1],
-* [1, 0, 1, 1],
-* [0, 1, 0, 0]]
-* Return 4.
-*/
+ * Q60.
+ * Given an N by M matrix consisting only of 1's and 0's, find the largest
+ * rectangle containing only 1's and return its area.
+ * For example, given the following matrix:
+ * [[1, 0, 0, 0],
+ * [1, 0, 1, 1],
+ * [1, 0, 1, 1],
+ * [0, 1, 0, 0]]
+ * Return 4.
+ */
 function largestRectangleArea(heights) {
     if (!heights || heights.length === 0) {
         return 0;
@@ -3694,12 +3749,12 @@ console.log(`Majority element: ${findMajorityElement(numsForMajorityElement)}`);
 console.log('\n');
 
 /*
-* Q71.
-* Given a positive integer n, find the smallest number of squared integers
-* which sum to n.
-* For example, given n = 13, return 2 since 13 = 3^2 + 2^2 = 9 + 4.
-* Given n = 27, return 3 since 27 = 3^2 + 3^2 + 3^2 = 9 + 9 + 9.
-*/
+ * Q71.
+ * Given a positive integer n, find the smallest number of squared integers
+ * which sum to n.
+ * For example, given n = 13, return 2 since 13 = 3^2 + 2^2 = 9 + 4.
+ * Given n = 27, return 3 since 27 = 3^2 + 3^2 + 3^2 = 9 + 9 + 9.
+ */
 function findSmallestSquaredSum(n) {
     let dp = new Array(n + 1);
 
@@ -3717,27 +3772,35 @@ function findSmallestSquaredSum(n) {
 
 console.log('========= Q71 =========');
 let nToFindSquaredInt = 13;
-console.log(`Smallest number of squared integers for ${nToFindSquaredInt}: ${findSmallestSquaredSum(nToFindSquaredInt)}`);
+console.log(
+    `Smallest number of squared integers for ${nToFindSquaredInt}: ${findSmallestSquaredSum(
+        nToFindSquaredInt
+    )}`
+);
 
 nToFindSquaredInt = 27;
-console.log(`Smallest number of squared integers for ${nToFindSquaredInt}: ${findSmallestSquaredSum(nToFindSquaredInt)}`);
+console.log(
+    `Smallest number of squared integers for ${nToFindSquaredInt}: ${findSmallestSquaredSum(
+        nToFindSquaredInt
+    )}`
+);
 console.log('\n');
 
 /*
-* Q72.
-* You are given an N by M matrix of 0s and 1s. Starting from the top left
-* corner, how many ways are there to reach the bottom right corner?
-* You can only move right and down. 0 represents an empty space while 1
-* represents a wall you cannot walk through.
-* For example, given the following matrix:
-* [[0, 0, 1],
-* [0, 0, 1],
-* [1, 0, 0]]
-* Return two, as there are only two ways to get to the bottom right:
-* Right, down, down, right
-* Down, right, down, right
-* The top left corner and bottom right corner will always be 0.
-*/
+ * Q72.
+ * You are given an N by M matrix of 0s and 1s. Starting from the top left
+ * corner, how many ways are there to reach the bottom right corner?
+ * You can only move right and down. 0 represents an empty space while 1
+ * represents a wall you cannot walk through.
+ * For example, given the following matrix:
+ * [[0, 0, 1],
+ * [0, 0, 1],
+ * [1, 0, 0]]
+ * Return two, as there are only two ways to get to the bottom right:
+ * Right, down, down, right
+ * Down, right, down, right
+ * The top left corner and bottom right corner will always be 0.
+ */
 function countPaths(matrix) {
     const m = matrix.length;
     const n = matrix[0].length;
@@ -3774,28 +3837,28 @@ console.log('========= Q72 =========');
 const matrixOf01 = [
     [0, 0, 1],
     [0, 0, 1],
-    [1, 0, 0]
+    [1, 0, 0],
 ];
 
 console.log(`Number of paths: ${countPaths(matrixOf01)}`);
 console.log('\n');
 
 /*
-* Q73.
-* Given a list of words, return the shortest unique prefix of each word. For
-* example, given the list:
-* dog
-* cat
-* apple
-* apricot
-* fish
-* Return the list:
-* d
-* c
-* app
-* apr
-* f
-*/
+ * Q73.
+ * Given a list of words, return the shortest unique prefix of each word. For
+ * example, given the list:
+ * dog
+ * cat
+ * apple
+ * apricot
+ * fish
+ * Return the list:
+ * d
+ * c
+ * app
+ * apr
+ * f
+ */
 class WordTrieNode {
     #_children;
     #_count;
@@ -3816,7 +3879,6 @@ class WordTrieNode {
     get children() {
         return this.#_children;
     }
-
 }
 
 function findShortestUniquePrefix(words) {
@@ -3872,11 +3934,11 @@ for (const prefix of prefixes) {
 console.log('\n');
 
 /*
-* Q74.
-* You are given an array of length n + 1 whose elements belong to the set {1,
-* 2, ..., n}. By the pigeonhole principle, there must be a duplicate. Find it
-* in linear time and space.
-*/
+ * Q74.
+ * You are given an array of length n + 1 whose elements belong to the set {1,
+ * 2, ..., n}. By the pigeonhole principle, there must be a duplicate. Find it
+ * in linear time and space.
+ */
 function findDuplicate(nums) {
     let slow = nums[0];
     let fast = nums[0];
@@ -3896,17 +3958,17 @@ console.log(`Duplicate element: ${findDuplicate(arrWithDuplicate)}`);
 console.log('\n');
 
 /*
-* Q75.
-* Given an array of integers, return a new array where each element in the new
-* array is the number of smaller elements to the right of that element in the
-* original input array.
-* For example, given the array [3, 4, 9, 6, 1], return [1, 1, 2, 1, 0], since:
-* There is 1 smaller element to the right of 3
-* There is 1 smaller element to the right of 4
-* There are 2 smaller elements to the right of 9
-* There is 1 smaller element to the right of 6
-* There are no smaller elements to the right of 1
-*/
+ * Q75.
+ * Given an array of integers, return a new array where each element in the new
+ * array is the number of smaller elements to the right of that element in the
+ * original input array.
+ * For example, given the array [3, 4, 9, 6, 1], return [1, 1, 2, 1, 0], since:
+ * There is 1 smaller element to the right of 3
+ * There is 1 smaller element to the right of 4
+ * There are 2 smaller elements to the right of 9
+ * There is 1 smaller element to the right of 6
+ * There are no smaller elements to the right of 1
+ */
 class Element {
     constructor(value, index) {
         this.value = value;
@@ -3916,7 +3978,9 @@ class Element {
 
 function countSmallerElements(nums) {
     let counts = new Array(nums.length).fill(0);
-    let elements = new Array(nums.length).fill(0).map((_, i) => new Element(nums[i], i));
+    let elements = new Array(nums.length)
+        .fill(0)
+        .map((_, i) => new Element(nums[i], i));
 
     mergeSort(elements, 0, nums.length - 1, counts);
 
@@ -3948,7 +4012,10 @@ function mergeElements(elements, start, mid, end, counts) {
         rightElements[i] = elements[mid + 1 + i];
     }
 
-    let i = 0, j = 0, k = start, smallerCount = 0;
+    let i = 0,
+        j = 0,
+        k = start,
+        smallerCount = 0;
 
     while (i < leftSize && j < rightSize) {
         if (leftElements[i].value <= rightElements[j].value) {
@@ -3979,21 +4046,25 @@ function mergeElements(elements, start, mid, end, counts) {
 
 console.log('========= Q75 =========');
 const numsToFindSmallerRightElements = [3, 4, 9, 6, 1];
-console.log(`Smaller elements to the right: ${countSmallerElements(numsToFindSmallerRightElements)}`);
+console.log(
+    `Smaller elements to the right: ${countSmallerElements(
+        numsToFindSmallerRightElements
+    )}`
+);
 console.log('\n');
 
 /*
-* Q76.
-* Implement a 2D iterator class. It will be initialized with an array of
-* arrays, and should implement the following methods:
-* next(): returns the next element in the array of arrays. If there are no more
-* elements, raise an exception.
-* has_next(): returns whether or not the iterator still has elements left.
-* For example, given the input [[1, 2], [3], [], [4, 5, 6]], calling next()
-* repeatedly should output 1, 2, 3, 4, 5, 6.
-* Do not use flatten or otherwise clone the arrays. Some of the arrays can be
-* empty.
-*/
+ * Q76.
+ * Implement a 2D iterator class. It will be initialized with an array of
+ * arrays, and should implement the following methods:
+ * next(): returns the next element in the array of arrays. If there are no more
+ * elements, raise an exception.
+ * has_next(): returns whether or not the iterator still has elements left.
+ * For example, given the input [[1, 2], [3], [], [4, 5, 6]], calling next()
+ * repeatedly should output 1, 2, 3, 4, 5, 6.
+ * Do not use flatten or otherwise clone the arrays. Some of the arrays can be
+ * empty.
+ */
 class TwoDIterator {
     constructor(arrays) {
         this.arrays = arrays;
@@ -4032,18 +4103,18 @@ while (twoDIterator.hasNext()) {
 console.log('\n');
 
 /*
-* Q77.
-* Given an N by N matrix, rotate it by 90 degrees clockwise.
-* For example, given the following matrix:
-* [[1, 2, 3],
-* [4, 5, 6],
-* [7, 8, 9]]
-* you should return:
-* [[7, 4, 1],
-* [8, 5, 2],
-* [9, 6, 3]]
-* Follow-up: What if you couldn't use any extra space?
-*/
+ * Q77.
+ * Given an N by N matrix, rotate it by 90 degrees clockwise.
+ * For example, given the following matrix:
+ * [[1, 2, 3],
+ * [4, 5, 6],
+ * [7, 8, 9]]
+ * you should return:
+ * [[7, 4, 1],
+ * [8, 5, 2],
+ * [9, 6, 3]]
+ * Follow-up: What if you couldn't use any extra space?
+ */
 function rotateMatrix(matrix) {
     const n = matrix.length;
 
@@ -4071,17 +4142,21 @@ function rotateMatrix(matrix) {
 }
 
 console.log('========= Q77 =========');
-const matrixToRotate = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+const matrixToRotate = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9],
+];
 rotateMatrix(matrixToRotate);
 console.log(matrixToRotate);
 console.log('\n');
 
 /*
-* Q78.
-* Given a linked list, sort it in O(n log n) time and constant space.
-* For example, the linked list 4 -> 1 -> -3 -> 99 should become -3 -> 1 -> 4 ->
-* 99.
-*/
+ * Q78.
+ * Given a linked list, sort it in O(n log n) time and constant space.
+ * For example, the linked list 4 -> 1 -> -3 -> 99 should become -3 -> 1 -> 4 ->
+ * 99.
+ */
 function sortList(head) {
     if (!head || !head.next) {
         return head;
@@ -4125,7 +4200,7 @@ function mergeLists(l1, l2) {
             curr.next = l1;
             l1 = l1.next;
         } else {
-            curr.next = l2
+            curr.next = l2;
             l2 = l2.next;
         }
         curr = curr.next;
@@ -4155,18 +4230,18 @@ while (sortedList) {
 console.log('\n');
 
 /*
-* Q79.
-* Given a start word, an end word, and a dictionary of valid words, find the
-* shortest transformation sequence from start to end such that only one letter
-* is changed at each step of the sequence, and each transformed word exists in
-* the dictionary. If there is no possible transformation, return null. Each
-* word in the dictionary have the same length as start and end and is
-* lowercase.
-* For example, given start = "dog", end = "cat", and dictionary = {"dot",
-* "dop", "dat", "cat"}, return ["dog", "dot", "dat", "cat"].
-* Given start = "dog", end = "cat", and dictionary = {"dot", "tod", "dat",
-* "dar"}, return null as there is no possible transformation from dog to cat.
-*/
+ * Q79.
+ * Given a start word, an end word, and a dictionary of valid words, find the
+ * shortest transformation sequence from start to end such that only one letter
+ * is changed at each step of the sequence, and each transformed word exists in
+ * the dictionary. If there is no possible transformation, return null. Each
+ * word in the dictionary have the same length as start and end and is
+ * lowercase.
+ * For example, given start = "dog", end = "cat", and dictionary = {"dot",
+ * "dop", "dat", "cat"}, return ["dog", "dot", "dat", "cat"].
+ * Given start = "dog", end = "cat", and dictionary = {"dot", "tod", "dat",
+ * "dar"}, return null as there is no possible transformation from dog to cat.
+ */
 function findTransformation(start, end, dictionary) {
     dictionary.push(start);
 
@@ -4215,7 +4290,7 @@ function buildGraph(dictionary) {
                     continue;
                 }
 
-                let transformedWord = ''
+                let transformedWord = '';
                 for (let j = 0; j < word.length; j++) {
                     if (i === j) {
                         transformedWord += String.fromCharCode(c);
@@ -4251,25 +4326,37 @@ const start = 'dog';
 const end = 'cat';
 const dictionary1 = ['dot', 'dop', 'dat', 'cat'];
 let transformation = findTransformation(start, end, dictionary1);
-console.log(`${transformation ? transformation.join(' -> ') : 'No transformation sequence found'}`);
+console.log(
+    `${
+        transformation
+            ? transformation.join(' -> ')
+            : 'No transformation sequence found'
+    }`
+);
 
 const dictionary2 = ['dot', 'tod', 'dat', 'dar'];
 transformation = findTransformation(start, end, dictionary2);
-console.log(`${transformation ? transformation.join(' -> ') : 'No transformation sequence found'}`);
+console.log(
+    `${
+        transformation
+            ? transformation.join(' -> ')
+            : 'No transformation sequence found'
+    }`
+);
 console.log('\n');
 
 /*
-* Q80.
-* Given a string s and a list of words words, where each word is the same
-* length, find all starting indices of substrings in s that is a concatenation
-* of every word in words exactly once.
-* For example, given s = "dogcatcatcodecatdog" and words = ["cat", "dog"],
-* return [0, 13], since "dogcat" starts at index 0 and "catdog" starts at index
-* 13.
-* Given s = "barfoobazbitbyte" and words = ["dog", "cat"], return [] since
-* there are no substrings composed of "dog" and "cat" in s.
-* The order of the indices does not matter.
-*/
+ * Q80.
+ * Given a string s and a list of words words, where each word is the same
+ * length, find all starting indices of substrings in s that is a concatenation
+ * of every word in words exactly once.
+ * For example, given s = "dogcatcatcodecatdog" and words = ["cat", "dog"],
+ * return [0, 13], since "dogcat" starts at index 0 and "catdog" starts at index
+ * 13.
+ * Given s = "barfoobazbitbyte" and words = ["dog", "cat"], return [] since
+ * there are no substrings composed of "dog" and "cat" in s.
+ * The order of the indices does not matter.
+ */
 function findSubstring(s, words) {
     let result = [];
     if (!s || s.length === 0 || !words || words.length === 0) {
@@ -4289,7 +4376,10 @@ function findSubstring(s, words) {
         let j = 0;
 
         while (j < words.length) {
-            const word = s.substring(i + j * wordLength, i + (j + 1) * wordLength);
+            const word = s.substring(
+                i + j * wordLength,
+                i + (j + 1) * wordLength
+            );
             if (!wordCount.has(word)) {
                 break;
             }
@@ -4317,4 +4407,461 @@ console.log(findSubstring(s1, words1));
 const s2 = 'barfoobazbitbyte';
 const words2 = ['dog', 'cat'];
 console.log(findSubstring(s2, words2));
+console.log('\n');
+
+/*
+ * Q81.
+ * Describe and give an example of each of the following types of polymorphism:
+ * Ad-hoc polymorphism
+ * Parametric polymorphism
+ * Subtype polymorphism
+ */
+// Detailed solution implemented in Java S81
+// Ad-hoc polymorphism through function overloading (or operator overloading)
+// Parametric polymorphism through generics
+// Subtype polymorphism through inheritance and method overriding
+console.log('========= Q81 =========');
+console.log('\n');
+
+/*
+ * Q82.
+ * Given the sequence of keys visited by a postorder traversal of a binary
+ * search tree, reconstruct the tree.
+ * For example, given the sequence 2, 4, 3, 8, 7, 5, you should construct the
+ * following tree:
+ * "    5      "
+ * "   / \     "
+ * "  3   7    "
+ * " / \   \   "
+ * "2   4   8  "
+ */
+function buildTreeFromPostorderHelper(postorder, start, end) {
+    if (start > end) {
+        return null;
+    }
+
+    const rootVal = postorder[end];
+    let root = new TreeNode(rootVal);
+
+    // Find the index of the last element smaller than the root value
+    let i = 0;
+    for (i = end - 1; i >= start; i--) {
+        if (postorder[i] < rootVal) {
+            break;
+        }
+    }
+
+    root.left = buildTreeFromPostorderHelper(postorder, start, i);
+    root.right = buildTreeFromPostorderHelper(postorder, i + 1, end - 1);
+
+    return root;
+}
+
+function buildTreeFromPostorder(postorder) {
+    if (!postorder || postorder.length === 0) {
+        return null;
+    }
+
+    return buildTreeFromPostorderHelper(postorder, 0, postorder.length - 1);
+}
+
+function inorderTraversal(node) {
+    if (!node) {
+        return;
+    }
+
+    inorderTraversal(node.left);
+    console.log(node.val);
+    inorderTraversal(node.right);
+}
+
+console.log('========= Q82 =========');
+const postorder = [2, 4, 3, 8, 7, 5];
+const treeRootFromPostorder = buildTreeFromPostorder(postorder);
+inorderTraversal(treeRootFromPostorder);
+console.log('\n');
+
+/*
+ * Q83.
+ * Given a stack of N elements, interleave the first half of the stack with the
+ * second half reversed using only one other queue. This should be done
+ * in-place.
+ * Recall that you can only push or pop from a stack, and enqueue or dequeue
+ * from a queue.
+ * For example, if the stack is [1, 2, 3, 4, 5], it should become [1, 5, 2, 4,
+ * 3]. If the stack is [1, 2, 3, 4], it should become [1, 4, 2, 3].
+ * Hint: Try working backwards from the end state.
+ */
+function interleaveStack(stack) {
+    const size = stack.length;
+    const halfSize = Math.floor(size / 2);
+
+    let queue = [];
+    let tempStack = new Stack();
+
+    for (let i = 0; i < halfSize; i++) {
+        queue.push(stack.pop());
+    }
+
+    while (stack.length > 0) {
+        tempStack.push(stack.pop());
+    }
+
+    while (queue.length > 0) {
+        stack.push(tempStack.pop());
+        stack.push(queue.shift());
+    }
+
+    while (!tempStack.isEmpty()) {
+        stack.push(tempStack.pop());
+    }
+}
+
+console.log('========= Q83 =========');
+let stack1 = new Stack();
+stack1.push(1);
+stack1.push(2);
+stack1.push(3);
+stack1.push(4);
+stack1.push(5);
+interleaveStack(stack1);
+console.log(stack1.elements);
+
+let stack2 = new Stack();
+stack2.push(1);
+stack2.push(2);
+stack2.push(3);
+stack2.push(4);
+interleaveStack(stack2);
+console.log(stack2.elements);
+console.log('\n');
+
+/*
+ * Q84.
+ * A graph is minimally-connected if it is connected and there is no edge that
+ * can be removed while still leaving the graph connected. For example, any
+ * binary tree is minimally-connected.
+ * Given an undirected graph, check if the graph is minimally-connected. You can
+ * choose to represent the graph as either an adjacency matrix or adjacency
+ * list.
+ */
+class Graph {
+    #_numVertices;
+    #_adjList;
+
+    constructor(numVertices) {
+        this.#_numVertices = numVertices;
+        this.#_adjList = new Array(numVertices).fill().map(() => []);
+    }
+
+    addEdge(u, v) {
+        this.#_adjList[u].push(v);
+        this.#_adjList[v].push(u);
+    }
+
+    isMinimallyConnected() {
+        let visited = new Array(this.#_numVertices).fill(false);
+
+        return this.dfs(0, visited, -1) && this.allVisited(visited);
+    }
+
+    dfs(vertex, visited, parent) {
+        visited[vertex] = true;
+
+        for (let neighbor of this.#_adjList[vertex]) {
+            if (!visited[neighbor]) {
+                if (!this.dfs(neighbor, visited, vertex)) {
+                    return false;
+                }
+            } else if (neighbor !== parent) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    allVisited(visited) {
+        for (const v of visited) {
+            if (!v) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // S90.
+    isBipartite() {
+        let colors = new Array(this.#_numVertices).fill(-1);
+
+        for (let i = 0; i < this.#_numVertices; i++) {
+            if (colors[i] === -1) {
+                if (!this.isBipartiteUtil(i, colors)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    isBipartiteUtil(src, colors) {
+        let queue = [];
+        queue.push(src);
+        colors[src] = 1;
+
+        while (queue.length > 0) {
+            const curr = queue.shift();
+
+            for (const neighbor of this.#_adjList[curr]) {
+                if (colors[neighbor] === -1) {
+                    colors[neighbor] = 1 - colors[curr];
+                    queue.push(neighbor);
+                } else if (colors[neighbor] === colors[curr]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+}
+
+console.log('========= Q84 =========');
+let minimalGraph = new Graph(5);
+minimalGraph.addEdge(0, 1);
+minimalGraph.addEdge(0, 2);
+minimalGraph.addEdge(2, 3);
+minimalGraph.addEdge(2, 4);
+console.log(
+    `Is the graph minimally-connected? ${minimalGraph.isMinimallyConnected()}`
+);
+console.log('\n');
+
+/*
+ * Q85.
+ * What will this code print out?
+ * "def make_functions():          "
+ * "    flist = []                 "
+ * "                               "
+ * "    for i in [1, 2, 3]:        "
+ * "        def print_i():         "
+ * "            print(i)           "
+ * "        flist.append(print_i)  "
+ * "                               "
+ * "    return flist               "
+ * "                               "
+ * "functions = make_functions()   "
+ * "for f in functions:            "
+ * "    f()                        "
+ * How can we make it print out what we apparently want?
+ */
+console.log('========= Q85 =========');
+
+/*
+ * It will print '3' three times since make_functions() refers to 'i' in its
+ * enclosing scope. It should be corrected by using default argument x=i in
+ * print_i as below.
+ * "def make_functions():          "
+ * "    flist = []                 "
+ * "                               "
+ * "    for i in [1, 2, 3]:        "
+ * "        def print_i(x=i):      "
+ * "            print(i)           "
+ * "        flist.append(print_i)  "
+ * "                               "
+ * "    return flist               "
+ * "                               "
+ * "functions = make_functions()   "
+ * "for f in functions:            "
+ * "    f()                        "
+ */
+console.log('\n');
+
+/*
+ * Q86.
+ * Given a circular array, compute its maximum subarray sum in O(n) time. A
+ * subarray can be empty, and in this case the sum is 0.
+ * For example, given [8, -1, 3, 4], return 15 as we choose the numbers 3, 4,
+ * and 8 where the 8 is obtained from wrapping around.
+ * Given [-4, 5, 1, 0], return 6 as we choose the numbers 5 and 1.
+ */
+function getMaxSubarraySum(nums) {
+    let maxSum = nums[0];
+    let currentMax = nums[0];
+    let minSum = nums[0];
+    let currentMin = nums[0];
+    let totalSum = nums[0];
+
+    for (let i = 1; i < nums.length; i++) {
+        totalSum += nums[i];
+
+        currentMax = Math.max(currentMax + nums[i], nums[i]);
+        maxSum = Math.max(maxSum, currentMax);
+
+        currentMin = Math.min(currentMin + nums[i], nums[i]);
+        minSum = Math.min(minSum, currentMin);
+    }
+
+    // If the total sum equals the minimum subarray sum,
+    // it means all elements in the array are negative, so return the maximum
+    // subarray sum
+    if (totalSum == minSum) {
+        return maxSum;
+    }
+
+    // Otherwise, return the maximum of the maximum subarray sum and the difference
+    // between the total sum and the minimum subarray sum
+    return Math.max(maxSum, totalSum - minSum);
+}
+
+console.log('========= Q86 =========');
+const circularArray1 = [8, -1, 3, 4];
+console.log(
+    `Max subarray sum of ${circularArray1} is ${getMaxSubarraySum(
+        circularArray1
+    )}`
+);
+
+const circularArray2 = [-4, 5, 1, 0];
+console.log(
+    `Max subarray sum of ${circularArray2} is ${getMaxSubarraySum(
+        circularArray2
+    )}`
+);
+console.log('\n');
+
+/*
+ * Q87.
+ * You are given an array of nonnegative integers. Let's say you start at the
+ * beginning of the array and are trying to advance to the end. You can advance
+ * at most, the number of steps that you're currently on. Determine whether you
+ * can get to the end of the array.
+ * For example, given the array [1, 3, 1, 2, 0, 1], we can go from indices 0 ->
+ * 1 -> 3 -> 5, so return true.
+ * Given the array [1, 2, 1, 0, 0], we can't reach the end, so return false.
+ */
+function canReachEnd(nums) {
+    let lastReachableIndex = nums.length - 1;
+
+    for (let i = nums.length - 2; i >= 0; i--) {
+        if (i + nums[i] >= lastReachableIndex) {
+            lastReachableIndex = i;
+        }
+    }
+
+    return lastReachableIndex === 0;
+}
+
+console.log('========= Q87 =========');
+const stepsArr1 = [1, 3, 1, 2, 0, 1];
+console.log(`Can reach end of ${stepsArr1}? ${canReachEnd(stepsArr1)}`);
+
+const stepsArr2 = [1, 2, 1, 0, 0];
+console.log(`Can reach end of ${stepsArr2}? ${canReachEnd(stepsArr2)}`);
+console.log('\n');
+
+/*
+ * Q88.
+ * Given a set of distinct positive integers, find the largest subset such that
+ * every pair of elements in the subset (i, j) satisfies either i % j = 0 or j %
+ * i = 0.
+ * For example, given the set [3, 5, 10, 20, 21], you should return [5, 10, 20].
+ * Given [1, 3, 6, 24], return [1, 3, 6, 24].
+ */
+function largestDivisibleSubset(nums) {
+    if (!nums || nums.length === 0) {
+        return [];
+    }
+
+    nums.sort((a, b) => a - b);
+
+    const n = nums.length;
+    let dp = new Array(n).fill(0); // Stores the size of the largest subset ending at index i
+    let prev = new Array(n).fill(0); // Stores the index of the previous element in the subset
+
+    let maxSize = 0;
+    let maxIdx = 0;
+
+    for (let i = 0; i < n; i++) {
+        dp[i] = 1;
+        prev[i] = -1;
+
+        for (let j = 0; j < i; j++) {
+            if (nums[i] % nums[j] === 0 && dp[j] + 1 > dp[i]) {
+                dp[i] = dp[j] + 1;
+                prev[i] = j;
+            }
+        }
+
+        if (dp[i] > maxSize) {
+            maxSize = dp[i];
+            maxIdx = i;
+        }
+    }
+
+    let result = [];
+    while (maxIdx !== -1) {
+        result.push(nums[maxIdx]);
+        maxIdx = prev[maxIdx];
+    }
+
+    return result.sort((a, b) => a - b);
+}
+
+console.log('========= Q88 =========');
+const divSubset1 = [3, 5, 10, 20, 21];
+console.log(
+    `Largest divisible subset of ${divSubset1} is ${largestDivisibleSubset(
+        divSubset1
+    )}`
+);
+
+const divSubset2 = [1, 3, 6, 24];
+console.log(
+    `Largest divisible subset of ${divSubset2} is ${largestDivisibleSubset(
+        divSubset2
+    )}`
+);
+console.log('\n');
+
+/*
+ * Q89.
+ * Suppose an array sorted in ascending order is rotated at some pivot unknown
+ * to you beforehand. Find the minimum element in O(log N) time. You may assume
+ * the array does not contain duplicates.
+ * For example, given [5, 7, 10, 3, 4], return 3.
+ */
+function findMin(nums) {
+    let left = 0;
+    let right = nums.length - 1;
+
+    while (left < right) {
+        const mid = left + Math.floor((right - left) / 2);
+
+        if (nums[mid] > nums[right]) {
+            left = mid + 1;
+        } else {
+            right = mid;
+        }
+    }
+    return nums[left];
+}
+
+console.log('========= Q89 =========');
+const numsToFindPivot = [5, 7, 10, 3, 4];
+console.log(`Pivot of ${numsToFindPivot} is ${findMin(numsToFindPivot)}`);
+console.log('\n');
+
+/*
+ * Q90.
+ * Given an undirected graph G, check whether it is bipartite. Recall that a
+ * graph is bipartite if its vertices can be divided into two independent sets,
+ * U and V, such that no edge connects vertices of the same set.
+ */
+console.log('========= Q90 =========');
+let bipartiteGraph = new Graph(4);
+bipartiteGraph.addEdge(0, 1);
+bipartiteGraph.addEdge(1, 2);
+bipartiteGraph.addEdge(2, 3);
+bipartiteGraph.addEdge(3, 0);
+
+console.log(`Is the graph bipartite? ${bipartiteGraph.isBipartite()}`);
 console.log('\n');
