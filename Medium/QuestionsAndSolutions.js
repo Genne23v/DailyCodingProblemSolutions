@@ -4865,3 +4865,501 @@ bipartiteGraph.addEdge(3, 0);
 
 console.log(`Is the graph bipartite? ${bipartiteGraph.isBipartite()}`);
 console.log('\n');
+
+/*
+* Q91.
+* Given a linked list of numbers and a pivot k, partition the linked list so
+* that all nodes less than k come before nodes greater than or equal to k.
+* For example, given the linked list 5 -> 1 -> 8 -> 0 -> 3 and k = 3, the
+* solution could be 1 -> 0 -> 5 -> 8 -> 3.
+*/
+function partition(head, k) {
+    let smallerHead = new ListNode(0);
+    let smallerTail = smallerHead;
+    let greaterHead = new ListNode(0);
+    let greaterTail = greaterHead;
+
+    let curr = head;
+    while (curr) {
+        if (curr.value < k) {
+            smallerTail.next = curr;
+            smallerTail = smallerTail.next;
+        } else {
+            greaterTail.next = curr;
+            greaterTail = greaterTail.next;
+        }
+
+        curr = curr.next;
+    }
+
+    greaterTail.next = null;
+    smallerTail.next = greaterHead.next;
+
+    return smallerHead.next;
+}
+
+console.log('========= Q91 =========');
+let headToPartition = new ListNode(5);
+headToPartition.next = new ListNode(1);
+headToPartition.next.next = new ListNode(8);
+headToPartition.next.next.next = new ListNode(0);
+headToPartition.next.next.next.next = new ListNode(3);
+
+const kToPartition = 3;
+let newList = partition(headToPartition, kToPartition);
+
+let newListPrint = '';
+while (newList) {
+    newListPrint += `${newList.value} -> `;
+    newList = newList.next;
+}
+newListPrint += 'null';
+console.log(`Partitioned list: ${newListPrint}`);
+console.log('\n');
+
+/*
+* Q92.
+* Given a string and a pattern, find the starting indices of all occurrences of
+* the pattern in the string. For example, given the string "abracadabra" and
+* the pattern "abr", you should return [0, 7].
+*/
+function findPatternIndices(str, pattern) {
+    let indices = [];
+
+    const n = str.length;
+    const m = pattern.length;
+
+    for (let i = 0; i <= n - m; i++) {
+        let j;
+        for (j = 0; j < m; j++) {
+            if (str[i + j] !== pattern[j]) {
+                break;
+            }
+        }
+
+        if (j === m) {
+            indices.push(i);
+        }
+    }
+
+    return indices;
+}
+
+console.log('========= Q92 =========');
+const strToFindPattern = 'abracadabra';
+const pattern = 'abr';
+console.log(`Indices of pattern occurrence: ${findPatternIndices(strToFindPattern, pattern)}`);
+console.log('\n');
+
+/*
+* Q93.
+* Given a string of digits, generate all possible valid IP address
+* combinations.
+* IP addresses must follow the format A.B.C.D, where A, B, C, and D are numbers
+* between 0 and 255. Zero-prefixed numbers, such as 01 and 065, are not
+* allowed, except for 0 itself.
+* For example, given "2542540123", you should return ['254.25.40.123',
+* '254.254.0.123'].
+*/
+function generateIPAddresses(s) {
+    let result = [];
+    backtrack(s, 0, [], result);
+    return result;
+}
+
+function backtrack(s, index, current, result) {
+    if (index === s.length && current.length === 4) {
+        result.push(current.join('.'));
+    } else if (index < s.length && current.length < 4) {
+        // Try different substrings of s starting from the current index
+        for (let i = 1; i <= 3 && index + i <= s.length; i++) {
+            const segment = s.substring(index, index + i);
+            if (isValidSegment(segment)) {
+                current.push(segment);
+                backtrack(s, index + i, current, result);
+                current.pop();
+            }
+        }
+    }
+}
+
+function isValidSegment(segment) {
+    if (segment.length > 1 && segment[0] === '0') {
+        return false;
+    }
+
+    const value = parseInt(segment);
+    return value >= 0 && value <= 255;
+}
+
+console.log('========= Q93 =========');
+const idAddressString = '2542540123';
+console.log(`Valid IP addresses: ${generateIPAddresses(idAddressString)}`);
+console.log('\n');
+
+/*
+* Q94.
+* The horizontal distance of a binary tree node describes how far left or right
+* the node will be when the tree is printed out.
+* More rigorously, we can define it as follows:
+* The horizontal distance of the root is 0.
+* The horizontal distance of a left child is hd(parent) - 1.
+* The horizontal distance of a right child is hd(parent) + 1.
+* For example, for the following tree, hd(1) = -2, and hd(6) = 0.
+* "             5             "
+* "          /     \          "
+* "        3         7        "
+* "      /  \      /   \      "
+* "    1     4    6     9     "
+* "   /                /      "
+* "  0                8       "
+* The bottom view of a tree, then, consists of the lowest node at each
+* horizontal distance. If there are two nodes at the same depth and horizontal
+* distance, either is acceptable.
+* For this tree, for example, the bottom view could be [0, 1, 3, 6, 8, 9].
+* Given the root to a binary tree, return its bottom view.
+*/
+class NodWithHorizontalDistance {
+    constructor(value) {
+        this.value = value;
+        this.hd = Number.MIN_SAFE_INTEGER;
+        this.left = null;
+        this.right = null;
+    }
+}
+
+function bottomView(root) {
+    let result = [];
+    if (!root) {
+        return result;
+    }
+
+    let map = new Map();
+
+    let queue = [];
+    root.hd = 0;
+    queue.push(root);
+
+    while (queue.length > 0) {
+        let node = queue.shift();
+        map.set(node.hd, node.value);
+
+        if (node.left) {
+            node.left.hd = node.hd - 1;
+            queue.push(node.left);
+        }
+
+        if (node.right) {
+            node.right.hd = node.hd + 1;
+            queue.push(node.right);
+        }
+    }
+
+    for (const value of map.values()) {
+        result.push(value);
+    }
+
+    return result.sort();
+}
+
+console.log('========= Q94 =========');
+let treeRootWithHorizontalDistance = new NodWithHorizontalDistance(5);
+treeRootWithHorizontalDistance.left = new NodWithHorizontalDistance(3);
+treeRootWithHorizontalDistance.right = new NodWithHorizontalDistance(7);
+treeRootWithHorizontalDistance.left.left = new NodWithHorizontalDistance(1);
+treeRootWithHorizontalDistance.left.right = new NodWithHorizontalDistance(4);
+treeRootWithHorizontalDistance.right.left = new NodWithHorizontalDistance(6);
+treeRootWithHorizontalDistance.right.right = new NodWithHorizontalDistance(9);
+treeRootWithHorizontalDistance.left.left.left = new NodWithHorizontalDistance(0);
+treeRootWithHorizontalDistance.right.right.left = new NodWithHorizontalDistance(8);
+
+console.log(`Bottom view of tree: ${bottomView(treeRootWithHorizontalDistance)}`);
+console.log('\n');
+
+/*
+* Q95.
+* https://en.wikipedia.org/wiki/Roman_numerals
+* Given a number in Roman numeral format, convert it to decimal.
+* The values of Roman numerals are as follows:
+* " {              "
+* "     'M': 1000, "
+* "     'D': 500,  "
+* "     'C': 100,  "
+* "     'L': 50,   "
+* "     'X': 10,   "
+* "     'V': 5,    "
+* "     'I': 1     "
+* " }              "
+* In addition, note that the Roman numeral system uses subtractive notation for
+* numbers such as IV and XL.
+* For the input XIV, for instance, you should return 14.
+*/
+function romanToDecimal(roman) {
+    let symbolValues = createSymbolValueMap();
+    let decimal = 0;
+
+    for (let i = 0; i < roman.length; i++) {
+        let currentValue = symbolValues.get(roman[i]);
+
+        if (i + 1 < roman.length && symbolValues.get(roman[i + 1]) > currentValue) {
+            decimal -= currentValue;
+        } else {
+            decimal += currentValue;
+        }
+    }
+    return decimal;
+}
+
+function createSymbolValueMap() {
+    let symbolValues = new Map();
+    symbolValues.set('M', 1000);
+    symbolValues.set('D', 500);
+    symbolValues.set('C', 100);
+    symbolValues.set('L', 50);
+    symbolValues.set('X', 10);
+    symbolValues.set('V', 5);
+    symbolValues.set('I', 1);
+    return symbolValues;
+}
+
+console.log('========= Q95 =========');
+const roman = 'XIV';
+console.log(`Roman numeral ${roman} is ${romanToDecimal(roman)} in decimal`);
+console.log('\n');
+
+/*
+* Q96.
+* Write an algorithm that computes the reversal of a directed graph. For
+* example, if a graph consists of A -> B -> C, it should become A <- B <- C.
+*/
+class ReversingGraph {
+    #_adjacencyList;
+
+    constructor() {
+        this.#_adjacencyList = new Map();
+    }
+
+    addEdge(source, destination) {
+        if (!this.#_adjacencyList.has(source)) {
+            this.#_adjacencyList.set(source, []);
+        }
+        this.#_adjacencyList.get(source).push(destination);
+    }
+
+    reverse() {
+        let reversedGraph = new ReversingGraph();
+
+        for (const vertex of this.#_adjacencyList.keys()) {
+            for (const destination of this.#_adjacencyList.get(vertex)) {
+                reversedGraph.addEdge(destination, vertex);
+            }
+        }
+        return reversedGraph;
+    }
+
+    printGraph() {
+        let stringToPrint = '';
+        for (const vertex of this.#_adjacencyList.keys()) {
+            stringToPrint += `${vertex} -> `;
+            const neighbors = this.#_adjacencyList.get(vertex);
+            for (const neighbor of neighbors) {
+                stringToPrint += `${neighbor}\n`;
+            }
+        }
+        console.log(stringToPrint);
+    }
+}
+
+console.log('========= Q96 =========');
+let originalGraph = new ReversingGraph();
+originalGraph.addEdge('A', 'B');
+originalGraph.addEdge('B', 'C');
+originalGraph.addEdge('C', 'D');
+
+console.log('Original graph');
+originalGraph.printGraph();
+
+let reversedGraph = originalGraph.reverse();
+console.log('Reversed graph');
+reversedGraph.printGraph();
+
+/*
+* Q97.
+* In front of you is a row of N coins, with values v1, v1, ..., vn.
+* You are asked to play the following game. You and an opponent take turns
+* choosing either the first or last coin from the row, removing it from the
+* row, and receiving the value of the coin.
+* Write a program that returns the maximum amount of money you can win with
+* certainty, if you move first, assuming your opponent plays optimally.
+*/
+function maxMoney(coins) {
+    const n = coins.length;
+
+    return play(coins, 0, n - 1);
+}
+
+function play(coins, left, right) {
+    if (left > right) {
+        return 0;
+    }
+
+    let pickLeft = coins[left] + Math.min(play(coins, left + 2, right), play(coins, left + 1, right - 1));
+    let pickRight = coins[right] + Math.min(play(coins, left + 1, right - 1), play(coins, left, right - 2));
+
+    let maxMoney = Math.max(pickLeft, pickRight);
+
+    return maxMoney;
+}
+
+console.log('========= Q97 =========');
+const coins = [3, 9, 1, 2];
+console.log(`Maximum amount of money: ${maxMoney(coins)}`);
+console.log('\n');
+
+/*
+* Q98.
+* Given an absolute pathname that may have . or .. as part of it, return the
+* shortest standardized path.
+* For example, given "/usr/bin/../bin/./scripts/../", return "/usr/bin/".
+*/
+function shortestPath(path) {
+    const components = path.split('/');
+    let stack = []
+
+    for (const component of components) {
+        if (component === '.' || component === '') {
+            continue;
+        } else if (component === '..') {
+            if (stack.length > 0) {
+                stack.pop();
+            }
+        } else {
+            stack.push(component);
+        }
+    }
+
+    let shortestPath = '/';
+    for (const dir of stack) {
+        shortestPath += `${dir}/`;
+    }
+
+    return shortestPath;
+}
+
+console.log('========= Q98 =========');
+const path = '/usr/bin/../bin/./scripts/../';
+console.log(`Shortest standardized path: ${shortestPath(path)}`);
+console.log('\n');
+
+function largestNumber(nums) {
+    let numStrings = new Array(nums.length);
+    for (let i = 0; i < nums.length; i++) {
+        numStrings[i] = nums[i].toString();
+    }
+
+    numStrings.sort((a, b) => b[0] - a[0]);
+
+    let largestNumber = '';
+    for (const numString of numStrings) {
+        largestNumber += numString;
+    }
+
+    return largestNumber;
+}
+
+console.log('========= Q99 =========');
+const numsToFormLargest = [10, 7, 76, 415];
+console.log(`Largest number formation: ${largestNumber(numsToFormLargest)}`);
+console.log('\n');
+
+/*
+* Q100.
+* https://en.wikipedia.org/wiki/Snakes_and_Ladders
+* Snakes and Ladders is a game played on a 10 x 10 board, the goal of which is
+* get from square 1 to square 100. On each turn players will roll a six-sided
+* die and move forward a number of spaces equal to the result. If they land on
+* a square that represents a snake or ladder, they will be transported ahead or
+* behind, respectively, to a new square.
+* Find the smallest number of turns it takes to play snakes and ladders.
+* For convenience, here are the squares representing snakes and ladders, and
+* their outcomes:
+* snakes = {16: 6, 48: 26, 49: 11, 56: 53, 62: 19, 64: 60, 87: 24, 93: 73, 95:
+* 75, 98: 78}
+* ladders = {1: 38, 4: 14, 9: 31, 21: 42, 28: 84, 36: 44, 51: 67, 71: 91, 80:
+* 100}
+*/
+class SnakesAndLadders {
+
+    snakesAndLadders(board) {
+        const n = board.length;
+        let visited = new Array(n + 1).fill(false);
+
+        let queue = [];
+        queue.push(1);
+        visited[1] = true;
+
+        let turns = 0;
+
+        while (queue.length > 0) {
+            const size = queue.length;
+
+            for (let i = 0; i < size; i++) {
+                const square = queue.shift();
+
+                if (square === n - 1) {
+                    return turns;
+                }
+
+                for (let j = 1; j <= 6 && square + j < n; j++) {
+                    const next = board[square + j] === -1 ? square + j : board[square + j];
+
+                    if (!visited[next]) {
+                        visited[next] = true;
+                        queue.push(next);
+                    }
+                }
+            }
+            turns++;
+        }
+        return -1;
+    }
+}
+
+console.log('========= Q100 =========');
+const snakesAndLadders = new SnakesAndLadders();
+
+let board = new Array(101).fill(-1);
+
+let snakes = new Map();
+snakes.set(16, 6);
+snakes.set(48, 26);
+snakes.set(49, 11);
+snakes.set(56, 53);
+snakes.set(62, 19);
+snakes.set(64, 60);
+snakes.set(87, 24);
+snakes.set(93, 73);
+snakes.set(95, 75);
+snakes.set(98, 78);
+
+let ladders = new Map();
+ladders.set(1, 38);
+ladders.set(4, 14);
+ladders.set(9, 31);
+ladders.set(21, 42);
+ladders.set(28, 84);
+ladders.set(36, 44);
+ladders.set(51, 67);
+ladders.set(71, 91);
+ladders.set(80, 100);
+
+for (const [key, value] of snakes) {
+    board[key] = value;
+}
+
+for (const [key, value] of ladders) {
+    board[key] = value;
+}
+
+console.log(`Minimum turns to win the game: ${snakesAndLadders.snakesAndLadders(board)}`);
+console.log('\n');

@@ -2988,6 +2988,309 @@ public class QuestionsAndSolutions {
     // S90.
     // Solution added to Graph class in S84
 
+    // S91.
+    public static ListNode partition(ListNode head, int k) {
+        ListNode smallerHead = new ListNode(0);
+        ListNode smallerTail = smallerHead;
+        ListNode greaterHead = new ListNode(0);
+        ListNode greaterTail = greaterHead;
+
+        ListNode curr = head;
+
+        while (curr != null) {
+            if (curr.val < k) {
+                smallerTail.next = curr;
+                smallerTail = smallerTail.next;
+            } else {
+                greaterTail.next = curr;
+                greaterTail = greaterTail.next;
+            }
+
+            curr = curr.next;
+        }
+
+        greaterTail.next = null;
+        smallerTail.next = greaterHead.next;
+
+        return smallerHead.next;
+    }
+
+    // S92.
+    public static List<Integer> findPatternIndices(String str, String pattern) {
+        List<Integer> indices = new ArrayList<>();
+
+        int n = str.length();
+        int m = pattern.length();
+
+        for (int i = 0; i <= n - m; i++) {
+            int j;
+            for (j = 0; j < m; j++) {
+                if (str.charAt(i + j) != pattern.charAt(j))
+                    break;
+            }
+
+            if (j == m) {
+                indices.add(i);
+            }
+        }
+
+        return indices;
+    }
+
+    // S93.
+    public static List<String> generateIPAddresses(String s) {
+        List<String> result = new ArrayList<>();
+        backtrack(s, 0, new ArrayList<>(), result);
+        return result;
+    }
+
+    private static void backtrack(String s, int index, List<String> current, List<String> result) {
+        if (index == s.length() && current.size() == 4) {
+            result.add(String.join(".", current));
+        } else if (index < s.length() && current.size() < 4) {
+            // Try different substrings of s starting from the current index
+            for (int i = 1; i <= 3 && index + i <= s.length(); i++) {
+                String segment = s.substring(index, index + i);
+                if (isValidSegment(segment)) {
+                    current.add(segment);
+                    backtrack(s, index + i, current, result);
+                    current.remove(current.size() - 1);
+                }
+            }
+        }
+    }
+
+    private static boolean isValidSegment(String segment) {
+        if (segment.length() > 1 && segment.charAt(0) == '0') {
+            return false;
+        }
+
+        int value = Integer.parseInt(segment);
+        return value >= 0 && value <= 255;
+    }
+
+    // S94.
+    static class NodeWithHorizontalDistance {
+        int value;
+        int hd;
+        NodeWithHorizontalDistance left, right;
+
+        public NodeWithHorizontalDistance(int value) {
+            this.value = value;
+            this.hd = Integer.MAX_VALUE;
+            this.left = null;
+            this.right = null;
+        }
+    }
+
+    public static List<Integer> bottomView(NodeWithHorizontalDistance root) {
+        List<Integer> result = new ArrayList<>();
+        if (root == null)
+            return result;
+
+        Map<Integer, Integer> map = new TreeMap<>();
+
+        Queue<NodeWithHorizontalDistance> queue = new LinkedList<>();
+        root.hd = 0;
+        queue.add(root);
+
+        while (!queue.isEmpty()) {
+            NodeWithHorizontalDistance node = queue.poll();
+            map.put(node.hd, node.value);
+
+            if (node.left != null) {
+                node.left.hd = node.hd - 1;
+                queue.add(node.left);
+            }
+            if (node.right != null) {
+                node.right.hd = node.hd + 1;
+                queue.add(node.right);
+            }
+        }
+
+        for (int value : map.values()) {
+            result.add(value);
+        }
+
+        return result;
+    }
+
+    // S95.
+    public static int romanToDecimal(String roman) {
+        Map<Character, Integer> symbolValues = createSymbolValuesMap();
+        int decimal = 0;
+
+        for (int i = 0; i < roman.length(); i++) {
+            int currentValue = symbolValues.get(roman.charAt(i));
+
+            if (i + 1 < roman.length() && symbolValues.get(roman.charAt(i + 1)) > currentValue) {
+                decimal -= currentValue;
+            } else {
+                decimal += currentValue;
+            }
+        }
+
+        return decimal;
+    }
+
+    private static Map<Character, Integer> createSymbolValuesMap() {
+        Map<Character, Integer> symbolValues = new HashMap<>();
+        symbolValues.put('M', 1000);
+        symbolValues.put('D', 500);
+        symbolValues.put('C', 100);
+        symbolValues.put('L', 50);
+        symbolValues.put('X', 10);
+        symbolValues.put('V', 5);
+        symbolValues.put('I', 1);
+        return symbolValues;
+    }
+
+    // S96.
+    static class ReversingGraph {
+        private Map<String, List<String>> adjacencyList;
+
+        public ReversingGraph() {
+            adjacencyList = new HashMap<>();
+        }
+
+        public void addEdge(String source, String destination) {
+            adjacencyList.computeIfAbsent(source, k -> new ArrayList<>()).add(destination);
+        }
+
+        public ReversingGraph reverse() {
+            ReversingGraph reversedGraph = new ReversingGraph();
+
+            for (String vertex : adjacencyList.keySet()) {
+                for (String destination : adjacencyList.get(vertex)) {
+                    reversedGraph.addEdge(destination, vertex);
+                }
+            }
+
+            return reversedGraph;
+        }
+
+        public void printGraph() {
+            for (String vertex : adjacencyList.keySet()) {
+                System.out.print(vertex + " -> ");
+                List<String> neighbors = adjacencyList.get(vertex);
+                for (String neighbor : neighbors) {
+                    System.out.print(neighbor + " ");
+                }
+                System.out.println();
+            }
+        }
+    }
+
+    // S97.
+    public static int maxMoney(int[] coins) {
+        int n = coins.length;
+
+        return play(coins, 0, n - 1);
+    }
+
+    private static int play(int[] coins, int left, int right) {
+        if (left > right) {
+            return 0;
+        }
+
+        int pickLeft = coins[left]
+                + Math.min(play(coins, left + 2, right), play(coins, left + 1, right - 1));
+        int pickRight = coins[right]
+                + Math.min(play(coins, left, right - 2), play(coins, left + 1, right - 1));
+
+        int maxMoney = Math.max(pickLeft, pickRight);
+
+        return maxMoney;
+    }
+
+    // S98.
+    public static String shortestPath(String path) {
+        String[] components = path.split("/");
+        Stack<String> stack = new Stack<>();
+
+        for (String component : components) {
+            if (component.equals(".") || component.isEmpty()) {
+                continue;
+            } else if (component.equals("..")) {
+                if (!stack.isEmpty()) {
+                    stack.pop();
+                }
+            } else {
+                stack.push(component);
+            }
+        }
+
+        StringBuilder sb = new StringBuilder("/");
+        for (String dir : stack) {
+            sb.append(dir).append("/");
+        }
+
+        return sb.toString();
+    }
+
+    // S99.
+    public static String largestNumber(int[] nums) {
+        String[] numStrings = new String[nums.length];
+        for (int i = 0; i < nums.length; i++) {
+            numStrings[i] = String.valueOf(nums[i]);
+        }
+
+        Arrays.sort(numStrings, new LargestNumberComparator());
+
+        StringBuilder sb = new StringBuilder();
+        for (String numString : numStrings) {
+            sb.append(numString);
+        }
+
+        return sb.toString();
+    }
+
+    static class LargestNumberComparator implements Comparator<String> {
+        @Override
+        public int compare(String a, String b) {
+            String order1 = a + b;
+            String order2 = b + a;
+            return order2.compareTo(order1);
+        }
+    }
+
+    // S100.
+    static class SnakesAndLadders {
+
+        public int snakesAndLadders(int[] board) {
+            int n = board.length;
+            boolean[] visited = new boolean[n + 1];
+
+            Queue<Integer> queue = new LinkedList<>();
+            queue.offer(1);
+            visited[1] = true;
+
+            int turns = 0;
+
+            while (!queue.isEmpty()) {
+                int size = queue.size();
+
+                for (int i = 0; i < size; i++) {
+                    int square = queue.poll();
+
+                    if (square == n - 1)
+                        return turns;
+
+                    for (int j = 1; j <= 6 && square + j < n; j++) {
+                        int next = board[square + j] == -1 ? square + j : board[square + j];
+
+                        if (!visited[next]) {
+                            visited[next] = true;
+                            queue.offer(next);
+                        }
+                    }
+                }
+                turns++;
+            }
+            return -1;
+        }
+    }
+
     public static void main(String[] args) {
         /*
          * Q1.
@@ -4899,6 +5202,231 @@ public class QuestionsAndSolutions {
 
         boolean isBipartite = bipartiteGraph.isBipartite();
         System.out.println("Is the graph bipartite? " + isBipartite);
+
+        /*
+         * Q91.
+         * Given a linked list of numbers and a pivot k, partition the linked list so
+         * that all nodes less than k come before nodes greater than or equal to k.
+         * For example, given the linked list 5 -> 1 -> 8 -> 0 -> 3 and k = 3, the
+         * solution could be 1 -> 0 -> 5 -> 8 -> 3.
+         */
+        System.out.println("========= Q91 ==========");
+        ListNode headToPartition = new ListNode(5);
+        headToPartition.next = new ListNode(1);
+        headToPartition.next.next = new ListNode(8);
+        headToPartition.next.next.next = new ListNode(0);
+        headToPartition.next.next.next.next = new ListNode(3);
+
+        int kToPartition = 3;
+
+        ListNode newList = partition(headToPartition, kToPartition);
+
+        while (newList != null) {
+            System.out.print(newList.val + " ");
+            newList = newList.next;
+        }
+        System.out.println();
+
+        /*
+         * Q92.
+         * Given a string and a pattern, find the starting indices of all occurrences of
+         * the pattern in the string. For example, given the string "abracadabra" and
+         * the pattern "abr", you should return [0, 7].
+         */
+        System.out.println("========= Q92 ==========");
+        String strToFindPattern = "abracadabra";
+        String pattern = "abr";
+
+        List<Integer> indices = findPatternIndices(strToFindPattern, pattern);
+
+        System.out.println("Indices of pattern occurrences: " + indices);
+
+        /*
+         * Q93.
+         * Given a string of digits, generate all possible valid IP address
+         * combinations.
+         * IP addresses must follow the format A.B.C.D, where A, B, C, and D are numbers
+         * between 0 and 255. Zero-prefixed numbers, such as 01 and 065, are not
+         * allowed, except for 0 itself.
+         * For example, given "2542540123", you should return ['254.25.40.123',
+         * '254.254.0.123'].
+         */
+        System.out.println("========= Q93 ==========");
+        String ipAddressString = "2542540123";
+        List<String> ipAddressList = generateIPAddresses(ipAddressString);
+
+        System.out.println("Valid IP addresses: " + ipAddressList);
+
+        /*
+         * Q94.
+         * The horizontal distance of a binary tree node describes how far left or right
+         * the node will be when the tree is printed out.
+         * More rigorously, we can define it as follows:
+         * The horizontal distance of the root is 0.
+         * The horizontal distance of a left child is hd(parent) - 1.
+         * The horizontal distance of a right child is hd(parent) + 1.
+         * For example, for the following tree, hd(1) = -2, and hd(6) = 0.
+         * "             5             "
+         * "          /     \          "
+         * "        3         7        "
+         * "      /  \      /   \      "
+         * "    1     4    6     9     "
+         * "   /                /      "
+         * "  0                8       "
+         * The bottom view of a tree, then, consists of the lowest node at each
+         * horizontal distance. If there are two nodes at the same depth and horizontal
+         * distance, either is acceptable.
+         * For this tree, for example, the bottom view could be [0, 1, 3, 6, 8, 9].
+         * Given the root to a binary tree, return its bottom view.
+         */
+        System.out.println("========= Q94 ==========");
+        NodeWithHorizontalDistance treeRootWithHorizontalDistance = new NodeWithHorizontalDistance(5);
+        treeRootWithHorizontalDistance.left = new NodeWithHorizontalDistance(3);
+        treeRootWithHorizontalDistance.right = new NodeWithHorizontalDistance(7);
+        treeRootWithHorizontalDistance.left.left = new NodeWithHorizontalDistance(1);
+        treeRootWithHorizontalDistance.left.right = new NodeWithHorizontalDistance(4);
+        treeRootWithHorizontalDistance.right.left = new NodeWithHorizontalDistance(6);
+        treeRootWithHorizontalDistance.right.right = new NodeWithHorizontalDistance(9);
+        treeRootWithHorizontalDistance.left.left.left = new NodeWithHorizontalDistance(0);
+        treeRootWithHorizontalDistance.right.right.left = new NodeWithHorizontalDistance(8);
+
+        List<Integer> bottomView = bottomView(treeRootWithHorizontalDistance);
+
+        System.out.println(bottomView); // Output: [0, 1, 3, 6, 8, 9]
+
+        /*
+         * Q95.
+         * https://en.wikipedia.org/wiki/Roman_numerals
+         * Given a number in Roman numeral format, convert it to decimal.
+         * The values of Roman numerals are as follows:
+         * " {              "
+         * "     'M': 1000, "
+         * "     'D': 500,  "
+         * "     'C': 100,  "
+         * "     'L': 50,   "
+         * "     'X': 10,   "
+         * "     'V': 5,    "
+         * "     'I': 1     "
+         * " }              "
+         * In addition, note that the Roman numeral system uses subtractive notation for
+         * numbers such as IV and XL.
+         * https://en.wikipedia.org/wiki/Subtractive_notation
+         * For the input XIV, for instance, you should return 14.
+         */
+        System.out.println("========= Q95 ==========");
+        int decimalValue = romanToDecimal("XIV");
+        System.out.println(decimalValue); // Output: 14
+
+        /*
+         * Q96.
+         * Write an algorithm that computes the reversal of a directed graph. For
+         * example, if a graph consists of A -> B -> C, it should become A <- B <- C.
+         */
+        System.out.println("========= Q96 ==========");
+        ReversingGraph originalGraph = new ReversingGraph();
+        originalGraph.addEdge("A", "B");
+        originalGraph.addEdge("B", "C");
+        originalGraph.addEdge("C", "D");
+
+        System.out.println("Original graph:");
+        originalGraph.printGraph();
+
+        ReversingGraph reversedGraph = originalGraph.reverse();
+
+        System.out.println("Reversed graph:");
+        reversedGraph.printGraph();
+
+        /*
+         * Q97.
+         * In front of you is a row of N coins, with values v1, v1, ..., vn.
+         * You are asked to play the following game. You and an opponent take turns
+         * choosing either the first or last coin from the row, removing it from the
+         * row, and receiving the value of the coin.
+         * Write a program that returns the maximum amount of money you can win with
+         * certainty, if you move first, assuming your opponent plays optimally.
+         */
+        System.out.println("========= Q97 ==========");
+        int[] coins = { 3, 9, 1, 2 };
+        int maxMoney = maxMoney(coins);
+        System.out.println("Maximum amount of money: " + maxMoney);
+
+        /*
+         * Q98.
+         * Given an absolute pathname that may have . or .. as part of it, return the
+         * shortest standardized path.
+         * For example, given "/usr/bin/../bin/./scripts/../", return "/usr/bin/".
+         */
+        System.out.println("========= Q98 ==========");
+        String path = "/usr/bin/../bin/./scripts/../";
+        String standardizedPath = shortestPath(path);
+        System.out.println("Shortest standardized path: " + standardizedPath);
+
+        /*
+         * Q99.
+         * Given a list of numbers, create an algorithm that arranges them in order to
+         * form the largest possible integer. For example, given [10, 7, 76, 415], you
+         * should return 77641510.
+         */
+        System.out.println("========= Q99 ==========");
+        int[] numsToFormLargest = { 10, 7, 76, 415 };
+        String largestNum = largestNumber(numsToFormLargest);
+        System.out.println("Largest number formation: " + largestNum);
+
+        /*
+         * Q100.
+         * https://en.wikipedia.org/wiki/Snakes_and_Ladders
+         * Snakes and Ladders is a game played on a 10 x 10 board, the goal of which is
+         * get from square 1 to square 100. On each turn players will roll a six-sided
+         * die and move forward a number of spaces equal to the result. If they land on
+         * a square that represents a snake or ladder, they will be transported ahead or
+         * behind, respectively, to a new square.
+         * Find the smallest number of turns it takes to play snakes and ladders.
+         * For convenience, here are the squares representing snakes and ladders, and
+         * their outcomes:
+         * snakes = {16: 6, 48: 26, 49: 11, 56: 53, 62: 19, 64: 60, 87: 24, 93: 73, 95:
+         * 75, 98: 78}
+         * ladders = {1: 38, 4: 14, 9: 31, 21: 42, 28: 84, 36: 44, 51: 67, 71: 91, 80:
+         * 100}
+         */
+        System.out.println("========= Q100 ==========");
+        SnakesAndLadders snakesAndLadders = new SnakesAndLadders();
+
+        int[] board = new int[101];
+        Arrays.fill(board, -1);
+
+        Map<Integer, Integer> snakes = new HashMap<>();
+        snakes.put(16, 6);
+        snakes.put(48, 26);
+        snakes.put(49, 11);
+        snakes.put(56, 53);
+        snakes.put(62, 19);
+        snakes.put(64, 60);
+        snakes.put(87, 24);
+        snakes.put(93, 73);
+        snakes.put(95, 75);
+        snakes.put(98, 78);
+
+        Map<Integer, Integer> ladders = new HashMap<>();
+        ladders.put(1, 38);
+        ladders.put(4, 14);
+        ladders.put(9, 31);
+        ladders.put(21, 42);
+        ladders.put(28, 84);
+        ladders.put(36, 44);
+        ladders.put(51, 67);
+        ladders.put(71, 91);
+        ladders.put(80, 100);
+
+        for (Map.Entry<Integer, Integer> entry : snakes.entrySet()) {
+            board[entry.getKey()] = entry.getValue();
+        }
+
+        for (Map.Entry<Integer, Integer> entry : ladders.entrySet()) {
+            board[entry.getKey()] = entry.getValue();
+        }
+
+        int minTurns = snakesAndLadders.snakesAndLadders(board);
+        System.out.println("Minimum turns to win the game: " + minTurns);
 
     }
 }
