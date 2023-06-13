@@ -5363,3 +5363,566 @@ for (const [key, value] of ladders) {
 
 console.log(`Minimum turns to win the game: ${snakesAndLadders.snakesAndLadders(board)}`);
 console.log('\n');
+
+/*
+* Q101.
+* You are given N identical eggs and access to a building with k floors. Your
+* task is to find the lowest floor that will cause an egg to break, if dropped
+* from that floor. Once an egg breaks, it cannot be dropped again. If an egg
+* breaks when dropped from the xth floor, you can assume it will also break
+* when dropped from any floor greater than x.
+* Write an algorithm that finds the minimum number of trial drops it will take,
+* in the worst case, to identify this floor.
+* For example, if N = 1 and k = 5, we will need to try dropping the egg at
+* every floor, beginning with the first, until we reach the fifth floor, so our
+* solution will be 5.
+*/
+function minTrialDrops(eggs, floors) {
+    // Create a 2D array to store the minimum number of trial drops for each subproblem
+    let dp = new Array(eggs + 1).fill(0).map(() => new Array(floors + 1).fill(0));
+
+    for (let i = 1; i <= eggs; i++) {
+        dp[i][0] = 0;
+        dp[i][1] = 1;
+    }
+
+    // If there is only one egg, we need to try dropping it from every floor
+    for (let j = 1; j <= floors; j++) {
+        dp[1][j] = j;
+    }
+
+    for (let i = 2; i <= eggs; i++) {
+        for (let j = 2; j <= floors; j++) {
+            dp[i][j] = Number.MAX_SAFE_INTEGER;
+            for (let k = 1; k <= j; k++) {
+                const drops = 1 + Math.max(dp[i - 1][k - 1], dp[i][j - k]);
+                dp[i][j] = Math.min(dp[i][j], drops);
+            }
+        }
+    }
+
+    return dp[eggs][floors];
+}
+
+console.log('========= Q101 =========');
+const eggs = 1;
+const floors = 5;
+console.log(`Minimum number of trial drops required is: ${minTrialDrops(eggs, floors)}`);
+console.log('\n');
+
+/*
+* Q102.
+* You are given a list of N points (x1, y1), (x2, y2), ..., (xN, yN)
+* representing a polygon. You can assume these points are given in order; that
+* is, you can construct the polygon by connecting point 1 to point 2, point 2
+* to point 3, and so on, finally looping around to connect point N to point 1.
+* Determine if a new point p lies inside this polygon. (If p is on the boundary
+* of the polygon, you should return False).
+*/
+class Point {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+function isInsidePolygon(polygon, p) {
+    const n = polygon.length;
+    let count = 0;
+
+    for (let i = 0; i < n; i++) {
+        let a = polygon[i];
+        let b = polygon[(i + 1) % n];
+
+        // Check if the ray intersects with the edge
+        if ((a.y > p.y) != (b.y > p.y) && p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x) {
+            count++;
+        }
+    }
+
+    // If the number of intersections is odd, point is inside the polygon
+    return count % 2 !== 0;
+}
+
+console.log('========= Q102 =========');
+const polygon = [new Point(0, 0), new Point(0, 5), new Point(5, 5), new Point(5, 0)];
+const p = new Point(1, 1);
+console.log(`Point is inside polygon: ${isInsidePolygon(polygon, p)}`);
+console.log('\n');
+
+/*
+* Q103.
+* One way to unlock an Android phone is through a pattern of swipes across a
+* 1-9 keypad.
+* For a pattern to be valid, it must satisfy the following:
+* All of its keys must be distinct.
+* It must not connect two keys by jumping over a third key, unless that key has
+* already been used.
+* For example, 4 - 2 - 1 - 7 is a valid pattern, whereas 2 - 1 - 7 is not.
+* Find the total number of valid unlock patterns of length N, where 1 <= N <=
+* 9.
+*/
+class UnlockPatternCalculator {
+    calculatePatterns(n) {
+        let path = new Array(10).fill(0);
+        let count = 0;
+
+        // Generate and count the patterns from 4 corners and 4 sides, and 1 center
+        count += 4 * this.countPatterns(path, 1, n - 1);
+        count += 4 * this.countPatterns(path, 2, n - 1);
+        count += this.countPatterns(path, 5, n - 1);
+
+        return count;
+    }
+
+    countPatterns(path, curr, remaining) {
+        if (remaining === 0) {
+            return 1;
+        }
+
+        let count = 0;
+
+        for (let i = 1; i <= 9; i++) {
+            if (this.canVisit(path, curr, i)) {
+                path[i] = 1;
+                // Recursively count the patterns starting from the next key
+                count += this.countPatterns(path, i, remaining - 1);
+                path[i] = 0;
+            }
+        }
+
+        return count;
+    }
+
+    canVisit(path, curr, next) {
+        if (path[next] !== 0) {
+            return false;
+        }
+
+        let currRow = Math.floor((curr - 1) / 3);
+        let currCol = (curr - 1) % 3;
+
+        let nextRow = Math.floor((next - 1) / 3);
+        let nextCol = (next - 1) % 3;
+
+        // If the next key is on the same row or column as the current key, return true
+        if (currRow === nextRow || currCol === nextCol) {
+            return true;
+        }
+
+        // If the third key between two keys is already visited, return true
+        const mid = Math.floor((curr + next) / 2);
+        return path[mid] !== 0;
+    }
+}
+
+console.log('========= Q103 =========');
+const unlockPatternCalculator = new UnlockPatternCalculator();
+const numOfSwipes = 4;
+
+console.log(`Number of valid unlock patterns for length ${numOfSwipes}: ${unlockPatternCalculator.calculatePatterns(numOfSwipes)}`);
+console.log('\n');
+
+/*
+* Q104.
+* Given an array of numbers N and an integer k, your task is to split N into k
+* partitions such that the maximum sum of any partition is minimized. Return
+* this sum.
+* For example, given N = [5, 1, 2, 7, 3, 4] and k = 3, you should return 8,
+* since the optimal partition is [5, 1, 2], [7], [3, 4].
+*/
+function isValidPartition(nums, k, maxSum) {
+    let sum = 0;
+    let partitions = 1;
+
+    for (const num of nums) {
+        if (sum + num > maxSum) {
+            sum = num;
+            partitions++;
+
+            if (partitions > k) {
+                return false;
+            }
+        } else {
+            sum += num;
+        }
+    }
+
+    return true;
+}
+
+function partitionArray(nums, k) {
+    let maxNum = 0;
+    let sumNum = 0;
+
+    for (const num of nums) {
+        maxNum = Math.max(maxNum, num);
+        sumNum += num;
+    }
+
+    let left = maxNum
+    let right = sumNum;
+
+    while (left < right) {
+        const mid = left + Math.floor((right - left) / 2);
+
+        if (isValidPartition(nums, k, mid)) {
+            right = mid;
+        } else {
+            left = mid + 1;
+        }
+    }
+
+    return left;
+}
+
+console.log('========= Q104 =========');
+const numsToFindMinimizedMaxPartition = [5, 1, 2, 7, 3, 4];
+const numPartition = 3;
+
+console.log(`Minimum maximum sum of partitions: ${partitionArray(numsToFindMinimizedMaxPartition, numPartition)}`);
+console.log('\n');
+
+/*
+* Q105.
+* You are given an array of integers, where each element represents the maximum
+* number of steps that can be jumped going forward from that element. Write a
+* function to return the minimum number of jumps you must take in order to get
+* from the start to the end of the array.
+* For example, given [6, 2, 4, 0, 5, 1, 1, 4, 2, 9], you should return 2, as
+* the optimal solution involves jumping from 6 to 5, and then from 5 to 9.
+*/
+function minJumps(nums) {
+    const n = nums.length;
+    if (n <= 1) {
+        return 0;
+    }
+
+    let jumps = new Array(n).fill(Number.MAX_SAFE_INTEGER);
+    jumps[0] = 0;
+
+    let queue = [];
+    queue.push(0);
+
+    while (queue.length > 0) {
+        let currentIndex = queue.shift();
+        let currentJumps = jumps[currentIndex];
+
+        let maxSteps = nums[currentIndex];
+        for (let i = 1; i <= maxSteps; i++) {
+            const nextIndex = currentIndex + i;
+            if (nextIndex >= n) {
+                break;
+            }
+
+            if (currentJumps + 1 < jumps[nextIndex]) {
+                jumps[nextIndex] = currentJumps + 1;
+                queue.push(nextIndex);
+            }
+        }
+    }
+
+    return jumps[n - 1];
+}
+
+console.log('========= Q105 =========');
+const stepsArr = [6, 2, 4, 0, 5, 1, 1, 4, 2, 9];
+console.log(`Minimum number of jumps: ${minJumps(stepsArr)}`);
+console.log('\n');
+
+/*
+* Q106.
+* Given a list of words, determine whether the words can be chained to form a
+* circle. A word X can be placed in front of another word Y in a circle if the
+* last character of X is same as the first character of Y.
+* For example, the words ['chair', 'height', 'racket', touch', 'tunic'] can
+* form the following circle: chair --> racket --> touch --> height --> tunic
+* --> chair.
+*/
+function canFormCircle(words) {
+    if (!words || words.length === 0) {
+        return false;
+    }
+
+    const n = words.length;
+    let visited = new Array(n).fill(false);
+
+    return dfsWords(words, words.length, visited, words[0], words[0]);
+}
+
+function dfsWords(words, wordsSize, visited, startWord, currentWord) {
+    if (wordsSize === 1 && startWord[0] === currentWord[currentWord.length - 1]) {
+        return true;
+    }
+
+    for (let i = 0; i < words.length; i++) {
+        if (!visited[i] && currentWord[currentWord.length - 1] === words[i][0]) {
+            visited[i] = true;
+            if (dfsWords(words, wordsSize - 1, visited, startWord, words[i])) {
+                return true;
+            }
+            visited[i] = false;
+        }
+    }
+
+    return false;
+}
+
+console.log('========= Q106 =========');
+const wordsToFormCircle = ['chair', 'height', 'racket', 'touch', 'tunic'];
+console.log(`Can form circle: ${canFormCircle(wordsToFormCircle)}`);
+console.log('\n');
+
+/*
+* Q107.
+* A cryptarithmetic puzzle is a mathematical game where the digits of some
+* numbers are represented by letters. Each letter represents a unique digit.
+* For example, a puzzle of the form:
+* "   SEND    "
+* " + MORE    "
+* "--------   "
+* " MONEY     "
+* may have the solution:
+* {'S': 9, 'E': 5, 'N': 6, 'D': 7, 'M': 1, 'O', 0, 'R': 8, 'Y': 2}
+* Given a three-word puzzle like the one above, create an algorithm that finds
+* a solution.
+*/
+function solvePuzzle(word1, word2, result) {
+    let letters = new Set();
+    for (const letter of word1) {
+        letters.add(letter);
+    }
+    for (const letter of word2) {
+        letters.add(letter);
+    }
+    for (const letter of result) {
+        letters.add(letter);
+    }
+
+    let assignments = new Map();
+    let digits = new Array(10).fill(0);
+    const foundSolution = solveRecursively(word1, word2, result, letters, assignments, digits, 0);
+
+    if (foundSolution) {
+        return assignments;
+    } else {
+        return null;
+    }
+}
+
+function solveRecursively(word1, word2, result, letters, assignments, digits, index) {
+    if (index === letters.size) {
+        return evaluateExpression(word1, word2, result, assignments);
+    }
+
+    let chars = new Array(letters.length);
+    let i = 0;
+    for (const c of letters) {
+        chars[i++] = c;
+    }
+
+    for (let digit = (index === 0 ? 1 : 0); digit <= 9; digit++) {
+        if (digits[digit] === 0) {
+            if (digit === 0 && result[0] === chars[index]) {
+                continue; // Skip leading zero assignment if it matches the first character of the result
+            }
+
+            assignments.set(chars[index], digit);
+            digits[digit] = 1;
+
+            if (solveRecursively(word1, word2, result, letters, assignments, digits, index + 1)) {
+                return true;
+            }
+
+            digits[digit] = 0;
+        }
+    }
+
+    return false;
+}
+
+function evaluateExpression(word1, word2, result, assignments) {
+    const num1 = getNumericValue(word1, assignments);
+    const num2 = getNumericValue(word2, assignments);
+    const res = getNumericValue(result, assignments);
+
+    return num1 + num2 === res;
+}
+
+function getNumericValue(word, assignments) {
+    let value = 0;
+    for (const c of word) {
+        value = value * 10 + assignments.get(c);
+    }
+
+    return value;
+}
+
+console.log('========= Q107 =========');
+const word1 = 'SEND';
+const word2 = 'MORE';
+const wordsMathResult = 'MONEY';
+
+const solution = solvePuzzle(word1, word2, wordsMathResult);
+
+if (solution) {
+    console.log(`Solution: found: `);
+    for (const [key, value] of solution) {
+        console.log(`${key} = ${value}`);
+    }
+} else {
+    console.log('No solution found');
+}
+console.log('\n');
+
+/*
+* Q108.
+* Given an array of a million integers between zero and a billion, out of
+* order, how can you efficiently sort it? Assume that you cannot store an array
+* of a billion elements in memory.
+*/
+console.log('========= Q108 =========');
+/*
+* High-level approach:
+* 1. Divide the array into smaller chunks that can fit into memory.
+* 2. Sort each chunk individually using an efficient in-memory sorting such as
+* quicksort or mergesort.
+* 3. Write each sorted chunk to a single file. Structure data in the file using
+* priority queue or min-heap.
+* 4. Perform a k-way merge sort on the sorted files. Repeatedly select the
+* smallest element from each file and write it to the output file.
+*/
+console.log('\n');
+
+/*
+* Q109.
+* Given a string and a number of lines k, print the string in zigzag form. In
+* zigzag, characters are printed out diagonally from top left to bottom right
+* until reaching the kth line, then back up to top right, and so on.
+* For example, given the sentence "thisisazigzag" and k = 4, you should print:
+* " t     a     g "
+* "  h   s z   a  "
+* "   i i   i z   "
+* "    s     g    "
+*/
+function printZigzag(s, k) {
+    if (k === 1) {
+        console.log(s);
+        return;
+    }
+
+    let rows = new Array(k).fill('');
+    let row = 0;
+    let goingDown = true;
+    let firstCh = true;
+
+    for (const c of s) {
+        if (goingDown) {
+            for (let i = 0; i < row; i++) {
+                rows[row] += ' ';
+            }
+
+            rows[row] += c;
+
+            for (let i = 0; i < k - row - 1; i++) {
+                rows[row] += ' ';
+            }
+        } else {
+            for (let i = k - row - 1; i > 0; i--) {
+                rows[row] += ' ';
+            }
+
+            rows[row] += c;
+
+            for (let i = row; i > 0; i--) {
+                rows[row] += ' ';
+            }
+        }
+
+        if (row == 0) {
+            goingDown = true;
+            if (!firstCh) {
+                for (let i = 0; i < k; i++) {
+                    rows[row] += ' ';
+                }
+            }
+            firstCh = false;
+        } else if (row == k - 1) {
+            goingDown = false;
+            for (let i = 0; i < k; i++) {
+                rows[row] += ' ';
+            }
+        }
+
+        row += goingDown ? 1 : -1;
+    }
+
+    let result = '';
+    for (const row of rows) {
+        result += `${row}\n`;
+    }
+
+    console.log(result);
+}
+
+console.log('========= Q109 =========');
+const sentence = 'thisisazigzag';
+const numLines = 4;
+printZigzag(sentence, numLines);
+console.log('\n');
+
+/*
+* Q110.
+* Recall that a full binary tree is one in which each node is either a leaf
+* node, or has two children. Given a binary tree, convert it to a full one by
+* removing nodes with only one child.
+* For example, given the following tree:
+* "          0                "
+* "       /     \             "
+* "     1         2           "
+* "   /            \          "
+* " 3                 4       "
+* "   \             /   \     "
+* "     5          6     7    "
+* You should convert it to:
+* "     0             "
+* "   /     \         "
+* " 5         4       "
+* "         /   \     "
+* "        6     7    "
+*/
+function convertToFullBinaryTree(root) {
+    if (!root) {
+        return null;
+    }
+
+    if (root.left && root.right){
+        root.left = convertToFullBinaryTree(root.left);
+        root.right = convertToFullBinaryTree(root.right);
+    } else if (root.left) {
+        root = convertToFullBinaryTree(root.left);
+    } else if (root.right) {
+        root = convertToFullBinaryTree(root.right);
+    }
+
+    return root;
+}
+
+console.log('========= Q110 =========');
+const treeToConvert = new TreeNode(0);
+treeToConvert.left = new TreeNode(1);
+treeToConvert.right = new TreeNode(2);
+treeToConvert.left.left = new TreeNode(3);
+treeToConvert.left.left.right = new TreeNode(5);
+treeToConvert.right.right = new TreeNode(4);
+treeToConvert.right.right.left = new TreeNode(6);
+treeToConvert.right.right.right = new TreeNode(7);
+
+console.log('Original Binary Tree:');
+printInorder(treeToConvert);
+
+const fullBinaryTree = convertToFullBinaryTree(treeToConvert);
+
+console.log('Full Binary Tree:');
+printInorder(fullBinaryTree);
+console.log('\n');

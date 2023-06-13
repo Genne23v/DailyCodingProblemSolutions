@@ -845,7 +845,7 @@ public class QuestionsAndSolutions {
         return root;
     }
 
-    public static void printInorder(TreeNode<Character> root) {
+    public static <T> void printInorder(TreeNode<T> root) {
         if (root == null) {
             return;
         }
@@ -3291,6 +3291,379 @@ public class QuestionsAndSolutions {
         }
     }
 
+    // S101.
+    public static int minTrialDrops(int eggs, int floors) {
+        // Create a 2D array to store the minimum number of trial drops for each
+        // subproblem
+        int[][] dp = new int[eggs + 1][floors + 1];
+
+        for (int i = 1; i <= eggs; i++) {
+            dp[i][0] = 0;
+            dp[i][1] = 1;
+        }
+
+        // If there is only one egg, we need to try dropping it from every floor
+        for (int j = 1; j <= floors; j++) {
+            dp[1][j] = j;
+        }
+
+        for (int i = 2; i <= eggs; i++) {
+            for (int j = 2; j <= floors; j++) {
+                dp[i][j] = Integer.MAX_VALUE;
+                for (int k = 1; k <= j; k++) {
+                    int drops = 1 + Math.max(dp[i - 1][k - 1], dp[i][j - k]);
+                    dp[i][j] = Math.min(dp[i][j], drops);
+                }
+            }
+        }
+
+        return dp[eggs][floors];
+    }
+
+    // S102.
+    static class Point {
+        double x;
+        double y;
+
+        public Point(double x, double y) {
+            this.x = x;
+            this.y = y;
+        }
+    }
+
+    public static boolean isInsidePolygon(Point[] polygon, Point p) {
+        int n = polygon.length;
+        int count = 0;
+
+        for (int i = 0; i < n; i++) {
+            Point a = polygon[i];
+            Point b = polygon[(i + 1) % n];
+
+            // Check if the ray intersects with the edge
+            if ((a.y > p.y) != (b.y > p.y) && p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x) {
+                count++;
+            }
+        }
+
+        // If the number of intersections is odd, point is inside the polygon
+        return count % 2 != 0;
+    }
+
+    // S103.
+    static class UnlockPatternCalculator {
+        public int calculatePatterns(int n) {
+            int[] path = new int[10];
+            int count = 0;
+
+            // Generate and count the patterns from 4 corners and 4 sides, and 1 center
+            count += 4 * countPatterns(path, 1, n - 1);
+            count += 4 * countPatterns(path, 2, n - 1);
+            count += countPatterns(path, 5, n - 1);
+
+            return count;
+        }
+
+        private int countPatterns(int[] path, int curr, int remaining) {
+            if (remaining == 0)
+                return 1;
+
+            int count = 0;
+
+            for (int i = 1; i <= 9; i++) {
+                if (canVisit(path, curr, i)) {
+                    path[i] = 1;
+                    // Recursively count the patterns starting from the next key
+                    count += countPatterns(path, i, remaining - 1);
+                    path[i] = 0;
+                }
+            }
+
+            return count;
+        }
+
+        private boolean canVisit(int[] path, int curr, int next) {
+            if (path[next] != 0)
+                return false;
+
+            int currRow = (curr - 1) / 3;
+            int currCol = (curr - 1) % 3;
+
+            int nextRow = (next - 1) / 3;
+            int nextCol = (next - 1) % 3;
+
+            // If the next key is on the same row or column as the current key, return true
+            if (currRow == nextRow || currCol == nextCol)
+                return true;
+
+            // If the third key between two keys is already visited, return true
+            int mid = (curr + next) / 2;
+            return path[mid] != 0;
+        }
+    }
+
+    // S104.
+    private static boolean isValidPartition(int[] nums, int k, int maxSum) {
+        int sum = 0;
+        int partitions = 1;
+
+        for (int num : nums) {
+            if (sum + num > maxSum) {
+                sum = num;
+                partitions++;
+
+                if (partitions > k) {
+                    return false;
+                }
+            } else {
+                sum += num;
+            }
+        }
+
+        return true;
+    }
+
+    public static int partitionArray(int[] nums, int k) {
+        int maxNum = 0;
+        int sumNum = 0;
+
+        for (int num : nums) {
+            maxNum = Math.max(maxNum, num);
+            sumNum += num;
+        }
+
+        int left = maxNum;
+        int right = sumNum;
+
+        while (left < right) {
+            int mid = left + (right - left) / 2;
+
+            if (isValidPartition(nums, k, mid)) {
+                right = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+
+        return left;
+    }
+
+    // S105.
+    public static int minJumps(int[] nums) {
+        int n = nums.length;
+        if (n <= 1) {
+            return 0;
+        }
+
+        int[] jumps = new int[n];
+        Arrays.fill(jumps, Integer.MAX_VALUE);
+        jumps[0] = 0;
+
+        Queue<Integer> queue = new LinkedList<>();
+        queue.offer(0);
+
+        while (!queue.isEmpty()) {
+            int currentIndex = queue.poll();
+            int currentJumps = jumps[currentIndex];
+
+            int maxSteps = nums[currentIndex];
+            for (int i = 1; i <= maxSteps; i++) {
+                int nextIndex = currentIndex + i;
+                if (nextIndex >= n) {
+                    break;
+                }
+
+                if (currentJumps + 1 < jumps[nextIndex]) {
+                    jumps[nextIndex] = currentJumps + 1;
+                    queue.offer(nextIndex);
+                }
+            }
+        }
+
+        return jumps[n - 1];
+    }
+
+    // S106.
+    public static boolean canFormCircle(List<String> words) {
+        if (words == null || words.isEmpty()) {
+            return false;
+        }
+
+        int n = words.size();
+        boolean[] visited = new boolean[n];
+
+        return dfs(words, words.size(), visited, words.get(0), words.get(0));
+    }
+
+    private static boolean dfs(List<String> words, int wordsSize, boolean[] visited, String startWord,
+            String currentWord) {
+        if (wordsSize == 1 && startWord.charAt(0) == currentWord.charAt(currentWord.length() - 1)) {
+            return true;
+        }
+
+        for (int i = 0; i < words.size(); i++) {
+            if (!visited[i] && currentWord.charAt(currentWord.length() - 1) == words.get(i).charAt(0)) {
+                visited[i] = true;
+                if (dfs(words, wordsSize - 1, visited, startWord, words.get(i))) {
+                    return true;
+                }
+                visited[i] = false;
+            }
+        }
+
+        return false;
+    }
+
+    // S107.
+    public static Map<Character, Integer> solvePuzzle(String word1, String word2, String result) {
+        Set<Character> letters = new HashSet<>();
+        for (char c : (word1 + word2 + result).toCharArray()) {
+            letters.add(c);
+        }
+
+        Map<Character, Integer> assignments = new HashMap<>();
+        int[] digits = new int[10];
+        boolean foundSolution = solveRecursively(word1, word2, result, letters, assignments, digits, 0);
+        if (foundSolution) {
+            return assignments;
+        } else {
+            return null;
+        }
+    }
+
+    private static boolean solveRecursively(String word1, String word2, String result, Set<Character> letters,
+            Map<Character, Integer> assignments, int[] digits, int index) {
+        if (index == letters.size()) {
+            return evaluateExpression(word1, word2, result, assignments);
+        }
+
+        char[] chars = new char[letters.size()];
+        int i = 0;
+        for (char c : letters) {
+            chars[i++] = c;
+        }
+
+        for (int digit = (index == 0 ? 1 : 0); digit <= 9; digit++) {
+            if (digits[digit] == 0) {
+                if (digit == 0 && result.charAt(0) == chars[index]) {
+                    continue; // Skip leading zero assignment if it matches the first character of the result
+                }
+
+                assignments.put(chars[index], digit);
+                digits[digit] = 1;
+
+                if (solveRecursively(word1, word2, result, letters, assignments, digits, index + 1)) {
+                    return true;
+                }
+
+                digits[digit] = 0;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean evaluateExpression(String word1, String word2, String result,
+            Map<Character, Integer> assignments) {
+        int num1 = getNumericValue(word1, assignments);
+        int num2 = getNumericValue(word2, assignments);
+        int res = getNumericValue(result, assignments);
+        return (num1 + num2 == res);
+    }
+
+    private static int getNumericValue(String word, Map<Character, Integer> assignments) {
+        int value = 0;
+        for (char c : word.toCharArray()) {
+            value = value * 10 + assignments.get(c);
+        }
+        return value;
+    }
+
+    // S108.
+    // Solution in Q108.
+
+    // S109.
+    public static void printZigzag(String s, int k) {
+        if (k == 1) {
+            System.out.println(s);
+            return;
+        }
+
+        StringBuilder[] rows = new StringBuilder[k];
+        for (int i = 0; i < k; i++) {
+            rows[i] = new StringBuilder();
+        }
+
+        int row = 0;
+        boolean goingDown = true;
+        boolean firstCh = true;
+
+        for (char c : s.toCharArray()) {
+            if (goingDown) {
+                for (int i = 0; i < row; i++) {
+                    rows[row].append(" ");
+                }
+
+                rows[row].append(c);
+
+                for (int i = 0; i < k - row - 1; i++) {
+                    rows[row].append(" ");
+                }
+            } else {
+                for (int i = k - row - 1; i > 0; i--) {
+                    rows[row].append(" ");
+                }
+
+                rows[row].append(c);
+
+                for (int i = row; i > 0; i--) {
+                    rows[row].append(" ");
+                }
+            }
+
+            if (row == 0) {
+                goingDown = true;
+                if (!firstCh) {
+                    for (int i = 0; i < k; i++) {
+                        rows[row].append(" ");
+                    }
+                }
+                firstCh = false;
+            } else if (row == k - 1) {
+                goingDown = false;
+                for (int i = 0; i < k; i++) {
+                    rows[row].append(" ");
+                }
+            }
+
+            row += goingDown ? 1 : -1;
+        }
+
+        StringBuilder result = new StringBuilder();
+        for (StringBuilder sb : rows) {
+            result.append(sb).append("\n");
+        }
+
+        System.out.println(result);
+    }
+
+    // S110.
+    public static TreeNode<Integer> convertToFullBinaryTree(TreeNode<Integer> root) {
+        if (root == null) {
+            return null;
+        }
+
+        if (root.left != null && root.right != null) {
+            root.left = convertToFullBinaryTree(root.left);
+            root.right = convertToFullBinaryTree(root.right);
+        } else if (root.left != null) {
+            root = convertToFullBinaryTree(root.left);
+        } else if (root.right != null) {
+            root = convertToFullBinaryTree(root.right);
+        }
+
+        return root;
+    }
+
     public static void main(String[] args) {
         /*
          * Q1.
@@ -5427,6 +5800,217 @@ public class QuestionsAndSolutions {
 
         int minTurns = snakesAndLadders.snakesAndLadders(board);
         System.out.println("Minimum turns to win the game: " + minTurns);
+
+        /*
+         * Q101.
+         * You are given N identical eggs and access to a building with k floors. Your
+         * task is to find the lowest floor that will cause an egg to break, if dropped
+         * from that floor. Once an egg breaks, it cannot be dropped again. If an egg
+         * breaks when dropped from the xth floor, you can assume it will also break
+         * when dropped from any floor greater than x.
+         * Write an algorithm that finds the minimum number of trial drops it will take,
+         * in the worst case, to identify this floor.
+         * For example, if N = 1 and k = 5, we will need to try dropping the egg at
+         * every floor, beginning with the first, until we reach the fifth floor, so our
+         * solution will be 5.
+         */
+        System.out.println("========= Q101 ==========");
+        int eggs = 1;
+        int floors = 5;
+        int minTrials = minTrialDrops(eggs, floors);
+        System.out.println("The minimum number of trial drops required is: " + minTrials);
+
+        /*
+         * Q102.
+         * You are given a list of N points (x1, y1), (x2, y2), ..., (xN, yN)
+         * representing a polygon. You can assume these points are given in order; that
+         * is, you can construct the polygon by connecting point 1 to point 2, point 2
+         * to point 3, and so on, finally looping around to connect point N to point 1.
+         * Determine if a new point p lies inside this polygon. (If p is on the boundary
+         * of the polygon, you should return False).
+         */
+        System.out.println("========= Q102 ==========");
+        Point[] polygon = { new Point(0, 0), new Point(4, 0), new Point(4, 4), new Point(0, 4) };
+        Point p1 = new Point(2, 2);
+
+        boolean isInside = isInsidePolygon(polygon, p1);
+        System.out.println("Point is inside polygon: " + isInside);
+
+        Point p2 = new Point(2, 4.1);
+        isInside = isInsidePolygon(polygon, p2);
+        System.out.println("Point is inside polygon: " + isInside);
+
+        /*
+         * Q103.
+         * One way to unlock an Android phone is through a pattern of swipes across a
+         * 1-9 keypad.
+         * For a pattern to be valid, it must satisfy the following:
+         * All of its keys must be distinct.
+         * It must not connect two keys by jumping over a third key, unless that key has
+         * already been used.
+         * For example, 4 - 2 - 1 - 7 is a valid pattern, whereas 2 - 1 - 7 is not.
+         * Find the total number of valid unlock patterns of length N, where 1 <= N <=
+         * 9.
+         */
+        System.out.println("========= Q103 ==========");
+        UnlockPatternCalculator calculator = new UnlockPatternCalculator();
+        int numOfSwipes = 4;
+
+        int totalPatterns = calculator.calculatePatterns(numOfSwipes);
+        System.out.println("Total number of valid unlock patterns: " + totalPatterns);
+
+        /*
+         * Q104.
+         * Given an array of numbers N and an integer k, your task is to split N into k
+         * partitions such that the maximum sum of any partition is minimized. Return
+         * this sum.
+         * For example, given N = [5, 1, 2, 7, 3, 4] and k = 3, you should return 8,
+         * since the optimal partition is [5, 1, 2], [7], [3, 4].
+         */
+        System.out.println("========= Q104 ==========");
+        int[] numsToFindMinimizedMaxPartition = { 5, 1, 2, 7, 3, 4 };
+        int numPartition = 3;
+
+        int minMaxSum = partitionArray(numsToFindMinimizedMaxPartition, numPartition);
+        System.out.println("Minimum maximum sum of partitions: " + minMaxSum);
+
+        /*
+         * Q105.
+         * You are given an array of integers, where each element represents the maximum
+         * number of steps that can be jumped going forward from that element. Write a
+         * function to return the minimum number of jumps you must take in order to get
+         * from the start to the end of the array.
+         * For example, given [6, 2, 4, 0, 5, 1, 1, 4, 2, 9], you should return 2, as
+         * the optimal solution involves jumping from 6 to 5, and then from 5 to 9.
+         */
+        System.out.println("========= Q105 ==========");
+        int[] stepsArr = { 6, 2, 4, 0, 5, 1, 1, 4, 2, 9 };
+        int minJumps = minJumps(stepsArr);
+        System.out.println("Minimum number of jumps: " + minJumps);
+
+        /*
+         * Q106.
+         * Given a list of words, determine whether the words can be chained to form a
+         * circle. A word X can be placed in front of another word Y in a circle if the
+         * last character of X is same as the first character of Y.
+         * For example, the words ['chair', 'height', 'racket', touch', 'tunic'] can
+         * form the following circle: chair --> racket --> touch --> height --> tunic
+         * --> chair.
+         */
+        System.out.println("========= Q106 ==========");
+        List<String> listOfWords = new ArrayList<>();
+        listOfWords.add("chair");
+        listOfWords.add("height");
+        listOfWords.add("racket");
+        listOfWords.add("touch");
+        listOfWords.add("tunic");
+
+        boolean canFormCircle = canFormCircle(listOfWords);
+        System.out.println("Can form a circle: " + canFormCircle);
+
+        /*
+         * Q107.
+         * A cryptarithmetic puzzle is a mathematical game where the digits of some
+         * numbers are represented by letters. Each letter represents a unique digit.
+         * For example, a puzzle of the form:
+         * "   SEND    "
+         * " + MORE    "
+         * "--------   "
+         * " MONEY     "
+         * may have the solution:
+         * {'S': 9, 'E': 5, 'N': 6, 'D': 7, 'M': 1, 'O', 0, 'R': 8, 'Y': 2}
+         * Given a three-word puzzle like the one above, create an algorithm that finds
+         * a solution.
+         */
+        System.out.println("========= Q107 ==========");
+        String word1 = "SEND";
+        String word2 = "MORE";
+        String wordsMathResult = "MONEY";
+
+        Map<Character, Integer> solution = solvePuzzle(word1, word2, wordsMathResult);
+
+        if (solution != null) {
+            System.out.println("Solution found:");
+            for (Map.Entry<Character, Integer> entry : solution.entrySet()) {
+                System.out.println(entry.getKey() + ": " + entry.getValue());
+            }
+        } else {
+            System.out.println("No solution found.");
+        }
+
+        /*
+         * Q108.
+         * Given an array of a million integers between zero and a billion, out of
+         * order, how can you efficiently sort it? Assume that you cannot store an array
+         * of a billion elements in memory.
+         */
+        System.out.println("========= Q108 ==========");
+        /*
+         * High-level approach:
+         * 1. Divide the array into smaller chunks that can fit into memory.
+         * 2. Sort each chunk individually using an efficient in-memory sorting such as
+         * quicksort or mergesort.
+         * 3. Write each sorted chunk to a single file. Structure data in the file using
+         * priority queue or min-heap.
+         * 4. Perform a k-way merge sort on the sorted files. Repeatedly select the
+         * smallest element from each file and write it to the output file.
+         */
+
+        /*
+         * Q109.
+         * Given a string and a number of lines k, print the string in zigzag form. In
+         * zigzag, characters are printed out diagonally from top left to bottom right
+         * until reaching the kth line, then back up to top right, and so on.
+         * For example, given the sentence "thisisazigzag" and k = 4, you should print:
+         * " t     a     g "
+         * "  h   s z   a  "
+         * "   i i   i z   "
+         * "    s     g    "
+         */
+        System.out.println("========= Q109 ==========");
+        String sentence = "thisisazigzag";
+        int numLines = 4;
+        printZigzag(sentence, numLines);
+
+        /*
+         * Q110.
+         * Recall that a full binary tree is one in which each node is either a leaf
+         * node, or has two children. Given a binary tree, convert it to a full one by
+         * removing nodes with only one child.
+         * For example, given the following tree:
+         * "          0                "
+         * "       /     \             "
+         * "     1         2           "
+         * "   /            \          "
+         * " 3                 4       "
+         * "   \             /   \     "
+         * "     5          6     7    "
+         * You should convert it to:
+         * "     0             "
+         * "   /     \         "
+         * " 5         4       "
+         * "         /   \     "
+         * "        6     7    "
+         */
+        System.out.println("========= Q110 ==========");
+        TreeNode<Integer> treeToConvert = new TreeNode<>(0);
+        treeToConvert.left = new TreeNode<>(1);
+        treeToConvert.right = new TreeNode<>(2);
+        treeToConvert.left.left = new TreeNode<>(3);
+        treeToConvert.left.left.right = new TreeNode<>(5);
+        treeToConvert.right.right = new TreeNode<>(4);
+        treeToConvert.right.right.left = new TreeNode<>(6);
+        treeToConvert.right.right.right = new TreeNode<>(7);
+
+        System.out.println("Original Binary Tree:");
+        printInorder(treeToConvert);
+        System.out.println();
+
+        TreeNode<Integer> fullBinaryTree = convertToFullBinaryTree(treeToConvert);
+
+        System.out.println("Full Binary Tree:");
+        printInorder(fullBinaryTree);
+        System.out.println();
 
     }
 }
