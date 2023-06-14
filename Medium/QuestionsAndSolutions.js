@@ -4549,9 +4549,25 @@ class Graph {
     #_numVertices;
     #_adjList;
 
+    // Member variables for S113
+    #_disc;
+    #_low;
+    #_parent;
+    #_visited;
+    #_bridges;
+    #_time;
+
     constructor(numVertices) {
         this.#_numVertices = numVertices;
         this.#_adjList = new Array(numVertices).fill().map(() => []);
+
+        // Member variables initialization for S113
+        this.#_disc = new Array(numVertices).fill(0);
+        this.#_low = new Array(numVertices).fill(0);
+        this.#_parent = new Array(numVertices).fill(-1);
+        this.#_visited = new Array(numVertices).fill(false);
+        this.#_bridges = [];
+        this.#_time = 0;
     }
 
     addEdge(u, v) {
@@ -4621,6 +4637,38 @@ class Graph {
             }
         }
         return true;
+    }
+
+    // S113.
+    findBridges() {
+        for (let i = 0; i < this.#_numVertices; i++) {
+            if (!this.#_visited[i]) {
+                this.dfsToFindBridges(i);
+            }
+        }
+
+        return this.#_bridges;
+    }
+
+    dfsToFindBridges(u) {
+        this.#_visited[u] = true;
+        this.#_disc[u] = this.#_low[u] = ++this.#_time;
+
+        for (const v of this.#_adjList[u]) {
+            if (!this.#_visited[v]) {
+                this.#_parent[v] = u;
+                this.dfsToFindBridges(v);
+                this.#_low[u] = Math.min(this.#_low[u], this.#_low[v]);
+
+                if (this.#_low[v] > this.#_disc[u]) {
+                    // No other path can reach v except through u
+                    console.log(`${u} ${v}`);
+                    this.#_bridges.push([u, v]);
+                }
+            } else if (v !== this.#_parent[u]) {
+                this.#_low[u] = Math.min(this.#_low[u], this.#_disc[v]);
+            }
+        }
     }
 }
 
@@ -4867,12 +4915,12 @@ console.log(`Is the graph bipartite? ${bipartiteGraph.isBipartite()}`);
 console.log('\n');
 
 /*
-* Q91.
-* Given a linked list of numbers and a pivot k, partition the linked list so
-* that all nodes less than k come before nodes greater than or equal to k.
-* For example, given the linked list 5 -> 1 -> 8 -> 0 -> 3 and k = 3, the
-* solution could be 1 -> 0 -> 5 -> 8 -> 3.
-*/
+ * Q91.
+ * Given a linked list of numbers and a pivot k, partition the linked list so
+ * that all nodes less than k come before nodes greater than or equal to k.
+ * For example, given the linked list 5 -> 1 -> 8 -> 0 -> 3 and k = 3, the
+ * solution could be 1 -> 0 -> 5 -> 8 -> 3.
+ */
 function partition(head, k) {
     let smallerHead = new ListNode(0);
     let smallerTail = smallerHead;
@@ -4918,11 +4966,11 @@ console.log(`Partitioned list: ${newListPrint}`);
 console.log('\n');
 
 /*
-* Q92.
-* Given a string and a pattern, find the starting indices of all occurrences of
-* the pattern in the string. For example, given the string "abracadabra" and
-* the pattern "abr", you should return [0, 7].
-*/
+ * Q92.
+ * Given a string and a pattern, find the starting indices of all occurrences of
+ * the pattern in the string. For example, given the string "abracadabra" and
+ * the pattern "abr", you should return [0, 7].
+ */
 function findPatternIndices(str, pattern) {
     let indices = [];
 
@@ -4948,19 +4996,24 @@ function findPatternIndices(str, pattern) {
 console.log('========= Q92 =========');
 const strToFindPattern = 'abracadabra';
 const pattern = 'abr';
-console.log(`Indices of pattern occurrence: ${findPatternIndices(strToFindPattern, pattern)}`);
+console.log(
+    `Indices of pattern occurrence: ${findPatternIndices(
+        strToFindPattern,
+        pattern
+    )}`
+);
 console.log('\n');
 
 /*
-* Q93.
-* Given a string of digits, generate all possible valid IP address
-* combinations.
-* IP addresses must follow the format A.B.C.D, where A, B, C, and D are numbers
-* between 0 and 255. Zero-prefixed numbers, such as 01 and 065, are not
-* allowed, except for 0 itself.
-* For example, given "2542540123", you should return ['254.25.40.123',
-* '254.254.0.123'].
-*/
+ * Q93.
+ * Given a string of digits, generate all possible valid IP address
+ * combinations.
+ * IP addresses must follow the format A.B.C.D, where A, B, C, and D are numbers
+ * between 0 and 255. Zero-prefixed numbers, such as 01 and 065, are not
+ * allowed, except for 0 itself.
+ * For example, given "2542540123", you should return ['254.25.40.123',
+ * '254.254.0.123'].
+ */
 function generateIPAddresses(s) {
     let result = [];
     backtrack(s, 0, [], result);
@@ -4998,27 +5051,27 @@ console.log(`Valid IP addresses: ${generateIPAddresses(idAddressString)}`);
 console.log('\n');
 
 /*
-* Q94.
-* The horizontal distance of a binary tree node describes how far left or right
-* the node will be when the tree is printed out.
-* More rigorously, we can define it as follows:
-* The horizontal distance of the root is 0.
-* The horizontal distance of a left child is hd(parent) - 1.
-* The horizontal distance of a right child is hd(parent) + 1.
-* For example, for the following tree, hd(1) = -2, and hd(6) = 0.
-* "             5             "
-* "          /     \          "
-* "        3         7        "
-* "      /  \      /   \      "
-* "    1     4    6     9     "
-* "   /                /      "
-* "  0                8       "
-* The bottom view of a tree, then, consists of the lowest node at each
-* horizontal distance. If there are two nodes at the same depth and horizontal
-* distance, either is acceptable.
-* For this tree, for example, the bottom view could be [0, 1, 3, 6, 8, 9].
-* Given the root to a binary tree, return its bottom view.
-*/
+ * Q94.
+ * The horizontal distance of a binary tree node describes how far left or right
+ * the node will be when the tree is printed out.
+ * More rigorously, we can define it as follows:
+ * The horizontal distance of the root is 0.
+ * The horizontal distance of a left child is hd(parent) - 1.
+ * The horizontal distance of a right child is hd(parent) + 1.
+ * For example, for the following tree, hd(1) = -2, and hd(6) = 0.
+ * "             5             "
+ * "          /     \          "
+ * "        3         7        "
+ * "      /  \      /   \      "
+ * "    1     4    6     9     "
+ * "   /                /      "
+ * "  0                8       "
+ * The bottom view of a tree, then, consists of the lowest node at each
+ * horizontal distance. If there are two nodes at the same depth and horizontal
+ * distance, either is acceptable.
+ * For this tree, for example, the bottom view could be [0, 1, 3, 6, 8, 9].
+ * Given the root to a binary tree, return its bottom view.
+ */
 class NodWithHorizontalDistance {
     constructor(value) {
         this.value = value;
@@ -5070,30 +5123,36 @@ treeRootWithHorizontalDistance.left.left = new NodWithHorizontalDistance(1);
 treeRootWithHorizontalDistance.left.right = new NodWithHorizontalDistance(4);
 treeRootWithHorizontalDistance.right.left = new NodWithHorizontalDistance(6);
 treeRootWithHorizontalDistance.right.right = new NodWithHorizontalDistance(9);
-treeRootWithHorizontalDistance.left.left.left = new NodWithHorizontalDistance(0);
-treeRootWithHorizontalDistance.right.right.left = new NodWithHorizontalDistance(8);
+treeRootWithHorizontalDistance.left.left.left = new NodWithHorizontalDistance(
+    0
+);
+treeRootWithHorizontalDistance.right.right.left = new NodWithHorizontalDistance(
+    8
+);
 
-console.log(`Bottom view of tree: ${bottomView(treeRootWithHorizontalDistance)}`);
+console.log(
+    `Bottom view of tree: ${bottomView(treeRootWithHorizontalDistance)}`
+);
 console.log('\n');
 
 /*
-* Q95.
-* https://en.wikipedia.org/wiki/Roman_numerals
-* Given a number in Roman numeral format, convert it to decimal.
-* The values of Roman numerals are as follows:
-* " {              "
-* "     'M': 1000, "
-* "     'D': 500,  "
-* "     'C': 100,  "
-* "     'L': 50,   "
-* "     'X': 10,   "
-* "     'V': 5,    "
-* "     'I': 1     "
-* " }              "
-* In addition, note that the Roman numeral system uses subtractive notation for
-* numbers such as IV and XL.
-* For the input XIV, for instance, you should return 14.
-*/
+ * Q95.
+ * https://en.wikipedia.org/wiki/Roman_numerals
+ * Given a number in Roman numeral format, convert it to decimal.
+ * The values of Roman numerals are as follows:
+ * " {              "
+ * "     'M': 1000, "
+ * "     'D': 500,  "
+ * "     'C': 100,  "
+ * "     'L': 50,   "
+ * "     'X': 10,   "
+ * "     'V': 5,    "
+ * "     'I': 1     "
+ * " }              "
+ * In addition, note that the Roman numeral system uses subtractive notation for
+ * numbers such as IV and XL.
+ * For the input XIV, for instance, you should return 14.
+ */
 function romanToDecimal(roman) {
     let symbolValues = createSymbolValueMap();
     let decimal = 0;
@@ -5101,7 +5160,10 @@ function romanToDecimal(roman) {
     for (let i = 0; i < roman.length; i++) {
         let currentValue = symbolValues.get(roman[i]);
 
-        if (i + 1 < roman.length && symbolValues.get(roman[i + 1]) > currentValue) {
+        if (
+            i + 1 < roman.length &&
+            symbolValues.get(roman[i + 1]) > currentValue
+        ) {
             decimal -= currentValue;
         } else {
             decimal += currentValue;
@@ -5128,10 +5190,10 @@ console.log(`Roman numeral ${roman} is ${romanToDecimal(roman)} in decimal`);
 console.log('\n');
 
 /*
-* Q96.
-* Write an algorithm that computes the reversal of a directed graph. For
-* example, if a graph consists of A -> B -> C, it should become A <- B <- C.
-*/
+ * Q96.
+ * Write an algorithm that computes the reversal of a directed graph. For
+ * example, if a graph consists of A -> B -> C, it should become A <- B <- C.
+ */
 class ReversingGraph {
     #_adjacencyList;
 
@@ -5184,14 +5246,14 @@ console.log('Reversed graph');
 reversedGraph.printGraph();
 
 /*
-* Q97.
-* In front of you is a row of N coins, with values v1, v1, ..., vn.
-* You are asked to play the following game. You and an opponent take turns
-* choosing either the first or last coin from the row, removing it from the
-* row, and receiving the value of the coin.
-* Write a program that returns the maximum amount of money you can win with
-* certainty, if you move first, assuming your opponent plays optimally.
-*/
+ * Q97.
+ * In front of you is a row of N coins, with values v1, v1, ..., vn.
+ * You are asked to play the following game. You and an opponent take turns
+ * choosing either the first or last coin from the row, removing it from the
+ * row, and receiving the value of the coin.
+ * Write a program that returns the maximum amount of money you can win with
+ * certainty, if you move first, assuming your opponent plays optimally.
+ */
 function maxMoney(coins) {
     const n = coins.length;
 
@@ -5203,8 +5265,18 @@ function play(coins, left, right) {
         return 0;
     }
 
-    let pickLeft = coins[left] + Math.min(play(coins, left + 2, right), play(coins, left + 1, right - 1));
-    let pickRight = coins[right] + Math.min(play(coins, left + 1, right - 1), play(coins, left, right - 2));
+    let pickLeft =
+        coins[left] +
+        Math.min(
+            play(coins, left + 2, right),
+            play(coins, left + 1, right - 1)
+        );
+    let pickRight =
+        coins[right] +
+        Math.min(
+            play(coins, left + 1, right - 1),
+            play(coins, left, right - 2)
+        );
 
     let maxMoney = Math.max(pickLeft, pickRight);
 
@@ -5217,14 +5289,14 @@ console.log(`Maximum amount of money: ${maxMoney(coins)}`);
 console.log('\n');
 
 /*
-* Q98.
-* Given an absolute pathname that may have . or .. as part of it, return the
-* shortest standardized path.
-* For example, given "/usr/bin/../bin/./scripts/../", return "/usr/bin/".
-*/
+ * Q98.
+ * Given an absolute pathname that may have . or .. as part of it, return the
+ * shortest standardized path.
+ * For example, given "/usr/bin/../bin/./scripts/../", return "/usr/bin/".
+ */
 function shortestPath(path) {
     const components = path.split('/');
-    let stack = []
+    let stack = [];
 
     for (const component of components) {
         if (component === '.' || component === '') {
@@ -5273,23 +5345,22 @@ console.log(`Largest number formation: ${largestNumber(numsToFormLargest)}`);
 console.log('\n');
 
 /*
-* Q100.
-* https://en.wikipedia.org/wiki/Snakes_and_Ladders
-* Snakes and Ladders is a game played on a 10 x 10 board, the goal of which is
-* get from square 1 to square 100. On each turn players will roll a six-sided
-* die and move forward a number of spaces equal to the result. If they land on
-* a square that represents a snake or ladder, they will be transported ahead or
-* behind, respectively, to a new square.
-* Find the smallest number of turns it takes to play snakes and ladders.
-* For convenience, here are the squares representing snakes and ladders, and
-* their outcomes:
-* snakes = {16: 6, 48: 26, 49: 11, 56: 53, 62: 19, 64: 60, 87: 24, 93: 73, 95:
-* 75, 98: 78}
-* ladders = {1: 38, 4: 14, 9: 31, 21: 42, 28: 84, 36: 44, 51: 67, 71: 91, 80:
-* 100}
-*/
+ * Q100.
+ * https://en.wikipedia.org/wiki/Snakes_and_Ladders
+ * Snakes and Ladders is a game played on a 10 x 10 board, the goal of which is
+ * get from square 1 to square 100. On each turn players will roll a six-sided
+ * die and move forward a number of spaces equal to the result. If they land on
+ * a square that represents a snake or ladder, they will be transported ahead or
+ * behind, respectively, to a new square.
+ * Find the smallest number of turns it takes to play snakes and ladders.
+ * For convenience, here are the squares representing snakes and ladders, and
+ * their outcomes:
+ * snakes = {16: 6, 48: 26, 49: 11, 56: 53, 62: 19, 64: 60, 87: 24, 93: 73, 95:
+ * 75, 98: 78}
+ * ladders = {1: 38, 4: 14, 9: 31, 21: 42, 28: 84, 36: 44, 51: 67, 71: 91, 80:
+ * 100}
+ */
 class SnakesAndLadders {
-
     snakesAndLadders(board) {
         const n = board.length;
         let visited = new Array(n + 1).fill(false);
@@ -5311,7 +5382,10 @@ class SnakesAndLadders {
                 }
 
                 for (let j = 1; j <= 6 && square + j < n; j++) {
-                    const next = board[square + j] === -1 ? square + j : board[square + j];
+                    const next =
+                        board[square + j] === -1
+                            ? square + j
+                            : board[square + j];
 
                     if (!visited[next]) {
                         visited[next] = true;
@@ -5361,25 +5435,29 @@ for (const [key, value] of ladders) {
     board[key] = value;
 }
 
-console.log(`Minimum turns to win the game: ${snakesAndLadders.snakesAndLadders(board)}`);
+console.log(
+    `Minimum turns to win the game: ${snakesAndLadders.snakesAndLadders(board)}`
+);
 console.log('\n');
 
 /*
-* Q101.
-* You are given N identical eggs and access to a building with k floors. Your
-* task is to find the lowest floor that will cause an egg to break, if dropped
-* from that floor. Once an egg breaks, it cannot be dropped again. If an egg
-* breaks when dropped from the xth floor, you can assume it will also break
-* when dropped from any floor greater than x.
-* Write an algorithm that finds the minimum number of trial drops it will take,
-* in the worst case, to identify this floor.
-* For example, if N = 1 and k = 5, we will need to try dropping the egg at
-* every floor, beginning with the first, until we reach the fifth floor, so our
-* solution will be 5.
-*/
+ * Q101.
+ * You are given N identical eggs and access to a building with k floors. Your
+ * task is to find the lowest floor that will cause an egg to break, if dropped
+ * from that floor. Once an egg breaks, it cannot be dropped again. If an egg
+ * breaks when dropped from the xth floor, you can assume it will also break
+ * when dropped from any floor greater than x.
+ * Write an algorithm that finds the minimum number of trial drops it will take,
+ * in the worst case, to identify this floor.
+ * For example, if N = 1 and k = 5, we will need to try dropping the egg at
+ * every floor, beginning with the first, until we reach the fifth floor, so our
+ * solution will be 5.
+ */
 function minTrialDrops(eggs, floors) {
     // Create a 2D array to store the minimum number of trial drops for each subproblem
-    let dp = new Array(eggs + 1).fill(0).map(() => new Array(floors + 1).fill(0));
+    let dp = new Array(eggs + 1)
+        .fill(0)
+        .map(() => new Array(floors + 1).fill(0));
 
     for (let i = 1; i <= eggs; i++) {
         dp[i][0] = 0;
@@ -5407,18 +5485,20 @@ function minTrialDrops(eggs, floors) {
 console.log('========= Q101 =========');
 const eggs = 1;
 const floors = 5;
-console.log(`Minimum number of trial drops required is: ${minTrialDrops(eggs, floors)}`);
+console.log(
+    `Minimum number of trial drops required is: ${minTrialDrops(eggs, floors)}`
+);
 console.log('\n');
 
 /*
-* Q102.
-* You are given a list of N points (x1, y1), (x2, y2), ..., (xN, yN)
-* representing a polygon. You can assume these points are given in order; that
-* is, you can construct the polygon by connecting point 1 to point 2, point 2
-* to point 3, and so on, finally looping around to connect point N to point 1.
-* Determine if a new point p lies inside this polygon. (If p is on the boundary
-* of the polygon, you should return False).
-*/
+ * Q102.
+ * You are given a list of N points (x1, y1), (x2, y2), ..., (xN, yN)
+ * representing a polygon. You can assume these points are given in order; that
+ * is, you can construct the polygon by connecting point 1 to point 2, point 2
+ * to point 3, and so on, finally looping around to connect point N to point 1.
+ * Determine if a new point p lies inside this polygon. (If p is on the boundary
+ * of the polygon, you should return False).
+ */
 class Point {
     constructor(x, y) {
         this.x = x;
@@ -5435,7 +5515,10 @@ function isInsidePolygon(polygon, p) {
         let b = polygon[(i + 1) % n];
 
         // Check if the ray intersects with the edge
-        if ((a.y > p.y) != (b.y > p.y) && p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x) {
+        if (
+            a.y > p.y != b.y > p.y &&
+            p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x
+        ) {
             count++;
         }
     }
@@ -5445,23 +5528,28 @@ function isInsidePolygon(polygon, p) {
 }
 
 console.log('========= Q102 =========');
-const polygon = [new Point(0, 0), new Point(0, 5), new Point(5, 5), new Point(5, 0)];
+const polygon = [
+    new Point(0, 0),
+    new Point(0, 5),
+    new Point(5, 5),
+    new Point(5, 0),
+];
 const p = new Point(1, 1);
 console.log(`Point is inside polygon: ${isInsidePolygon(polygon, p)}`);
 console.log('\n');
 
 /*
-* Q103.
-* One way to unlock an Android phone is through a pattern of swipes across a
-* 1-9 keypad.
-* For a pattern to be valid, it must satisfy the following:
-* All of its keys must be distinct.
-* It must not connect two keys by jumping over a third key, unless that key has
-* already been used.
-* For example, 4 - 2 - 1 - 7 is a valid pattern, whereas 2 - 1 - 7 is not.
-* Find the total number of valid unlock patterns of length N, where 1 <= N <=
-* 9.
-*/
+ * Q103.
+ * One way to unlock an Android phone is through a pattern of swipes across a
+ * 1-9 keypad.
+ * For a pattern to be valid, it must satisfy the following:
+ * All of its keys must be distinct.
+ * It must not connect two keys by jumping over a third key, unless that key has
+ * already been used.
+ * For example, 4 - 2 - 1 - 7 is a valid pattern, whereas 2 - 1 - 7 is not.
+ * Find the total number of valid unlock patterns of length N, where 1 <= N <=
+ * 9.
+ */
 class UnlockPatternCalculator {
     calculatePatterns(n) {
         let path = new Array(10).fill(0);
@@ -5520,17 +5608,21 @@ console.log('========= Q103 =========');
 const unlockPatternCalculator = new UnlockPatternCalculator();
 const numOfSwipes = 4;
 
-console.log(`Number of valid unlock patterns for length ${numOfSwipes}: ${unlockPatternCalculator.calculatePatterns(numOfSwipes)}`);
+console.log(
+    `Number of valid unlock patterns for length ${numOfSwipes}: ${unlockPatternCalculator.calculatePatterns(
+        numOfSwipes
+    )}`
+);
 console.log('\n');
 
 /*
-* Q104.
-* Given an array of numbers N and an integer k, your task is to split N into k
-* partitions such that the maximum sum of any partition is minimized. Return
-* this sum.
-* For example, given N = [5, 1, 2, 7, 3, 4] and k = 3, you should return 8,
-* since the optimal partition is [5, 1, 2], [7], [3, 4].
-*/
+ * Q104.
+ * Given an array of numbers N and an integer k, your task is to split N into k
+ * partitions such that the maximum sum of any partition is minimized. Return
+ * this sum.
+ * For example, given N = [5, 1, 2, 7, 3, 4] and k = 3, you should return 8,
+ * since the optimal partition is [5, 1, 2], [7], [3, 4].
+ */
 function isValidPartition(nums, k, maxSum) {
     let sum = 0;
     let partitions = 1;
@@ -5560,7 +5652,7 @@ function partitionArray(nums, k) {
         sumNum += num;
     }
 
-    let left = maxNum
+    let left = maxNum;
     let right = sumNum;
 
     while (left < right) {
@@ -5580,18 +5672,23 @@ console.log('========= Q104 =========');
 const numsToFindMinimizedMaxPartition = [5, 1, 2, 7, 3, 4];
 const numPartition = 3;
 
-console.log(`Minimum maximum sum of partitions: ${partitionArray(numsToFindMinimizedMaxPartition, numPartition)}`);
+console.log(
+    `Minimum maximum sum of partitions: ${partitionArray(
+        numsToFindMinimizedMaxPartition,
+        numPartition
+    )}`
+);
 console.log('\n');
 
 /*
-* Q105.
-* You are given an array of integers, where each element represents the maximum
-* number of steps that can be jumped going forward from that element. Write a
-* function to return the minimum number of jumps you must take in order to get
-* from the start to the end of the array.
-* For example, given [6, 2, 4, 0, 5, 1, 1, 4, 2, 9], you should return 2, as
-* the optimal solution involves jumping from 6 to 5, and then from 5 to 9.
-*/
+ * Q105.
+ * You are given an array of integers, where each element represents the maximum
+ * number of steps that can be jumped going forward from that element. Write a
+ * function to return the minimum number of jumps you must take in order to get
+ * from the start to the end of the array.
+ * For example, given [6, 2, 4, 0, 5, 1, 1, 4, 2, 9], you should return 2, as
+ * the optimal solution involves jumping from 6 to 5, and then from 5 to 9.
+ */
 function minJumps(nums) {
     const n = nums.length;
     if (n <= 1) {
@@ -5631,14 +5728,14 @@ console.log(`Minimum number of jumps: ${minJumps(stepsArr)}`);
 console.log('\n');
 
 /*
-* Q106.
-* Given a list of words, determine whether the words can be chained to form a
-* circle. A word X can be placed in front of another word Y in a circle if the
-* last character of X is same as the first character of Y.
-* For example, the words ['chair', 'height', 'racket', touch', 'tunic'] can
-* form the following circle: chair --> racket --> touch --> height --> tunic
-* --> chair.
-*/
+ * Q106.
+ * Given a list of words, determine whether the words can be chained to form a
+ * circle. A word X can be placed in front of another word Y in a circle if the
+ * last character of X is same as the first character of Y.
+ * For example, the words ['chair', 'height', 'racket', touch', 'tunic'] can
+ * form the following circle: chair --> racket --> touch --> height --> tunic
+ * --> chair.
+ */
 function canFormCircle(words) {
     if (!words || words.length === 0) {
         return false;
@@ -5651,12 +5748,18 @@ function canFormCircle(words) {
 }
 
 function dfsWords(words, wordsSize, visited, startWord, currentWord) {
-    if (wordsSize === 1 && startWord[0] === currentWord[currentWord.length - 1]) {
+    if (
+        wordsSize === 1 &&
+        startWord[0] === currentWord[currentWord.length - 1]
+    ) {
         return true;
     }
 
     for (let i = 0; i < words.length; i++) {
-        if (!visited[i] && currentWord[currentWord.length - 1] === words[i][0]) {
+        if (
+            !visited[i] &&
+            currentWord[currentWord.length - 1] === words[i][0]
+        ) {
             visited[i] = true;
             if (dfsWords(words, wordsSize - 1, visited, startWord, words[i])) {
                 return true;
@@ -5674,19 +5777,19 @@ console.log(`Can form circle: ${canFormCircle(wordsToFormCircle)}`);
 console.log('\n');
 
 /*
-* Q107.
-* A cryptarithmetic puzzle is a mathematical game where the digits of some
-* numbers are represented by letters. Each letter represents a unique digit.
-* For example, a puzzle of the form:
-* "   SEND    "
-* " + MORE    "
-* "--------   "
-* " MONEY     "
-* may have the solution:
-* {'S': 9, 'E': 5, 'N': 6, 'D': 7, 'M': 1, 'O', 0, 'R': 8, 'Y': 2}
-* Given a three-word puzzle like the one above, create an algorithm that finds
-* a solution.
-*/
+ * Q107.
+ * A cryptarithmetic puzzle is a mathematical game where the digits of some
+ * numbers are represented by letters. Each letter represents a unique digit.
+ * For example, a puzzle of the form:
+ * "   SEND    "
+ * " + MORE    "
+ * "--------   "
+ * " MONEY     "
+ * may have the solution:
+ * {'S': 9, 'E': 5, 'N': 6, 'D': 7, 'M': 1, 'O', 0, 'R': 8, 'Y': 2}
+ * Given a three-word puzzle like the one above, create an algorithm that finds
+ * a solution.
+ */
 function solvePuzzle(word1, word2, result) {
     let letters = new Set();
     for (const letter of word1) {
@@ -5701,7 +5804,15 @@ function solvePuzzle(word1, word2, result) {
 
     let assignments = new Map();
     let digits = new Array(10).fill(0);
-    const foundSolution = solveRecursively(word1, word2, result, letters, assignments, digits, 0);
+    const foundSolution = solveRecursively(
+        word1,
+        word2,
+        result,
+        letters,
+        assignments,
+        digits,
+        0
+    );
 
     if (foundSolution) {
         return assignments;
@@ -5710,7 +5821,15 @@ function solvePuzzle(word1, word2, result) {
     }
 }
 
-function solveRecursively(word1, word2, result, letters, assignments, digits, index) {
+function solveRecursively(
+    word1,
+    word2,
+    result,
+    letters,
+    assignments,
+    digits,
+    index
+) {
     if (index === letters.size) {
         return evaluateExpression(word1, word2, result, assignments);
     }
@@ -5721,7 +5840,7 @@ function solveRecursively(word1, word2, result, letters, assignments, digits, in
         chars[i++] = c;
     }
 
-    for (let digit = (index === 0 ? 1 : 0); digit <= 9; digit++) {
+    for (let digit = index === 0 ? 1 : 0; digit <= 9; digit++) {
         if (digits[digit] === 0) {
             if (digit === 0 && result[0] === chars[index]) {
                 continue; // Skip leading zero assignment if it matches the first character of the result
@@ -5730,7 +5849,17 @@ function solveRecursively(word1, word2, result, letters, assignments, digits, in
             assignments.set(chars[index], digit);
             digits[digit] = 1;
 
-            if (solveRecursively(word1, word2, result, letters, assignments, digits, index + 1)) {
+            if (
+                solveRecursively(
+                    word1,
+                    word2,
+                    result,
+                    letters,
+                    assignments,
+                    digits,
+                    index + 1
+                )
+            ) {
                 return true;
             }
 
@@ -5776,35 +5905,35 @@ if (solution) {
 console.log('\n');
 
 /*
-* Q108.
-* Given an array of a million integers between zero and a billion, out of
-* order, how can you efficiently sort it? Assume that you cannot store an array
-* of a billion elements in memory.
-*/
+ * Q108.
+ * Given an array of a million integers between zero and a billion, out of
+ * order, how can you efficiently sort it? Assume that you cannot store an array
+ * of a billion elements in memory.
+ */
 console.log('========= Q108 =========');
 /*
-* High-level approach:
-* 1. Divide the array into smaller chunks that can fit into memory.
-* 2. Sort each chunk individually using an efficient in-memory sorting such as
-* quicksort or mergesort.
-* 3. Write each sorted chunk to a single file. Structure data in the file using
-* priority queue or min-heap.
-* 4. Perform a k-way merge sort on the sorted files. Repeatedly select the
-* smallest element from each file and write it to the output file.
-*/
+ * High-level approach:
+ * 1. Divide the array into smaller chunks that can fit into memory.
+ * 2. Sort each chunk individually using an efficient in-memory sorting such as
+ * quicksort or mergesort.
+ * 3. Write each sorted chunk to a single file. Structure data in the file using
+ * priority queue or min-heap.
+ * 4. Perform a k-way merge sort on the sorted files. Repeatedly select the
+ * smallest element from each file and write it to the output file.
+ */
 console.log('\n');
 
 /*
-* Q109.
-* Given a string and a number of lines k, print the string in zigzag form. In
-* zigzag, characters are printed out diagonally from top left to bottom right
-* until reaching the kth line, then back up to top right, and so on.
-* For example, given the sentence "thisisazigzag" and k = 4, you should print:
-* " t     a     g "
-* "  h   s z   a  "
-* "   i i   i z   "
-* "    s     g    "
-*/
+ * Q109.
+ * Given a string and a number of lines k, print the string in zigzag form. In
+ * zigzag, characters are printed out diagonally from top left to bottom right
+ * until reaching the kth line, then back up to top right, and so on.
+ * For example, given the sentence "thisisazigzag" and k = 4, you should print:
+ * " t     a     g "
+ * "  h   s z   a  "
+ * "   i i   i z   "
+ * "    s     g    "
+ */
 function printZigzag(s, k) {
     if (k === 1) {
         console.log(s);
@@ -5872,31 +6001,31 @@ printZigzag(sentence, numLines);
 console.log('\n');
 
 /*
-* Q110.
-* Recall that a full binary tree is one in which each node is either a leaf
-* node, or has two children. Given a binary tree, convert it to a full one by
-* removing nodes with only one child.
-* For example, given the following tree:
-* "          0                "
-* "       /     \             "
-* "     1         2           "
-* "   /            \          "
-* " 3                 4       "
-* "   \             /   \     "
-* "     5          6     7    "
-* You should convert it to:
-* "     0             "
-* "   /     \         "
-* " 5         4       "
-* "         /   \     "
-* "        6     7    "
-*/
+ * Q110.
+ * Recall that a full binary tree is one in which each node is either a leaf
+ * node, or has two children. Given a binary tree, convert it to a full one by
+ * removing nodes with only one child.
+ * For example, given the following tree:
+ * "          0                "
+ * "       /     \             "
+ * "     1         2           "
+ * "   /            \          "
+ * " 3                 4       "
+ * "   \             /   \     "
+ * "     5          6     7    "
+ * You should convert it to:
+ * "     0             "
+ * "   /     \         "
+ * " 5         4       "
+ * "         /   \     "
+ * "        6     7    "
+ */
 function convertToFullBinaryTree(root) {
     if (!root) {
         return null;
     }
 
-    if (root.left && root.right){
+    if (root.left && root.right) {
         root.left = convertToFullBinaryTree(root.left);
         root.right = convertToFullBinaryTree(root.right);
     } else if (root.left) {
@@ -5926,3 +6055,519 @@ const fullBinaryTree = convertToFullBinaryTree(treeToConvert);
 console.log('Full Binary Tree:');
 printInorder(fullBinaryTree);
 console.log('\n');
+
+/*
+ * Q111.
+ * Given a linked list, rearrange the node values such that they appear in
+ * alternating low -> high -> low -> high ... form. For example, given 1 -> 2 ->
+ * 3 -> 4 -> 5, you should return 1 -> 3 -> 2 -> 5 -> 4.
+ */
+function rearrangeLinkedList(head) {
+    if (!head || !head.next) {
+        return head;
+    }
+
+    let current = head;
+    let temp = new ListNode(0);
+    let dummy = temp;
+    let isLow = true;
+
+    while (current && current.next) {
+        if (isLow) {
+            if (current.value < current.next.value) {
+                temp.next = current;
+                current = current.next;
+            } else {
+                temp.next = current.next;
+                current.next = current.next.next;
+            }
+            temp = temp.next;
+        } else {
+            if (current.value > current.next.value) {
+                temp.next = current;
+                current = current.next;
+            } else {
+                temp.next = current.next;
+                current.next = current.next.next;
+            }
+            temp = temp.next;
+        }
+        isLow = !isLow;
+    }
+
+    temp.next = current;
+
+    return dummy.next;
+}
+
+function printLinkedList(head) {
+    let current = head;
+    let result = '';
+
+    while (current) {
+        result += `${current.value} -> `;
+        current = current.next;
+    }
+
+    result += 'null';
+    console.log(result);
+}
+
+console.log('========= Q111 =========');
+const listToRearrange = new ListNode(1);
+listToRearrange.next = new ListNode(2);
+listToRearrange.next.next = new ListNode(3);
+listToRearrange.next.next.next = new ListNode(4);
+listToRearrange.next.next.next.next = new ListNode(5);
+
+const rearrangedList = rearrangeLinkedList(listToRearrange);
+printLinkedList(rearrangedList);
+console.log('\n');
+
+/*
+ * Q112.
+ * The sequence [0, 1, ..., N] has been jumbled, and the only clue you have for
+ * its order is an array representing whether each number is larger or smaller
+ * than the last. Given this information, reconstruct an array that is
+ * consistent with it. For example, given [None, +, +, -, +], you could return
+ * [1, 2, 3, 0, 4].
+ */
+function reconstructArray(clues) {
+    let numOfMinus = 0;
+
+    for (const clue of clues) {
+        if (clue == '-') {
+            numOfMinus++;
+        }
+    }
+
+    const N = clues.length;
+    let result = new Array(N);
+    let j = 0;
+    let number = numOfMinus;
+
+    for (let i = 0; i < N; i++) {
+        if (clues[i] == '-') {
+            result[i] = j++;
+        } else {
+            result[i] = number++;
+        }
+    }
+
+    return result;
+}
+
+console.log('========= Q112 =========');
+const clues = ['None', '+', '+', '-', '+'];
+console.log(reconstructArray(clues));
+console.log('\n');
+
+/*
+ * Q113.
+ * A bridge in a connected (undirected) graph is an edge that, if removed,
+ * causes the graph to become disconnected. Find all the bridges in a graph.
+ */
+// Solution in Graph class member functions in S84
+console.log('========= Q113 =========');
+const V = 5;
+let bridgeGraph = new Graph(V);
+bridgeGraph.addEdge(0, 1);
+bridgeGraph.addEdge(1, 2);
+bridgeGraph.addEdge(2, 0);
+bridgeGraph.addEdge(1, 3);
+bridgeGraph.addEdge(3, 4);
+
+const bridges = bridgeGraph.findBridges();
+console.log('Bridges in graph:');
+for (const bridge of bridges) {
+    console.log(bridge);
+}
+console.log('\n');
+
+/*
+ * Q114.
+ * Create a basic sentence checker that takes in a stream of characters and
+ * determines whether they form valid sentences. If a sentence is valid, the
+ * program should print it out.
+ * We can consider a sentence valid if it conforms to the following rules:
+ * The sentence must start with a capital letter, followed by a lowercase letter
+ * or a space.
+ * All other characters must be lowercase letters, separators (,,;,:) or
+ * terminal marks (.,?,!,‽).
+ * There must be a single space between each word.
+ * The sentence must end with a terminal mark immediately following a word.
+ */
+function checkSentences(input) {
+    const sentences = input.split(/(?<=[.?!‽])\s+/);
+
+    for (const sentence of sentences) {
+        if (isValidSentence(sentence)) {
+            console.log(sentence);
+        }
+    }
+}
+
+function isValidSentence(sentence) {
+    // Check if sentence starts with a capital letter,
+    // and all other characters are lowercase letters, separators,
+    // and sentence ends with a terminal mark immediately following a word
+    if (!/^[A-Z][a-z\s,;:.]*[.,?!‽]$/.test(sentence)) {
+        return false;
+    }
+
+    // Check if there are two or more spaces between words
+    if (/\s{2,}/.test(sentence)) {
+        return false;
+    }
+
+    return true;
+}
+
+console.log('========= Q114 =========');
+const sentenceToCheck =
+    'This is a valid sentence. Another valid sentence? No? Invalid! Two   more spaces. This is, ,an invalid sentence';
+checkSentences(sentenceToCheck);
+console.log('\n');
+
+/*
+ * Q115.
+ * Given a 32-bit positive integer N, determine whether it is a power of four in
+ * faster than O(log N) time.
+ */
+function isPowerOfFour(n) {
+    // Check if n is a power of two
+    if ((n & (n - 1)) !== 0) {
+        return false;
+    }
+
+    // Check if the only set bit is at an even position
+    // n & 10101010 10101010 10101010 10101010
+    if ((n & 0xaaaaaaaa) != 0) {
+        return false;
+    }
+
+    return true;
+}
+
+console.log('========= Q115 =========');
+const powerOfFour = 256; //00000000 00000000 00000001 00000000
+console.log(`${powerOfFour} is a power of four: ${isPowerOfFour(powerOfFour)}`);
+
+const notPowerOfFour = 128; //00000000 00000000 00000000 10000000
+console.log(
+    `${notPowerOfFour} is a power of four: ${isPowerOfFour(notPowerOfFour)}`
+);
+console.log('\n');
+
+/*
+ * Q116.
+ * A network consists of nodes labeled 0 to N. You are given a list of edges (a,
+ * b, t), describing the time t it takes for a message to be sent from node a to
+ * node b. Whenever a node receives a message, it immediately passes the message
+ * on to a neighboring node, if possible.
+ * Assuming all nodes are connected, determine how long it will take for every
+ * node to receive a message that begins at node 0.
+ * For example, given N = 5, and the following edges:
+ * " edges = [         "
+ * "     (0, 1, 5),    "
+ * "     (0, 2, 3),    "
+ * "     (0, 5, 4),    "
+ * "     (1, 3, 8),    "
+ * "     (2, 3, 1),    "
+ * "     (3, 5, 10),   "
+ * "     (3, 4, 5)     "
+ * " ]                 "
+ * You should return 9, because propagating the message from 0 -> 2 -> 3 -> 4
+ * will take that much time.
+ */
+class NetworkNode {
+    constructor(id, time) {
+        this.id = id;
+        this.time = time;
+    }
+}
+
+function propagateMessage(N, edges) {
+    let graph = new Array(N + 1);
+    for (let i = 0; i <= N; i++) {
+        graph[i] = [];
+    }
+
+    for (const edge of edges) {
+        const a = edge[0];
+        const b = edge[1];
+        const t = edge[2];
+        graph[a].push(new NetworkNode(b, t));
+    }
+
+    let dist = new Array(N + 1).fill(Number.MAX_SAFE_INTEGER);
+    dist[0] = 0;
+
+    let pq = [];
+    pq.push(new NetworkNode(0, 0));
+
+    while (pq.length > 0) {
+        const curr = pq.shift();
+        if (curr.time > dist[curr.id]) {
+            continue;
+        }
+
+        for (const neighbor of graph[curr.id]) {
+            const newTime = curr.time + neighbor.time;
+            if (newTime < dist[neighbor.id]) {
+                dist[neighbor.id] = newTime;
+                pq.push(new NetworkNode(neighbor.id, newTime));
+            }
+        }
+    }
+
+    let maxTime = 0;
+    for (let i = 0; i <= N; i++) {
+        maxTime = Math.max(maxTime, dist[i]);
+    }
+
+    return maxTime;
+}
+
+console.log('========= Q116 =========');
+const numNodes = 5;
+const edges = [
+    [0, 1, 5],
+    [0, 2, 3],
+    [0, 5, 4],
+    [1, 3, 8],
+    [2, 3, 1],
+    [3, 5, 10],
+    [3, 4, 5],
+];
+
+console.log(
+    `Time taken for every node to receive the message: ${propagateMessage(
+        numNodes,
+        edges
+    )}`
+);
+console.log('\n');
+
+/*
+ * Q117.
+ * Write a function, throw_dice(N, faces, total), that determines how many ways
+ * it is possible to throw N dice with some number of faces each to get a
+ * specific total.
+ * For example, throw_dice(3, 6, 7) should equal 15.
+ */
+function throw_dice(N, faces, total) {
+    let memo = new Map();
+    return countWaysToTotal(N, faces, total, memo);
+}
+
+function countWaysToTotal(N, faces, total, memo) {
+    if (total < 0) {
+        return 0;
+    }
+
+    if (N === 0) {
+        return total === 0 ? 1 : 0;
+    }
+
+    if (total === 0) {
+        return 0;
+    }
+
+    const key = `${N}:${total}`;
+    if (memo.has(key)) {
+        return memo.get(key);
+    }
+
+    let ways = 0;
+    for (let face = 1; face <= faces; face++) {
+        ways += countWaysToTotal(N - 1, faces, total - face, memo);
+    }
+
+    memo.set(key, ways);
+
+    return ways;
+}
+
+console.log('========= Q117 =========');
+const numDice = 3;
+const faces = 6;
+const total = 7;
+console.log(`Number of ways: ${throw_dice(numDice, faces, total)}`);
+console.log('\n');
+
+/*
+ * Q118.
+ * The "look and say" sequence is defined as follows: beginning with the term 1,
+ * each subsequent term visually describes the digits appearing in the previous
+ * term. The first few terms are as follows:
+ * 1
+ * 11
+ * 21
+ * 1211
+ * 111221
+ * As an example, the fourth term is 1211, since the third term consists of one
+ * 2 and one 1.
+ * Given an integer N, print the Nth term of this sequence.
+ */
+function nthTerm(N) {
+    if (N <= 0) {
+        return '';
+    }
+
+    if (N === 1) {
+        return '1';
+    }
+
+    let previousTerm = nthTerm(N - 1);
+    let currentTerm = '';
+
+    let currentDigit = previousTerm[0];
+    let count = 1;
+
+    for (let i = 1; i < previousTerm.length; i++) {
+        const digit = previousTerm[i];
+
+        if (digit === currentDigit) {
+            count++;
+        } else {
+            currentTerm += `${count}${currentDigit}`;
+            currentDigit = digit;
+            count = 1;
+        }
+    }
+
+    currentTerm += `${count}${currentDigit}`;
+
+    return currentTerm;
+}
+
+console.log('========= Q118 =========');
+const term = 5;
+console.log(
+    `Nth term of the 'look and say' sequence for N = ${term}: ${nthTerm(term)}`
+);
+
+/*
+ * Q119.
+ * Implement an efficient string matching algorithm.
+ * That is, given a string of length N and a pattern of length k, write a
+ * program that searches for the pattern in the string with less than O(N * k)
+ * worst-case time complexity.
+ * If the pattern is found, return the start index of its location. If not,
+ * return False.
+ */
+function stringMath(text, pattern) {
+    const n = text.length;
+    const m = pattern.length;
+
+    const prefixTable = buildPrefixTable(pattern);
+
+    let i = 0;
+    let j = 0;
+
+    while (i < n) {
+        if (text[i] === pattern[j]) {
+            i++;
+            j++;
+
+            if (j === m) {
+                return i - j;
+            }
+        } else if (j > 0) {
+            j = prefixTable[j - 1];
+        } else {
+            i++;
+        }
+    }
+
+    return false;
+}
+
+function buildPrefixTable(pattern) {
+    const m = pattern.length;
+    let prefixTable = new Array(m).fill(0);
+    let len = 0;
+
+    let i = 1;
+    while (i < m) {
+        if (pattern[i] === pattern[len]) {
+            len++;
+            prefixTable[i] = len;
+            i++;
+        } else {
+            if (len > 0) {
+                len = prefixTable[len - 1];
+            } else {
+                prefixTable[i] = len;
+                i++;
+            }
+        }
+    }
+    return prefixTable;
+}
+
+console.log('========= Q119 =========');
+const text = 'ababcababcabc';
+const patternToFind = 'abcabc';
+const indexFound = stringMath(text, patternToFind);
+
+if (indexFound !== false) {
+    console.log(`Pattern found at index ${indexFound}`);
+} else {
+    console.log(`Pattern not found`);
+}
+console.log('\n');
+
+/*
+ * Q120.
+ * A wall consists of several rows of bricks of various integer lengths and
+ * uniform height. Your goal is to find a vertical line going from the top to
+ * the bottom of the wall that cuts through the fewest number of bricks. If the
+ * line goes through the edge between two bricks, this does not count as a cut.
+ * For example, suppose the input is as follows, where values in each row
+ * represent the lengths of bricks in that row:
+ * " [[3, 5, 1, 1],    "
+ * "  [2, 3, 3, 2],    "
+ * "  [5, 5],          "
+ * "  [4, 4, 2],       "
+ * "  [1, 3, 3, 3],    "
+ * "  [1, 1, 6, 1, 1]] "
+ * The best we can we do here is to draw a line after the eighth brick, which
+ * will only require cutting through the bricks in the third and fifth row.
+ * Given an input consisting of brick lengths for each row such as the one
+ * above, return the fewest number of bricks that must be cut to create a
+ * vertical line.
+ */
+function fewestBricks(wall) {
+    let frequencyMap = new Map();
+
+    for (const row of wall) {
+        let sum = 0;
+        for (let i = 0; i < row.length - 1; i++) {
+            sum += row[i];
+            frequencyMap.set(sum, (frequencyMap.get(sum) || 0) + 1);
+        }
+    }
+    console.log(frequencyMap);
+    let maxFrequency = 0;
+    for (const frequency of frequencyMap.values()) {
+        maxFrequency = Math.max(maxFrequency, frequency);
+    }
+
+    const rowCount = wall.length;
+    return rowCount - maxFrequency;
+}
+
+console.log('========= Q120 =========');
+const wall = [
+    [3, 5, 1, 1],
+    [2, 3, 3, 2],
+    [5, 5],
+    [4, 4, 2],
+    [1, 3, 3, 3],
+    [1, 1, 6, 1, 1],
+];
+console.log(`Fewest number of bricks to cut: ${fewestBricks(wall)}`);
+console.log('\n');
+

@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -2794,12 +2796,27 @@ public class QuestionsAndSolutions {
         private int numVertices;
         private List<List<Integer>> adjList;
 
+        // Member variables for S113.
+        private int[] disc; // Discovery time of each vertex in DFS traversal
+        private int[] low; // Earliest reachable vertex
+        private int[] parent;
+        private int time;
+        private boolean[] visited;
+        private List<int[]> bridges;
+
         public Graph(int numVertices) {
             this.numVertices = numVertices;
             adjList = new ArrayList<>(numVertices);
             for (int i = 0; i < numVertices; i++) {
                 adjList.add(new ArrayList<>());
             }
+
+            // Member variables initialization for S113
+            disc = new int[numVertices];
+            low = new int[numVertices];
+            parent = new int[numVertices];
+            visited = new boolean[numVertices];
+            bridges = new ArrayList<>();
         }
 
         public void addEdge(int u, int v) {
@@ -2872,6 +2889,36 @@ public class QuestionsAndSolutions {
             }
 
             return true;
+        }
+
+        // S113.
+        public List<int[]> findBridges() {
+            for (int i = 0; i < numVertices; i++) {
+                if (!visited[i]) {
+                    dfs(i);
+                }
+            }
+            return bridges;
+        }
+
+        private void dfs(int u) {
+            visited[u] = true;
+            disc[u] = low[u] = ++time;
+
+            for (int v : adjList.get(u)) {
+                if (!visited[v]) {
+                    parent[v] = u;
+                    dfs(v);
+                    low[u] = Math.min(low[u], low[v]);
+
+                    if (low[v] > disc[u]) {
+                        // No other path can reach v except through u
+                        bridges.add(new int[] { u, v });
+                    }
+                } else if (v != parent[u]) {
+                    low[u] = Math.min(low[u], disc[v]);
+                }
+            }
         }
     }
 
@@ -3662,6 +3709,322 @@ public class QuestionsAndSolutions {
         }
 
         return root;
+    }
+
+    // S111.
+    public static ListNode rearrangeLinkedList(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+
+        ListNode current = head;
+        ListNode temp = new ListNode(0);
+        ListNode dummy = temp;
+        boolean isLow = true;
+
+        while (current != null && current.next != null) {
+            if (isLow) {
+                if (current.val < current.next.val) {
+                    temp.next = current;
+                    current = current.next;
+                } else {
+                    temp.next = current.next;
+                    current.next = current.next.next;
+                }
+                temp = temp.next;
+            } else {
+                if (current.val > current.next.val) {
+                    temp.next = current;
+                    current = current.next;
+                } else {
+                    temp.next = current.next;
+                    current.next = current.next.next;
+                }
+                temp = temp.next;
+            }
+
+            isLow = !isLow;
+        }
+
+        temp.next = current;
+
+        return dummy.next;
+    }
+
+    private static void printLinkedList(ListNode head) {
+        ListNode current = head;
+        while (current != null) {
+            System.out.print(current.val + " -> ");
+            current = current.next;
+        }
+        System.out.println("null");
+    }
+
+    // S112.
+    public static int[] reconstructArray(String[] clues) {
+        int numOfMinus = 0;
+
+        for (String clue : clues) {
+            if (clue.equals("-")) {
+                numOfMinus++;
+            }
+        }
+
+        int N = clues.length;
+        int[] result = new int[N];
+        int j = 0;
+        int number = numOfMinus;
+
+        for (int i = 0; i < N; i++) {
+            if (clues[i].equals("-")) {
+                result[i] = j++;
+            } else {
+                result[i] = number++;
+            }
+        }
+
+        return result;
+    }
+
+    // S113.
+    // Solution in S84 Graph class member functions
+
+    // S114.
+    public static void checkSentences(String input) {
+        String[] sentences = input.split("(?<=[.?!‽])\\s+");
+
+        for (String sentence : sentences) {
+            if (isValidSentence(sentence)) {
+                System.out.println(sentence);
+            }
+        }
+    }
+
+    public static boolean isValidSentence(String sentence) {
+        // Check if sentence starts with a capital letter,
+        // and all other characters are lowercase letters, separators,
+        // and sentence ends with a terminal mark immediately following a word
+        if (!sentence.matches("^[A-Z][a-z\\s,:;.]*[a-z][.?!‽]$")) {
+            return false;
+        }
+
+        String pattern = "\\s{2,}";
+        Pattern regex = Pattern.compile(pattern);
+        Matcher matcher = regex.matcher(sentence);
+        // Check if there are two or more spaces between words
+        if (matcher.find()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    // S115.
+    public static boolean isPowerOfFour(int n) {
+        // Check if n is a power of two
+        if ((n & (n - 1)) != 0) {
+            return false;
+        }
+
+        // Check if the only set bit is at an even position
+        // n & 10101010 10101010 10101010 10101010
+        if ((n & 0xAAAAAAAA) != 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    // S116.
+    static class NetworkNode {
+        int id;
+        int time;
+
+        NetworkNode(int id, int time) {
+            this.id = id;
+            this.time = time;
+        }
+    }
+
+    public static int propagateMessage(int N, int[][] edges) {
+        List<List<NetworkNode>> graph = new ArrayList<>();
+        for (int i = 0; i <= N; i++) {
+            graph.add(new ArrayList<>());
+        }
+
+        for (int[] edge : edges) {
+            int a = edge[0];
+            int b = edge[1];
+            int t = edge[2];
+            graph.get(a).add(new NetworkNode(b, t));
+        }
+
+        int[] dist = new int[N + 1];
+        Arrays.fill(dist, Integer.MAX_VALUE);
+        dist[0] = 0;
+
+        PriorityQueue<NetworkNode> pq = new PriorityQueue<>(Comparator.comparingInt(node -> node.time));
+        pq.offer(new NetworkNode(0, 0));
+
+        while (!pq.isEmpty()) {
+            NetworkNode curr = pq.poll();
+            if (curr.time > dist[curr.id]) {
+                continue;
+            }
+
+            for (NetworkNode neighbor : graph.get(curr.id)) {
+                int newTime = curr.time + neighbor.time;
+                if (newTime < dist[neighbor.id]) {
+                    dist[neighbor.id] = newTime;
+                    pq.offer(new NetworkNode(neighbor.id, newTime));
+                }
+            }
+        }
+
+        int maxTime = 0;
+        for (int i = 0; i <= N; i++) {
+            maxTime = Math.max(maxTime, dist[i]);
+        }
+
+        return maxTime;
+    }
+
+    // S117.
+    public static int throw_dice(int N, int faces, int total) {
+        Map<String, Integer> memo = new HashMap<>();
+        return countWays(N, faces, total, memo);
+    }
+
+    private static int countWays(int N, int faces, int total, Map<String, Integer> memo) {
+        if (total < 0) {
+            return 0;
+        }
+        if (N == 0) {
+            return (total == 0) ? 1 : 0;
+        }
+        if (total == 0) {
+            return 0;
+        }
+
+        String key = N + ":" + total;
+        if (memo.containsKey(key)) {
+            return memo.get(key);
+        }
+
+        int ways = 0;
+        for (int face = 1; face <= faces; face++) {
+            ways += countWays(N - 1, faces, total - face, memo);
+        }
+
+        memo.put(key, ways);
+
+        return ways;
+    }
+
+    // S118.
+    public static String nthTerm(int N) {
+        if (N <= 0) {
+            return "";
+        }
+
+        if (N == 1) {
+            return "1";
+        }
+
+        String previousTerm = nthTerm(N - 1);
+        StringBuilder currentTerm = new StringBuilder();
+
+        char currentDigit = previousTerm.charAt(0);
+        int count = 1;
+
+        for (int i = 1; i < previousTerm.length(); i++) {
+            char digit = previousTerm.charAt(i);
+
+            if (digit == currentDigit) {
+                count++;
+            } else {
+                currentTerm.append(count).append(currentDigit);
+                currentDigit = digit;
+                count = 1;
+            }
+        }
+
+        currentTerm.append(count).append(currentDigit);
+
+        return currentTerm.toString();
+    }
+
+    // S119.
+    public static int stringMatch(String text, String pattern) {
+        int n = text.length();
+        int m = pattern.length();
+
+        int[] prefixTable = buildPrefixTable(pattern);
+
+        int i = 0;
+        int j = 0;
+
+        while (i < n) {
+            if (text.charAt(i) == pattern.charAt(j)) {
+                i++;
+                j++;
+
+                if (j == m) {
+                    return i - j;
+                }
+            } else if (j > 0) {
+                j = prefixTable[j - 1];
+            } else {
+                i++;
+            }
+        }
+
+        return -1;
+    }
+
+    private static int[] buildPrefixTable(String pattern) {
+        int m = pattern.length();
+        int[] prefixTable = new int[m];
+        int len = 0;
+
+        int i = 1;
+        while (i < m) {
+            if (pattern.charAt(i) == pattern.charAt(len)) {
+                len++;
+                prefixTable[i] = len;
+                i++;
+            } else {
+                if (len > 0) {
+                    len = prefixTable[len - 1];
+                } else {
+                    prefixTable[i] = len;
+                    i++;
+                }
+            }
+        }
+
+        return prefixTable;
+    }
+
+    // S120.
+    public static int fewestBricks(List<List<Integer>> wall) {
+        Map<Integer, Integer> frequencyMap = new HashMap<>();
+
+        for (List<Integer> row : wall) {
+            int sum = 0;
+            for (int i = 0; i < row.size() - 1; i++) {
+                sum += row.get(i);
+                frequencyMap.put(sum, frequencyMap.getOrDefault(sum, 0) + 1);
+            }
+        }
+
+        int maxFrequency = 0;
+        for (int frequency : frequencyMap.values()) {
+            maxFrequency = Math.max(maxFrequency, frequency);
+        }
+
+        int rowCount = wall.size();
+        return rowCount - maxFrequency;
     }
 
     public static void main(String[] args) {
@@ -6011,6 +6374,213 @@ public class QuestionsAndSolutions {
         System.out.println("Full Binary Tree:");
         printInorder(fullBinaryTree);
         System.out.println();
+
+        /*
+         * Q111.
+         * Given a linked list, rearrange the node values such that they appear in
+         * alternating low -> high -> low -> high ... form. For example, given 1 -> 2 ->
+         * 3 -> 4 -> 5, you should return 1 -> 3 -> 2 -> 5 -> 4.
+         */
+        System.out.println("========= Q111 ==========");
+        ListNode listToRearrange = new ListNode(1);
+        listToRearrange.next = new ListNode(2);
+        listToRearrange.next.next = new ListNode(3);
+        listToRearrange.next.next.next = new ListNode(4);
+        listToRearrange.next.next.next.next = new ListNode(5);
+
+        ListNode rearrangedList = rearrangeLinkedList(listToRearrange);
+
+        printLinkedList(rearrangedList);
+
+        /*
+         * Q112.
+         * The sequence [0, 1, ..., N] has been jumbled, and the only clue you have for
+         * its order is an array representing whether each number is larger or smaller
+         * than the last. Given this information, reconstruct an array that is
+         * consistent with it. For example, given [None, +, +, -, +], you could return
+         * [1, 2, 3, 0, 4].
+         */
+        System.out.println("========= Q112 ==========");
+        String[] clues = { "None", "+", "+", "-", "+" };
+        int[] reconstructedArray = reconstructArray(clues);
+
+        System.out.println("Reconstructed Array:");
+        for (int i = 0; i < reconstructedArray.length; i++) {
+            System.out.print(reconstructedArray[i] + " ");
+        }
+        System.out.println();
+
+        /*
+         * Q113.
+         * A bridge in a connected (undirected) graph is an edge that, if removed,
+         * causes the graph to become disconnected. Find all the bridges in a graph.
+         */
+        System.out.println("========= Q113 ==========");
+        int V = 5;
+        Graph bridgeGraph = new Graph(V);
+        bridgeGraph.addEdge(0, 1);
+        bridgeGraph.addEdge(1, 2);
+        bridgeGraph.addEdge(2, 0);
+        bridgeGraph.addEdge(1, 3);
+        bridgeGraph.addEdge(3, 4);
+
+        List<int[]> bridges = bridgeGraph.findBridges();
+        for (int[] bridge : bridges) {
+            System.out.println(bridge[0] + " - " + bridge[1]);
+        }
+
+        /*
+         * Q114.
+         * Create a basic sentence checker that takes in a stream of characters and
+         * determines whether they form valid sentences. If a sentence is valid, the
+         * program should print it out.
+         * We can consider a sentence valid if it conforms to the following rules:
+         * The sentence must start with a capital letter, followed by a lowercase letter
+         * or a space.
+         * All other characters must be lowercase letters, separators (,,;,:) or
+         * terminal marks (.,?,!,‽).
+         * There must be a single space between each word.
+         * The sentence must end with a terminal mark immediately following a word.
+         */
+        System.out.println("========= Q114 ==========");
+        String sentenceToCheck = "This is a valid sentence. Another valid sentence? No? Invalid! Two   more spaces. This is, ,an invalid sentence";
+        checkSentences(sentenceToCheck);
+
+        /*
+         * Q115.
+         * Given a 32-bit positive integer N, determine whether it is a power of four in
+         * faster than O(log N) time.
+         */
+        System.out.println("========= Q115 ==========");
+        int powerOfFour = 256; // 00000000 00000000 00000001 00000000
+        boolean isPowerOfFour = isPowerOfFour(powerOfFour);
+        System.out.println(powerOfFour + " is a power of four: " + isPowerOfFour);
+
+        int notPowerOfFour = 128; // 00000000 00000000 00000000 10000000
+        isPowerOfFour = isPowerOfFour(notPowerOfFour);
+        System.out.println(notPowerOfFour + " is a power of four: " + isPowerOfFour);
+
+        /*
+         * Q116.
+         * A network consists of nodes labeled 0 to N. You are given a list of edges (a,
+         * b, t), describing the time t it takes for a message to be sent from node a to
+         * node b. Whenever a node receives a message, it immediately passes the message
+         * on to a neighboring node, if possible.
+         * Assuming all nodes are connected, determine how long it will take for every
+         * node to receive a message that begins at node 0.
+         * For example, given N = 5, and the following edges:
+         * " edges = [         "
+         * "     (0, 1, 5),    "
+         * "     (0, 2, 3),    "
+         * "     (0, 5, 4),    "
+         * "     (1, 3, 8),    "
+         * "     (2, 3, 1),    "
+         * "     (3, 5, 10),   "
+         * "     (3, 4, 5)     "
+         * " ]                 "
+         * You should return 9, because propagating the message from 0 -> 2 -> 3 -> 4
+         * will take that much time.
+         */
+        System.out.println("========= Q116 ==========");
+        int numNodes = 5;
+        int[][] edges = {
+                { 0, 1, 5 },
+                { 0, 2, 3 },
+                { 0, 5, 4 },
+                { 1, 3, 8 },
+                { 2, 3, 1 },
+                { 3, 5, 10 },
+                { 3, 4, 5 }
+        };
+
+        int leadTime = propagateMessage(numNodes, edges);
+        System.out.println("Time taken for every node to receive the message: " + leadTime);
+
+        /*
+         * Q117.
+         * Write a function, throw_dice(N, faces, total), that determines how many ways
+         * it is possible to throw N dice with some number of faces each to get a
+         * specific total.
+         * For example, throw_dice(3, 6, 7) should equal 15.
+         */
+        System.out.println("========= Q117 ==========");
+        int numDices = 3;
+        int faces = 6;
+        int total = 7;
+        int waysToGetTarget = throw_dice(numDices, faces, total);
+        System.out.println("Number of ways: " + waysToGetTarget);
+
+        /*
+         * Q118.
+         * The "look and say" sequence is defined as follows: beginning with the term 1,
+         * each subsequent term visually describes the digits appearing in the previous
+         * term. The first few terms are as follows:
+         * 1
+         * 11
+         * 21
+         * 1211
+         * 111221
+         * As an example, the fourth term is 1211, since the third term consists of one
+         * 2 and one 1.
+         * Given an integer N, print the Nth term of this sequence.
+         */
+        System.out.println("========= Q118 ==========");
+        int term = 5;
+        String nthTerm = nthTerm(term);
+        System.out.println("Nth term of the 'look and say' sequence for N = " + term + ": " + nthTerm);
+
+        /*
+         * Q119.
+         * Implement an efficient string matching algorithm.
+         * That is, given a string of length N and a pattern of length k, write a
+         * program that searches for the pattern in the string with less than O(N * k)
+         * worst-case time complexity.
+         * If the pattern is found, return the start index of its location. If not,
+         * return False.
+         */
+        System.out.println("========= Q119 ==========");
+        String text = "ababcababcabc";
+        String patternToFind = "abcabc";
+
+        int indexFound = stringMatch(text, patternToFind);
+
+        if (indexFound != -1) {
+            System.out.println("Pattern found at index " + indexFound);
+        } else {
+            System.out.println("Pattern not found");
+        }
+
+        /*
+         * Q120.
+         * A wall consists of several rows of bricks of various integer lengths and
+         * uniform height. Your goal is to find a vertical line going from the top to
+         * the bottom of the wall that cuts through the fewest number of bricks. If the
+         * line goes through the edge between two bricks, this does not count as a cut.
+         * For example, suppose the input is as follows, where values in each row
+         * represent the lengths of bricks in that row:
+         * " [[3, 5, 1, 1],    "
+         * "  [2, 3, 3, 2],    "
+         * "  [5, 5],          "
+         * "  [4, 4, 2],       "
+         * "  [1, 3, 3, 3],    "
+         * "  [1, 1, 6, 1, 1]] "
+         * The best we can we do here is to draw a line after the eighth brick, which
+         * will only require cutting through the bricks in the third and fifth row.
+         * Given an input consisting of brick lengths for each row such as the one
+         * above, return the fewest number of bricks that must be cut to create a
+         * vertical line.
+         */
+        System.out.println("========= Q120 ==========");
+        List<List<Integer>> wall = new ArrayList<>();
+        wall.add(Arrays.asList(3, 5, 1, 1));
+        wall.add(Arrays.asList(2, 3, 3, 2));
+        wall.add(Arrays.asList(5, 5));
+        wall.add(Arrays.asList(4, 4, 2));
+        wall.add(Arrays.asList(1, 3, 3, 3));
+        wall.add(Arrays.asList(1, 1, 6, 1, 1));
+
+        int fewestCuts = fewestBricks(wall);
+        System.out.println("Fewest number of bricks to be cut: " + fewestCuts);
 
     }
 }
