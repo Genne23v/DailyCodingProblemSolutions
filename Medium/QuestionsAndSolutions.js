@@ -6549,7 +6549,7 @@ function fewestBricks(wall) {
             frequencyMap.set(sum, (frequencyMap.get(sum) || 0) + 1);
         }
     }
-    console.log(frequencyMap);
+
     let maxFrequency = 0;
     for (const frequency of frequencyMap.values()) {
         maxFrequency = Math.max(maxFrequency, frequency);
@@ -6571,3 +6571,690 @@ const wall = [
 console.log(`Fewest number of bricks to cut: ${fewestBricks(wall)}`);
 console.log('\n');
 
+/*
+ * Q121.
+ * Two nodes in a binary tree can be called cousins if they are on the same
+ * level of the tree but have different parents. For example, in the following
+ * diagram 4 and 6 are cousins.
+ * "     1     "
+ * "    / \    "
+ * "   2   3   "
+ * "  / \   \  "
+ * " 4   5   6 "
+ * Given a binary tree and a particular node, find all cousins of that node.
+ */
+function findCousins(root, target) {
+    let parentMap = new Map();
+    let levelMap = new Map();
+    let targetLevel = -1;
+    let targetParent = -1;
+
+    dfsToGetParentAndLevel(root, null, 0, parentMap, levelMap);
+
+    for (const [node, value] of levelMap.entries()) {
+        if (node.val === target) {
+            targetLevel = value;
+            targetParent = parentMap.get(node);
+            break;
+        }
+    }
+
+    let cousins = [];
+
+    for (const [node, value] of levelMap.entries()) {
+        const temp = node;
+        const level = value;
+        const parent = parentMap.get(temp);
+
+        if (level === targetLevel && parent !== targetParent) {
+            cousins.push(node.val);
+        }
+    }
+
+    return cousins;
+}
+
+function dfsToGetParentAndLevel(node, parent, level, parentMap, levelMap) {
+    if (node === null) {
+        return;
+    }
+
+    parentMap.set(node, parent);
+    levelMap.set(node, level);
+
+    if (node === target) {
+        targetLevel = levelMap.get(node);
+        targetParent = parentMap.get(node);
+    }
+
+    dfsToGetParentAndLevel(node.left, node, level + 1, parentMap, levelMap);
+    dfsToGetParentAndLevel(node.right, node, level + 1, parentMap, levelMap);
+}
+
+console.log('========= Q121 =========');
+const treeToFindCousins = new TreeNode(1);
+treeToFindCousins.left = new TreeNode(2);
+treeToFindCousins.right = new TreeNode(3);
+treeToFindCousins.left.left = new TreeNode(4);
+treeToFindCousins.left.right = new TreeNode(5);
+treeToFindCousins.right.right = new TreeNode(6);
+
+const targetNode = 5;
+console.log(
+    `Cousins of ${targetNode}: ${findCousins(treeToFindCousins, targetNode)}`
+);
+console.log('\n');
+
+/*
+ * Q122.
+ * You are given an array representing the heights of neighboring buildings on a
+ * city street, from east to west. The city assessor would like you to write an
+ * algorithm that returns how many of these buildings have a view of the setting
+ * sun, in order to properly value the street.
+ * For example, given the array [3, 7, 8, 3, 6, 1], you should return 3, since
+ * the top floors of the buildings with heights 8, 6, and 1 all have an
+ * unobstructed view to the west.
+ * Can you do this using just one forward pass through the array?
+ */
+function getBuildingsWithSunsetView(heights) {
+    let count = 0;
+    let maxSoFar = 0;
+
+    for (let i = heights.length - 1; i >= 0; i--) {
+        if (heights[i] > maxSoFar) {
+            maxSoFar = heights[i];
+            count++;
+        }
+    }
+
+    return count;
+}
+
+console.log('========= Q122 =========');
+const heights = [3, 7, 8, 3, 6, 1];
+console.log(
+    `Buildings with sunset view: ${getBuildingsWithSunsetView(heights)}`
+);
+console.log('\n');
+
+/*
+ * Q123.
+ * You are given a list of (website, user) pairs that represent users visiting
+ * websites. Come up with a program that identifies the top k pairs of websites
+ * with the greatest similarity.
+ * For example, suppose k = 1, and the list of tuples is:
+ * " [('a', 1), ('a', 3), ('a', 5),                        "
+ * "  ('b', 2), ('b', 6),                                  "
+ * "  ('c', 1), ('c', 2), ('c', 3), ('c', 4), ('c', 5)     "
+ * "  ('d', 4), ('d', 5), ('d', 6), ('d', 7),              "
+ * "  ('e', 1), ('e', 3), ('e': 5), ('e', 6)]              "
+ * Then a reasonable similarity metric would most likely conclude that a and e
+ * are the most similar, so your program should return [('a', 'e')].
+ */
+class WebsiteAndUser {
+    constructor(website, user) {
+        this._website = website;
+        this._user = user;
+    }
+
+    get website() {
+        return this._website;
+    }
+
+    get user() {
+        return this._user;
+    }
+}
+
+function findTopSimilarPairs(pairs, k) {
+    let userMap = new Map();
+    let similarityMap = new Map();
+    let result = [];
+
+    for (const pair of pairs) {
+        const website = pair.website;
+        const user = pair.user;
+
+        if (!userMap.has(website)) {
+            userMap.set(website, new Set());
+        }
+        userMap.get(website).add(user);
+    }
+
+    for (const pair of pairs) {
+        const website1 = pair.website;
+
+        for (const website2 of userMap.keys()) {
+            if (website1 !== website2) {
+                const users1 = userMap.get(website1);
+                const users2 = userMap.get(website2);
+
+                const similarity = computeSimilarity(users1, users2);
+                const websitePair = `${website1}, ${website2}`;
+                similarityMap.set(websitePair, similarity);
+            }
+        }
+    }
+
+    let sortedPairs = [...similarityMap.entries()].sort((a, b) => b[1] - a[1]);
+
+    for (let i = 0; i < Math.min(k, sortedPairs.length); i++) {
+        result.push(sortedPairs[i][0]);
+    }
+
+    return result;
+}
+
+function computeSimilarity(users1, users2) {
+    const intersection = new Set([...users1].filter((x) => users2.has(x)));
+    return intersection.size / Math.sqrt(users1.size * users2.size);
+}
+
+console.log('========= Q123 =========');
+let websiteAndUser = [];
+websiteAndUser.push(new WebsiteAndUser('a', 1));
+websiteAndUser.push(new WebsiteAndUser('a', 3));
+websiteAndUser.push(new WebsiteAndUser('a', 5));
+websiteAndUser.push(new WebsiteAndUser('b', 2));
+websiteAndUser.push(new WebsiteAndUser('b', 6));
+websiteAndUser.push(new WebsiteAndUser('c', 1));
+websiteAndUser.push(new WebsiteAndUser('c', 2));
+websiteAndUser.push(new WebsiteAndUser('c', 3));
+websiteAndUser.push(new WebsiteAndUser('c', 4));
+websiteAndUser.push(new WebsiteAndUser('c', 5));
+websiteAndUser.push(new WebsiteAndUser('d', 4));
+websiteAndUser.push(new WebsiteAndUser('d', 5));
+websiteAndUser.push(new WebsiteAndUser('d', 6));
+websiteAndUser.push(new WebsiteAndUser('d', 7));
+websiteAndUser.push(new WebsiteAndUser('e', 1));
+websiteAndUser.push(new WebsiteAndUser('e', 3));
+websiteAndUser.push(new WebsiteAndUser('e', 5));
+websiteAndUser.push(new WebsiteAndUser('e', 6));
+
+const topPairs = 1;
+const topSimilarPairs = findTopSimilarPairs(websiteAndUser, topPairs);
+console.log(`Top ${topPairs} similar pairs: ${topSimilarPairs}`);
+console.log('\n');
+
+/*
+ * Q124.
+ * The number 6174 is known as Kaprekar's contant, after the mathematician who
+ * discovered an associated property: for all four-digit numbers with at least
+ * two distinct digits, repeatedly applying a simple procedure eventually
+ * results in this value. The procedure is as follows:
+ * For a given input x, create two new numbers that consist of the digits in x
+ * in ascending and descending order.
+ * Subtract the smaller number from the larger number.
+ * For example, this algorithm terminates in three steps when starting from
+ * 1234:
+ * 4321 - 1234 = 3087
+ * 8730 - 0378 = 8352
+ * 8532 - 2358 = 6174
+ * Write a function that returns how many steps this will take for a given input
+ * N.
+ */
+function kaprekarSteps(N) {
+    if (N === 6174) {
+        return 0;
+    } else {
+        const ascending = getAscending(N);
+        const descending = getDescending(N);
+        const result = descending - ascending;
+        return 1 + kaprekarSteps(result);
+    }
+}
+
+function getAscending(num) {
+    let digits = num.toString().split('');
+    digits.sort();
+    return parseInt(digits.join(''));
+}
+
+function getDescending(num) {
+    let digits = num.toString().split('');
+    digits.sort();
+    return parseInt(digits.reverse().join(''));
+}
+
+console.log('========= Q124 =========');
+const startingNum = 1234;
+const stepsToKaprekar = kaprekarSteps(startingNum);
+console.log(`Number of steps for ${startingNum}: ${stepsToKaprekar}`);
+console.log('\n');
+
+/*
+ * Q125.
+ * An imminent hurricane threatens the coastal town of Codeville. If at most two
+ * people can fit in a rescue boat, and the maximum weight limit for a given
+ * boat is k, determine how many boats will be needed to save everyone.
+ * For example, given a population with weights [100, 200, 150, 80] and a boat
+ * limit of 200, the smallest number of boats required will be three.
+ */
+function minimumRescueBoats(weights, limit) {
+    weights.sort();
+    let boats = 0;
+    let left = 0;
+    let right = weights.length - 1;
+
+    while (left <= right) {
+        if (weights[left] + weights[right] <= limit) {
+            left++;
+            right--;
+        } else {
+            right--;
+        }
+
+        boats++;
+    }
+
+    return boats;
+}
+
+console.log('========= Q125 =========');
+const weights = [100, 200, 150, 80];
+const limit = 200;
+const boats = minimumRescueBoats(weights, limit);
+console.log(`Number of boats needed: ${boats}`);
+console.log('\n');
+
+/*
+ * Q126.
+ * A competitive runner would like to create a route that starts and ends at his
+ * house, with the condition that the route goes entirely uphill at first, and
+ * then entirely downhill.
+ * Given a dictionary of places of the form {location: elevation}, and a
+ * dictionary mapping paths between some of these locations to their
+ * corresponding distances, find the length of the shortest route satisfying the
+ * condition above. Assume the runner's home is location 0.
+ * For example, suppose you are given the following input:
+ * elevations = {0: 5, 1: 25, 2: 15, 3: 20, 4: 10}
+ * " paths = {         "
+ * "     (0, 1): 10,   "
+ * "     (0, 2): 8,    "
+ * "     (0, 3): 15,   "
+ * "     (1, 3): 12,   "
+ * "     (2, 4): 10,   "
+ * "     (3, 4): 5,    "
+ * "     (3, 0): 17,   "
+ * "     (4, 0): 10    "
+ * " }                 "
+ * In this case, the shortest valid path would be 0 -> 2 -> 4 -> 0, with a
+ * distance of 28.
+ */
+function shortestUphillDownhillRoute(elevations, paths) {
+    const home = 0;
+    const n = elevations.size;
+
+    let uphillGraph = new Map();
+    for (const [key, value] of paths.entries()) {
+        const pair = key;
+        const from = pair.first;
+        const to = pair.second;
+
+        if (elevations.get(from) < elevations.get(to)) {
+            if (!uphillGraph.has(from)) {
+                uphillGraph.set(from, []);
+            }
+            uphillGraph.get(from).push(pair);
+        }
+    }
+
+    let uphillDistances = new Array(n).fill(Number.MAX_SAFE_INTEGER);
+    uphillDistances[home] = 0;
+
+    let uphillQueue = [];
+    uphillQueue.push(new Pair(home, home));
+
+    while (uphillQueue.length > 0) {
+        const current = uphillQueue.shift();
+        const from = current.first;
+        const to = current.second;
+
+        if (uphillDistances[to] < uphillDistances[from]) {
+            continue;
+        }
+
+        const neighbours = uphillGraph.get(to) ? uphillGraph.get(to) : [];
+        for (const neighbour of neighbours) {
+            const newDistance = uphillDistances[to] + paths.get(neighbour);
+            if (newDistance < uphillDistances[neighbour.second]) {
+                uphillDistances[neighbour.second] = newDistance;
+                uphillQueue.push(neighbour);
+            }
+        }
+    }
+
+    let downhillGraph = new Map();
+    for (const [key, value] of paths.entries()) {
+        const pair = key;
+        const from = pair.first;
+        const to = pair.second;
+
+        if (elevations.get(from) > elevations.get(to)) {
+            if (!downhillGraph.has(from)) {
+                downhillGraph.set(from, []);
+            }
+            downhillGraph.get(from).push(pair);
+        }
+    }
+
+    let downhillDistances = new Array(n).fill(Number.MAX_SAFE_INTEGER);
+    downhillDistances[home] = 0;
+
+    const locationsFromHome = uphillGraph.get(home);
+    for (const location of locationsFromHome) {
+        let dowhillQueue = [];
+        dowhillQueue.push(location);
+        let distance = 0;
+
+        while (dowhillQueue.length > 0) {
+            const current = dowhillQueue.shift();
+            let from = current.first;
+            let to = current.second;
+
+            for (const [key, value] of paths.entries()) {
+                if (key.first === to) {
+                    distance += value;
+                    from = key.first;
+                    to = key.second;
+
+                    if (to === home) {
+                        downhillDistances[location.second] = Math.min(
+                            downhillDistances[location.second],
+                            distance
+                        );
+                    } else {
+                        dowhillQueue.push(key);
+                    }
+                }
+            }
+        }
+    }
+
+    let totalDistances = new Array(n).fill(Number.MAX_SAFE_INTEGER);
+    totalDistances[home] = Number.MAX_SAFE_INTEGER;
+    for (let i = 1; i < n; i++) {
+        if (
+            uphillDistances[i] !== Number.MAX_SAFE_INTEGER &&
+            downhillDistances[i] !== Number.MAX_SAFE_INTEGER
+        ) {
+            totalDistances[i] = uphillDistances[i] + downhillDistances[i];
+        } else {
+            totalDistances[i] = Number.MAX_SAFE_INTEGER;
+        }
+    }
+
+    let shortestDistance = Number.MAX_SAFE_INTEGER;
+    for (let i = 0; i < n; i++) {
+        if (totalDistances[i] < shortestDistance) {
+            shortestDistance = totalDistances[i];
+        }
+    }
+
+    return shortestDistance;
+}
+
+console.log('========= Q126 =========');
+const elevations = new Map();
+elevations.set(0, 5);
+elevations.set(1, 25);
+elevations.set(2, 15);
+elevations.set(3, 20);
+elevations.set(4, 10);
+
+const availablePaths = new Map();
+availablePaths.set(new Pair(0, 1), 10);
+availablePaths.set(new Pair(0, 2), 8);
+availablePaths.set(new Pair(0, 3), 15);
+availablePaths.set(new Pair(1, 3), 12);
+availablePaths.set(new Pair(2, 4), 10);
+availablePaths.set(new Pair(3, 4), 5);
+availablePaths.set(new Pair(3, 0), 17);
+availablePaths.set(new Pair(4, 0), 10);
+
+const shortestRoute = shortestUphillDownhillRoute(elevations, availablePaths);
+console.log(`Shortest route distance: ${shortestRoute}`);
+console.log('\n');
+
+/*
+ * Q127.
+ * Pascal's triangle is a triangular array of integers constructed with the
+ * following formula:
+ * The first row consists of the number 1.
+ * For each subsequent row, each element is the sum of the numbers directly
+ * above it, on either side.
+ * For example, here are the first few rows:
+ * "     1     "
+ * "    1 1    "
+ * "   1 2 1   "
+ * "  1 3 3 1  "
+ * " 1 4 6 4 1 "
+ * Given an input k, return the kth row of Pascal's triangle.
+ * Bonus: Can you do this using only O(k) space?
+ */
+function getRow(k) {
+    let row = [];
+    if (k < 0) {
+        return row;
+    }
+
+    row.push(1);
+    for (let i = 1; i <= k; i++) {
+        for (let j = row.length - 2; j >= 0; j--) {
+            row[j + 1] = row[j] + row[j + 1];
+        }
+        row.push(1);
+    }
+
+    return row;
+}
+
+console.log('========= Q127 =========');
+const kthRow = 4;
+const row = getRow(kthRow);
+console.log(`Row ${kthRow}: ${row}`);
+console.log('\n');
+
+/*
+ * Q128.
+ * At a popular bar, each customer has a set of favorite drinks, and will
+ * happily accept any drink among this set. For example, in the following
+ * situation, customer 0 will be satisfied with drinks 0, 1, 3, or 6.
+ * " preferences = {       "
+ * "     0: [0, 1, 3, 6],  "
+ * "     1: [1, 4, 7],     "
+ * "     2: [2, 4, 7, 5],  "
+ * "     3: [3, 2, 5],     "
+ * "     4: [5, 8]         "
+ * " }                     "
+ * A lazy bartender working at this bar is trying to reduce his effort by
+ * limiting the drink recipes he must memorize. Given a dictionary input such as
+ * the one above, return the fewest number of drinks he must learn in order to
+ * satisfy all customers.
+ * For the input above, the answer would be 2, as drinks 1 and 5 will satisfy
+ * everyone.
+ */
+function fewestDrinksToSatisfyCustomers(preferences) {
+    let commonDrinks = [];
+    let commonDrinksCount = 0;
+
+    for (let customerPreference of preferences.values()) {
+        if (commonDrinks.length === 0) {
+            customerPreference.forEach((drink) => commonDrinks.push(drink));
+        } else {
+            if (
+                commonDrinks.some((element) =>
+                    customerPreference.includes(element)
+                )
+            ) {
+                commonDrinks = commonDrinks.filter((element) =>
+                    customerPreference.includes(element)
+                );
+            } else {
+                commonDrinksCount++;
+                commonDrinks = [];
+                customerPreference.forEach((drink) => commonDrinks.push(drink));
+            }
+        }
+    }
+
+    return commonDrinksCount + commonDrinks.length;
+}
+
+console.log('========= Q128 =========');
+const preferences = new Map();
+preferences.set(0, [0, 1, 3, 6]);
+preferences.set(1, [1, 4, 7]);
+preferences.set(2, [2, 4, 7, 5]);
+preferences.set(3, [3, 2, 5]);
+preferences.set(4, [5, 8]);
+
+const minDrinks = fewestDrinksToSatisfyCustomers(preferences);
+console.log(`Fewest number of drinks: ${minDrinks}`);
+console.log('\n');
+
+/*
+ * Q129.
+ * A group of houses is connected to the main water plant by means of a set of
+ * pipes. A house can either be connected by a set of pipes extending directly
+ * to the plant, or indirectly by a pipe to a nearby house which is otherwise
+ * connected.
+ * For example, here is a possible configuration, where A, B, and C are houses,
+ * and arrows represent pipes:
+ * A <--> B <--> C <--> plant
+ * Each pipe has an associated cost, which the utility company would like to
+ * minimize. Given an undirected graph of pipe connections, return the lowest
+ * cost configuration of pipes such that each house has access to water.
+ * In the following setup, for example, we can remove all but the pipes from
+ * plant to A, plant to B, and B to C, for a total cost of 16.
+ * " pipes = {                                 "
+ * "     'plant': {'A': 1, 'B': 5, 'C': 20},   "
+ * "     'A': {'C': 15},                       "
+ * "     'B': {'C': 10},                       "
+ * "     'C': {}                               "
+ * " }                                         "
+ */
+class Edge {
+    constructor(from, to, cost) {
+        this.from = from;
+        this.to = to;
+        this.cost = cost;
+    }
+}
+
+function minimumCostConfiguration(pipes) {
+    let visited = new Set();
+    let minHeap = [];
+
+    let initialVertex = 'plant';
+    visited.add(initialVertex);
+
+    let initialConnections = pipes.get(initialVertex);
+    for (const [key, value] of initialConnections) {
+        const neighbour = key;
+        const cost = value;
+        minHeap.push(new Edge(initialVertex, neighbour, cost));
+        minHeap.sort((a, b) => a.cost - b.cost);
+    }
+
+    let totalCost = 0;
+
+    while (minHeap.length > 0) {
+        const edge = minHeap.shift();
+        const from = edge.from;
+        const to = edge.to;
+        const cost = edge.cost;
+
+        if (visited.has(to)) {
+            continue;
+        }
+
+        visited.add(to);
+        totalCost += cost;
+
+        const connnections = pipes.get(to);
+        for (const [key, value] of connnections) {
+            const neighbour = key;
+            const cost = value;
+            minHeap.push(new Edge(to, neighbour, cost));
+            minHeap.sort((a, b) => a.cost - b.cost);
+        }
+    }
+
+    return totalCost;
+}
+
+console.log('========= Q129 =========');
+const pipes = new Map();
+pipes.set(
+    'plant',
+    new Map([
+        ['A', 1],
+        ['B', 5],
+        ['C', 20],
+    ])
+);
+pipes.set('A', new Map([['C', 15]]));
+pipes.set('B', new Map([['C', 10]]));
+pipes.set('C', new Map());
+
+const minimumCost = minimumCostConfiguration(pipes);
+console.log(`Minimum cost: ${minimumCost}`);
+console.log('\n');
+
+/*
+ * Q130.
+ * Implement a data structure which carries out the following operations without
+ * resizing the underlying array:
+ * add(value): Add a value to the set of values.
+ * check(value): Check whether a value is in the set.
+ * The check method may return occasional false positives (in other words,
+ * incorrectly identifying an element as part of the set), but should always
+ * correctly identify a true element.
+ */
+class BloomFilter {
+    #_bitSet;
+    #_size;
+    #_hashSeeds;
+
+    constructor(size) {
+        this.#_size = size;
+        this.#_bitSet = new Array(size).fill(false);
+        this.#_hashSeeds = [3, 5, 7, 11, 13];
+    }
+
+    add(value) {
+        for (const seed of this.#_hashSeeds) {
+            const hash = this.computeHash(value, seed);
+            this.#_bitSet[hash % this.#_size] = true;
+        }
+    }
+
+    check(value) {
+        for (const seed of this.#_hashSeeds) {
+            const hash = this.computeHash(value, seed);
+            if (!this.#_bitSet[hash % this.#_size]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    computeHash(value, seed) {
+        Math.random();
+        return seed ^ value;
+    }
+}
+
+console.log('========= Q130 =========');
+const filter = new BloomFilter(1000);
+
+filter.add(10);
+filter.add(20);
+filter.add(30);
+
+console.log(`Check 10: ${filter.check(10)}`); // true
+console.log(`Check 20: ${filter.check(20)}`); // true
+console.log(`Check 30: ${filter.check(30)}`); // true
+console.log(`Check 40: ${filter.check(40)}`); // false
+console.log('\n');

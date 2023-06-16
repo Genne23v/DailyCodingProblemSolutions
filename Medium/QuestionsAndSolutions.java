@@ -1,6 +1,7 @@
 package Medium;
 
 import java.util.Random;
+import java.util.BitSet;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.Collections;
 import java.util.EmptyStackException;
 import java.util.NoSuchElementException;
 
@@ -84,6 +86,15 @@ public class QuestionsAndSolutions {
         }
 
         public B cdr() {
+            return second;
+        }
+
+        // S126.
+        public A getFirst() {
+            return first;
+        }
+
+        public B getSecond() {
             return second;
         }
     }
@@ -4027,6 +4038,413 @@ public class QuestionsAndSolutions {
         return rowCount - maxFrequency;
     }
 
+    // S121.
+    public static List<Integer> findCousins(TreeNode<Integer> root, int target) {
+        Map<Integer, Integer> parentMap = new HashMap<>();
+        Map<Integer, Integer> levelMap = new HashMap<>();
+        int targetLevel = -1;
+        int targetParent = -1;
+
+        dfs(root, null, 0, parentMap, levelMap);
+
+        for (Map.Entry<Integer, Integer> entry : levelMap.entrySet()) {
+            if (entry.getKey() == target) {
+                targetLevel = entry.getValue();
+                targetParent = parentMap.get(target);
+                break;
+            }
+        }
+
+        List<Integer> cousins = new ArrayList<>();
+
+        for (Map.Entry<Integer, Integer> entry : levelMap.entrySet()) {
+            int node = entry.getKey();
+            int level = entry.getValue();
+            int parent = parentMap.get(node);
+
+            if (level == targetLevel && parent != targetParent) {
+                cousins.add(node);
+            }
+        }
+
+        return cousins;
+    }
+
+    private static void dfs(TreeNode<Integer> node, TreeNode<Integer> parent, int level,
+            Map<Integer, Integer> parentMap,
+            Map<Integer, Integer> levelMap) {
+        if (node == null) {
+            return;
+        }
+
+        parentMap.put(node.val, parent != null ? parent.val : -1);
+        levelMap.put(node.val, level);
+
+        dfs(node.left, node, level + 1, parentMap, levelMap);
+        dfs(node.right, node, level + 1, parentMap, levelMap);
+    }
+
+    // S122.
+    public static int countBuildingsWithSunsetView(int[] heights) {
+        int count = 0;
+        int maxSoFar = 0;
+
+        for (int i = heights.length - 1; i >= 0; i--) {
+            if (heights[i] > maxSoFar) {
+                maxSoFar = heights[i];
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    // S123.
+    static class WebsiteAndUser {
+        private String website;
+        private int user;
+
+        public WebsiteAndUser(String website, int user) {
+            this.website = website;
+            this.user = user;
+        }
+
+        public String getWebsite() {
+            return website;
+        }
+
+        public int getUser() {
+            return user;
+        }
+
+        @Override
+        public String toString() {
+            return "(" + website + ", " + user + ")";
+        }
+    }
+
+    public static List<String> findTopSimilarPairs(List<WebsiteAndUser> pairs, int k) {
+        Map<String, Set<Integer>> userMap = new HashMap<>();
+        Map<String, Double> similarityMap = new HashMap<>();
+        List<String> result = new ArrayList<>();
+
+        for (WebsiteAndUser pair : pairs) {
+            String website = pair.getWebsite();
+            int user = pair.getUser();
+            userMap.computeIfAbsent(website, w -> new HashSet<>()).add(user);
+        }
+
+        for (WebsiteAndUser pair : pairs) {
+            String website1 = pair.getWebsite();
+
+            for (String website2 : userMap.keySet()) {
+                if (!website1.equals(website2)) {
+                    Set<Integer> users1 = userMap.get(website1);
+                    Set<Integer> users2 = userMap.get(website2);
+
+                    double similarity = computeSimilarity(users1, users2);
+                    String websitePair = website1 + ", " + website2;
+                    similarityMap.put(websitePair, similarity);
+                }
+            }
+        }
+
+        List<Map.Entry<String, Double>> sortedPairs = new ArrayList<>(similarityMap.entrySet());
+        sortedPairs.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
+
+        for (int i = 0; i < Math.min(k, sortedPairs.size()); i++) {
+            result.add(sortedPairs.get(i).getKey());
+        }
+
+        return result;
+    }
+
+    private static Double computeSimilarity(Set<Integer> users1, Set<Integer> users2) {
+        Set<Integer> intersection = new HashSet<>(users1);
+        intersection.retainAll(users2);
+        return intersection.size() / Math.sqrt(users1.size() * users2.size());
+    }
+
+    // S124.
+    public static int kaprekarSteps(int N) {
+        if (N == 6174) {
+            return 0;
+        } else {
+            int ascending = getAscending(N);
+            int descending = getDescending(N);
+            int result = descending - ascending;
+            return 1 + kaprekarSteps(result);
+        }
+    }
+
+    private static int getAscending(int num) {
+        char[] digits = String.format("%04d", num).toCharArray();
+        Arrays.sort(digits);
+        return Integer.parseInt(new String(digits));
+    }
+
+    private static int getDescending(int num) {
+        char[] digits = String.format("%04d", num).toCharArray();
+        Arrays.sort(digits);
+        return Integer.parseInt(new StringBuilder(new String(digits)).reverse().toString());
+    }
+
+    // S125.
+    public static int minimumRescueBoats(int[] weights, int limit) {
+        Arrays.sort(weights);
+        int boats = 0;
+        int left = 0;
+        int right = weights.length - 1;
+
+        while (left <= right) {
+            if (weights[left] + weights[right] <= limit) {
+                left++;
+                right--;
+            } else {
+                right--;
+            }
+            boats++;
+        }
+
+        return boats;
+    }
+
+    // S126.
+    public static int shortestUphillDownhillRoute(Map<Integer, Integer> elevations,
+            Map<Pair<Integer, Integer>, Integer> paths) {
+        int home = 0;
+        int n = elevations.size();
+
+        Map<Integer, List<Pair<Integer, Integer>>> uphillGraph = new HashMap<>();
+        for (Map.Entry<Pair<Integer, Integer>, Integer> entry : paths.entrySet()) {
+            Pair<Integer, Integer> pair = entry.getKey();
+            int from = pair.getFirst();
+            int to = pair.getSecond();
+            int distance = entry.getValue();
+
+            if (elevations.get(from) < elevations.get(to)) {
+                uphillGraph.putIfAbsent(from, new ArrayList<>());
+                uphillGraph.get(from).add(pair);
+            }
+        }
+
+        // Run Dijkstra's algorithm to find shortest uphill distances
+        int[] uphillDistances = new int[n];
+        Arrays.fill(uphillDistances, Integer.MAX_VALUE);
+        uphillDistances[home] = 0;
+
+        PriorityQueue<Pair<Integer, Integer>> uphillQueue = new PriorityQueue<>(
+                Comparator.comparingInt(p -> uphillDistances[p.getSecond()]));
+        uphillQueue.offer(new Pair(home, home));
+
+        while (!uphillQueue.isEmpty()) {
+            Pair<Integer, Integer> current = uphillQueue.poll();
+            int from = current.getFirst();
+            int to = current.getSecond();
+
+            if (uphillDistances[to] < uphillDistances[from]) {
+                continue;
+            }
+
+            List<Pair<Integer, Integer>> neighbors = uphillGraph.getOrDefault(to, new ArrayList<>());
+
+            for (Pair<Integer, Integer> neighbor : neighbors) {
+                int newDistance = uphillDistances[to] + paths.get(neighbor);
+                if (newDistance < uphillDistances[neighbor.getSecond()]) {
+                    uphillDistances[neighbor.getSecond()] = newDistance;
+                    uphillQueue.offer(neighbor);
+                }
+            }
+        }
+
+        int[] downhillDistances = new int[n];
+        Arrays.fill(downhillDistances, Integer.MAX_VALUE);
+        downhillDistances[home] = 0;
+
+        List<Pair<Integer, Integer>> locationsFromHome = uphillGraph.get(home);
+        for (Pair<Integer, Integer> location : locationsFromHome) {
+            Queue<Pair<Integer, Integer>> downhillQueue = new LinkedList<>();
+            downhillQueue.offer(location);
+            int distance = 0;
+
+            while (!downhillQueue.isEmpty()) {
+                Pair<Integer, Integer> current = downhillQueue.poll();
+                int from = current.getFirst();
+                int to = current.getSecond();
+
+                for (Pair<Integer, Integer> path : paths.keySet()) {
+                    if (path.getFirst() == to) {
+                        if (elevations.get(path.getFirst()) > elevations.get(path.getSecond())) {
+                            distance += paths.get(path);
+                            from = path.getFirst();
+                            to = path.getSecond();
+
+                            if (to == home) {
+                                downhillDistances[location.getSecond()] = Math
+                                        .min(downhillDistances[location.getSecond()], distance);
+                                break;
+                            } else {
+                                downhillQueue.offer(path);
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+
+        int[] totalDistances = new int[n];
+        totalDistances[0] = Integer.MAX_VALUE;
+        for (int i = 1; i < n; i++) {
+            if (uphillDistances[i] != Integer.MAX_VALUE && downhillDistances[i] != Integer.MAX_VALUE) {
+                totalDistances[i] = uphillDistances[i] + downhillDistances[i];
+            } else {
+                totalDistances[i] = Integer.MAX_VALUE;
+            }
+        }
+
+        int shortestDistance = Integer.MAX_VALUE;
+        for (int i = 0; i < n; i++) {
+            if (totalDistances[i] < shortestDistance) {
+                shortestDistance = totalDistances[i];
+            }
+        }
+
+        return shortestDistance;
+    }
+
+    // S127.
+    public static List<Integer> getRow(int k) {
+        List<Integer> row = new ArrayList<>();
+        if (k < 0) {
+            return row;
+        }
+
+        row.add(1);
+        for (int i = 1; i <= k; i++) {
+            for (int j = row.size() - 2; j >= 0; j--) {
+                row.set(j + 1, row.get(j) + row.get(j + 1));
+            }
+            row.add(1);
+        }
+
+        return row;
+    }
+
+    // S128.
+    public static int fewestDrinksToSatisfyCustomers(Map<Integer, List<Integer>> preferences) {
+        Set<Integer> commonDrinks = new HashSet<>();
+        int commonDrinksCount = 0;
+
+        for (List<Integer> customerPreferences : preferences.values()) {
+            if (commonDrinks.isEmpty()) {
+                commonDrinks.addAll(customerPreferences);
+            } else {
+                if (commonDrinks.stream().anyMatch(customerPreferences::contains)) {
+                    commonDrinks.retainAll(customerPreferences);
+                } else {
+                    commonDrinksCount++;
+                    commonDrinks.clear();
+                    commonDrinks.addAll(customerPreferences);
+                }
+            }
+        }
+
+        return commonDrinksCount + commonDrinks.size();
+    }
+
+    // S129.
+    static class Edge {
+        String from;
+        String to;
+        int cost;
+
+        Edge(String from, String to, int cost) {
+            this.from = from;
+            this.to = to;
+            this.cost = cost;
+        }
+    }
+
+    public static int minimumCostConfiguration(Map<String, Map<String, Integer>> pipes) {
+        Set<String> visited = new HashSet<>();
+        PriorityQueue<Edge> minHeap = new PriorityQueue<>(Comparator.comparingInt(e -> e.cost));
+
+        String initialVertex = "plant";
+        visited.add(initialVertex);
+
+        Map<String, Integer> initialConnections = pipes.get(initialVertex);
+        for (Map.Entry<String, Integer> connection : initialConnections.entrySet()) {
+            String neighbor = connection.getKey();
+            int cost = connection.getValue();
+            minHeap.offer(new Edge(initialVertex, neighbor, cost));
+        }
+
+        int totalCost = 0;
+
+        while (!minHeap.isEmpty()) {
+            Edge edge = minHeap.poll();
+            String from = edge.from;
+            String to = edge.to;
+            int cost = edge.cost;
+
+            if (visited.contains(to)) {
+                continue;
+            }
+
+            visited.add(to);
+            totalCost += cost;
+
+            // Add all the pipes connected to the current vertex to the min heap
+            Map<String, Integer> connections = pipes.get(to);
+            for (Map.Entry<String, Integer> connection : connections.entrySet()) {
+                String neighbor = connection.getKey();
+                int neighborCost = connection.getValue();
+                minHeap.offer(new Edge(to, neighbor, neighborCost));
+            }
+        }
+
+        return totalCost;
+    }
+
+    // S130.
+    static class BloomFilter {
+        private BitSet bitSet;
+        private int size;
+        private int[] hashSeeds;
+        private Random random;
+    
+        public BloomFilter(int size) {
+            this.size = size;
+            bitSet = new BitSet(size);
+            random = new Random();
+            hashSeeds = new int[]{3, 5, 7, 11, 13}; // Random hash seeds for diversity
+        }
+    
+        public void add(int value) {
+            for (int seed : hashSeeds) {
+                int hash = computeHash(value, seed);
+                bitSet.set(hash % size, true);
+            }
+        }
+    
+        public boolean check(int value) {
+            for (int seed : hashSeeds) {
+                int hash = computeHash(value, seed);
+                if (!bitSet.get(hash % size)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    
+        private int computeHash(int value, int seed) {
+            random.setSeed(seed);
+            int hash = random.nextInt() ^ value;
+            return hash & Integer.MAX_VALUE;
+        }
+    }
+    
     public static void main(String[] args) {
         /*
          * Q1.
@@ -6581,6 +6999,271 @@ public class QuestionsAndSolutions {
 
         int fewestCuts = fewestBricks(wall);
         System.out.println("Fewest number of bricks to be cut: " + fewestCuts);
+
+        /*
+         * Q121.
+         * Two nodes in a binary tree can be called cousins if they are on the same
+         * level of the tree but have different parents. For example, in the following
+         * diagram 4 and 6 are cousins.
+         * "     1     "
+         * "    / \    "
+         * "   2   3   "
+         * "  / \   \  "
+         * " 4   5   6 "
+         * Given a binary tree and a particular node, find all cousins of that node.
+         */
+        System.out.println("========= Q121 ==========");
+        TreeNode<Integer> treeToFindCousins = new TreeNode<>(1);
+        treeToFindCousins.left = new TreeNode<>(2);
+        treeToFindCousins.right = new TreeNode<>(3);
+        treeToFindCousins.left.left = new TreeNode<>(4);
+        treeToFindCousins.left.right = new TreeNode<>(5);
+        treeToFindCousins.right.right = new TreeNode<>(6);
+
+        int targetNode = 5;
+        List<Integer> cousins = findCousins(treeToFindCousins, targetNode);
+        System.out.println("Cousins of " + targetNode + ": " + cousins);
+
+        /*
+         * Q122.
+         * You are given an array representing the heights of neighboring buildings on a
+         * city street, from east to west. The city assessor would like you to write an
+         * algorithm that returns how many of these buildings have a view of the setting
+         * sun, in order to properly value the street.
+         * For example, given the array [3, 7, 8, 3, 6, 1], you should return 3, since
+         * the top floors of the buildings with heights 8, 6, and 1 all have an
+         * unobstructed view to the west.
+         * Can you do this using just one forward pass through the array?
+         */
+        System.out.println("========= Q122 ==========");
+        int[] heights = { 3, 7, 8, 3, 6, 1 };
+        int buildingsWithSunsetView = countBuildingsWithSunsetView(heights);
+
+        System.out.println("Buildings with sunset view: " + buildingsWithSunsetView);
+
+        /*
+         * Q123.
+         * You are given a list of (website, user) pairs that represent users visiting
+         * websites. Come up with a program that identifies the top k pairs of websites
+         * with the greatest similarity.
+         * For example, suppose k = 1, and the list of tuples is:
+         * " [('a', 1), ('a', 3), ('a', 5),                        "
+         * "  ('b', 2), ('b', 6),                                  "
+         * "  ('c', 1), ('c', 2), ('c', 3), ('c', 4), ('c', 5)     "
+         * "  ('d', 4), ('d', 5), ('d', 6), ('d', 7),              "
+         * "  ('e', 1), ('e', 3), ('e': 5), ('e', 6)]              "
+         * Then a reasonable similarity metric would most likely conclude that a and e
+         * are the most similar, so your program should return [('a', 'e')].
+         */
+        System.out.println("========= Q123 ==========");
+        List<WebsiteAndUser> websiteAndUser = new ArrayList<>();
+        websiteAndUser.add(new WebsiteAndUser("a", 1));
+        websiteAndUser.add(new WebsiteAndUser("a", 3));
+        websiteAndUser.add(new WebsiteAndUser("a", 5));
+        websiteAndUser.add(new WebsiteAndUser("b", 2));
+        websiteAndUser.add(new WebsiteAndUser("b", 6));
+        websiteAndUser.add(new WebsiteAndUser("c", 1));
+        websiteAndUser.add(new WebsiteAndUser("c", 2));
+        websiteAndUser.add(new WebsiteAndUser("c", 3));
+        websiteAndUser.add(new WebsiteAndUser("c", 4));
+        websiteAndUser.add(new WebsiteAndUser("c", 5));
+        websiteAndUser.add(new WebsiteAndUser("d", 4));
+        websiteAndUser.add(new WebsiteAndUser("d", 5));
+        websiteAndUser.add(new WebsiteAndUser("d", 6));
+        websiteAndUser.add(new WebsiteAndUser("d", 7));
+        websiteAndUser.add(new WebsiteAndUser("e", 1));
+        websiteAndUser.add(new WebsiteAndUser("e", 3));
+        websiteAndUser.add(new WebsiteAndUser("e", 5));
+        websiteAndUser.add(new WebsiteAndUser("e", 6));
+
+        int topPairs = 1;
+        List<String> topSimilarPairs = findTopSimilarPairs(websiteAndUser, topPairs);
+        System.out.println(topSimilarPairs);
+
+        /*
+         * Q124.
+         * The number 6174 is known as Kaprekar's contant, after the mathematician who
+         * discovered an associated property: for all four-digit numbers with at least
+         * two distinct digits, repeatedly applying a simple procedure eventually
+         * results in this value. The procedure is as follows:
+         * For a given input x, create two new numbers that consist of the digits in x
+         * in ascending and descending order.
+         * Subtract the smaller number from the larger number.
+         * For example, this algorithm terminates in three steps when starting from
+         * 1234:
+         * 4321 - 1234 = 3087
+         * 8730 - 0378 = 8352
+         * 8532 - 2358 = 6174
+         * Write a function that returns how many steps this will take for a given input
+         * N.
+         */
+        System.out.println("========= Q124 ==========");
+        int startingNum = 1234;
+        int stepsToKaprekar = kaprekarSteps(startingNum);
+        System.out.println("Number of steps for " + startingNum + ": " + stepsToKaprekar);
+
+        /*
+         * Q125.
+         * An imminent hurricane threatens the coastal town of Codeville. If at most two
+         * people can fit in a rescue boat, and the maximum weight limit for a given
+         * boat is k, determine how many boats will be needed to save everyone.
+         * For example, given a population with weights [100, 200, 150, 80] and a boat
+         * limit of 200, the smallest number of boats required will be three.
+         */
+        System.out.println("========= Q125 ==========");
+        int[] weights = { 100, 200, 150, 80 };
+        int limit = 200;
+        int boats = minimumRescueBoats(weights, limit);
+        System.out.println("Number of boats needed: " + boats);
+
+        /*
+         * Q126.
+         * A competitive runner would like to create a route that starts and ends at his
+         * house, with the condition that the route goes entirely uphill at first, and
+         * then entirely downhill.
+         * Given a dictionary of places of the form {location: elevation}, and a
+         * dictionary mapping paths between some of these locations to their
+         * corresponding distances, find the length of the shortest route satisfying the
+         * condition above. Assume the runner's home is location 0.
+         * For example, suppose you are given the following input:
+         * elevations = {0: 5, 1: 25, 2: 15, 3: 20, 4: 10}
+         * " paths = {         "
+         * "     (0, 1): 10,   "
+         * "     (0, 2): 8,    "
+         * "     (0, 3): 15,   "
+         * "     (1, 3): 12,   "
+         * "     (2, 4): 10,   "
+         * "     (3, 4): 5,    "
+         * "     (3, 0): 17,   "
+         * "     (4, 0): 10    "
+         * " }                 "
+         * In this case, the shortest valid path would be 0 -> 2 -> 4 -> 0, with a
+         * distance of 28.
+         */
+        System.out.println("========= Q126 ==========");
+        Map<Integer, Integer> elevations = new HashMap<>();
+        elevations.put(0, 5);
+        elevations.put(1, 25);
+        elevations.put(2, 15);
+        elevations.put(3, 20);
+        elevations.put(4, 10);
+
+        Map<Pair<Integer, Integer>, Integer> availablePaths = new HashMap<>();
+        availablePaths.put(new Pair<>(0, 1), 10);
+        availablePaths.put(new Pair<>(0, 2), 8);
+        availablePaths.put(new Pair<>(0, 3), 15);
+        availablePaths.put(new Pair<>(1, 3), 12);
+        availablePaths.put(new Pair<>(2, 4), 10);
+        availablePaths.put(new Pair<>(3, 4), 5);
+        availablePaths.put(new Pair<>(3, 0), 17);
+        availablePaths.put(new Pair<>(4, 0), 10);
+
+        int shortestRoute = shortestUphillDownhillRoute(elevations, availablePaths);
+        System.out.println("Shortest route distance: " + shortestRoute);
+
+        /*
+         * Q127.
+         * Pascal's triangle is a triangular array of integers constructed with the
+         * following formula:
+         * The first row consists of the number 1.
+         * For each subsequent row, each element is the sum of the numbers directly
+         * above it, on either side.
+         * For example, here are the first few rows:
+         * "     1     "
+         * "    1 1    "
+         * "   1 2 1   "
+         * "  1 3 3 1  "
+         * " 1 4 6 4 1 "
+         * Given an input k, return the kth row of Pascal's triangle.
+         * Bonus: Can you do this using only O(k) space?
+         */
+        System.out.println("========= Q127 ==========");
+        int height = 4;
+        List<Integer> row = getRow(height);
+        System.out.println(row);
+
+        /*
+         * Q128.
+         * At a popular bar, each customer has a set of favorite drinks, and will
+         * happily accept any drink among this set. For example, in the following
+         * situation, customer 0 will be satisfied with drinks 0, 1, 3, or 6.
+         * " preferences = {       "
+         * "     0: [0, 1, 3, 6],  "
+         * "     1: [1, 4, 7],     "
+         * "     2: [2, 4, 7, 5],  "
+         * "     3: [3, 2, 5],     "
+         * "     4: [5, 8]         "
+         * " }                     "
+         * A lazy bartender working at this bar is trying to reduce his effort by
+         * limiting the drink recipes he must memorize. Given a dictionary input such as
+         * the one above, return the fewest number of drinks he must learn in order to
+         * satisfy all customers.
+         * For the input above, the answer would be 2, as drinks 1 and 5 will satisfy
+         * everyone.
+         */
+        System.out.println("========= Q128 ==========");
+        Map<Integer, List<Integer>> preferences = new HashMap<>();
+        preferences.put(0, Arrays.asList(0, 1, 3, 6));
+        preferences.put(1, Arrays.asList(1, 4, 7));
+        preferences.put(2, Arrays.asList(2, 4, 7, 5));
+        preferences.put(3, Arrays.asList(3, 2, 5));
+        preferences.put(4, Arrays.asList(5, 8));
+
+        int minDrinks = fewestDrinksToSatisfyCustomers(preferences);
+        System.out.println("Fewest number of drinks: " + minDrinks);
+
+        /*
+         * Q129.
+         * A group of houses is connected to the main water plant by means of a set of
+         * pipes. A house can either be connected by a set of pipes extending directly
+         * to the plant, or indirectly by a pipe to a nearby house which is otherwise
+         * connected.
+         * For example, here is a possible configuration, where A, B, and C are houses,
+         * and arrows represent pipes:
+         * A <--> B <--> C <--> plant
+         * Each pipe has an associated cost, which the utility company would like to
+         * minimize. Given an undirected graph of pipe connections, return the lowest
+         * cost configuration of pipes such that each house has access to water.
+         * In the following setup, for example, we can remove all but the pipes from
+         * plant to A, plant to B, and B to C, for a total cost of 16.
+         * " pipes = {                                 "
+         * "     'plant': {'A': 1, 'B': 5, 'C': 20},   "
+         * "     'A': {'C': 15},                       "
+         * "     'B': {'C': 10},                       "
+         * "     'C': {}                               "
+         * " }                                         "
+         */
+        System.out.println("========= Q129 ==========");
+        Map<String, Map<String, Integer>> pipes = new HashMap<>();
+        pipes.put("plant", Map.of("A", 1, "B", 5, "C", 20));
+        pipes.put("A", Map.of("C", 15));
+        pipes.put("B", Map.of("C", 10));
+        pipes.put("C", Collections.emptyMap());
+
+        int minumCost = minimumCostConfiguration(pipes);
+        System.out.println("Minimum cost configuration: " + minumCost);
+
+        /*
+         * Q130.
+         * Implement a data structure which carries out the following operations without
+         * resizing the underlying array:
+         * add(value): Add a value to the set of values.
+         * check(value): Check whether a value is in the set.
+         * The check method may return occasional false positives (in other words,
+         * incorrectly identifying an element as part of the set), but should always
+         * correctly identify a true element.
+         */
+        System.out.println("========= Q130 ==========");
+        BloomFilter filter = new BloomFilter(1000);
+        
+        filter.add(10);
+        filter.add(20);
+        filter.add(30);
+        
+        System.out.println(filter.check(10)); // true
+        System.out.println(filter.check(20)); // true
+        System.out.println(filter.check(30)); // true
+        System.out.println(filter.check(40)); // false
 
     }
 }
