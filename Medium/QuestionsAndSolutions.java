@@ -4220,7 +4220,6 @@ public class QuestionsAndSolutions {
             Pair<Integer, Integer> pair = entry.getKey();
             int from = pair.getFirst();
             int to = pair.getSecond();
-            int distance = entry.getValue();
 
             if (elevations.get(from) < elevations.get(to)) {
                 uphillGraph.putIfAbsent(from, new ArrayList<>());
@@ -4235,7 +4234,7 @@ public class QuestionsAndSolutions {
 
         PriorityQueue<Pair<Integer, Integer>> uphillQueue = new PriorityQueue<>(
                 Comparator.comparingInt(p -> uphillDistances[p.getSecond()]));
-        uphillQueue.offer(new Pair(home, home));
+        uphillQueue.offer(new Pair<>(home, home));
 
         while (!uphillQueue.isEmpty()) {
             Pair<Integer, Integer> current = uphillQueue.poll();
@@ -4384,7 +4383,6 @@ public class QuestionsAndSolutions {
 
         while (!minHeap.isEmpty()) {
             Edge edge = minHeap.poll();
-            String from = edge.from;
             String to = edge.to;
             int cost = edge.cost;
 
@@ -4413,21 +4411,21 @@ public class QuestionsAndSolutions {
         private int size;
         private int[] hashSeeds;
         private Random random;
-    
+
         public BloomFilter(int size) {
             this.size = size;
             bitSet = new BitSet(size);
             random = new Random();
-            hashSeeds = new int[]{3, 5, 7, 11, 13}; // Random hash seeds for diversity
+            hashSeeds = new int[] { 3, 5, 7, 11, 13 }; // Random hash seeds for diversity
         }
-    
+
         public void add(int value) {
             for (int seed : hashSeeds) {
                 int hash = computeHash(value, seed);
                 bitSet.set(hash % size, true);
             }
         }
-    
+
         public boolean check(int value) {
             for (int seed : hashSeeds) {
                 int hash = computeHash(value, seed);
@@ -4437,14 +4435,335 @@ public class QuestionsAndSolutions {
             }
             return true;
         }
-    
+
         private int computeHash(int value, int seed) {
             random.setSeed(seed);
             int hash = random.nextInt() ^ value;
             return hash & Integer.MAX_VALUE;
         }
     }
-    
+
+    // S131.
+    public static int countRegions(char[][] grid) {
+        int m = grid.length;
+        int n = grid[0].length;
+        boolean[][] visited = new boolean[m][n];
+        int count = 0;
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (!visited[i][j]) {
+                    count += dfs(grid, visited, i, j);
+                    // count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
+    private static int dfs(char[][] grid, boolean[][] visited, int i, int j) {
+        int m = grid.length;
+        int n = grid[0].length;
+
+        if (i < 0 || i >= m || j < 0 || j >= n || visited[i][j]) {
+            return 0; // If the cell is out of bounds or already visited
+        }
+
+        visited[i][j] = true;
+
+        if (grid[i][j] == '/' || grid[i][j] == '\\') {
+            return 0; // If the cell is a wall
+        } else {
+            dfs(grid, visited, i - 1, j);
+            dfs(grid, visited, i + 1, j);
+            dfs(grid, visited, i, j - 1);
+            dfs(grid, visited, i, j + 1);
+        }
+
+        return 1; // If the cell is a region
+    }
+
+    // S132.
+    public static void sortWithKDistance(int[] arr, int k) {
+        PriorityQueue<Integer> minHeap = new PriorityQueue<>();
+
+        for (int i = 0; i <= k; i++) {
+            minHeap.offer(arr[i]);
+        }
+
+        int index = 0;
+
+        for (int i = k + 1; i < arr.length; i++) {
+            arr[index++] = minHeap.poll(); // Extract the minimum element from the min-heap
+            minHeap.offer(arr[i]); // Add the next element to the min-heap
+        }
+
+        while (!minHeap.isEmpty()) {
+            arr[index++] = minHeap.poll();
+        }
+    }
+
+    // S133.
+    public static int lowestCost(int[] seats) {
+        List<Integer> currentSeats = new ArrayList<>();
+
+        for (int i = 0; i < seats.length; i++) {
+            if (seats[i] == 1) {
+                currentSeats.add(i);
+            }
+        }
+
+        int mid = currentSeats.size() / 2;
+        int pivot = currentSeats.get(mid);
+
+        int minCost = 0;
+        int peopleOnLeft = 0;
+        int peopleOnRight = 0;
+        for (int i = 0; i < currentSeats.size(); i++) {
+            minCost += Math.abs(currentSeats.get(i) - pivot);
+
+            if (currentSeats.get(i) < pivot) {
+                peopleOnLeft++;
+            } else if (currentSeats.get(i) > pivot) {
+                peopleOnRight++;
+            }
+        }
+
+        return minCost - ((adjustNumOfMoves(peopleOnLeft)) + adjustNumOfMoves(peopleOnRight));
+    }
+
+    private static int adjustNumOfMoves(int numOfPeople) {
+        int numOfMoves = 0;
+
+        while (numOfPeople > 0) {
+            numOfMoves += numOfPeople;
+            numOfPeople--;
+        }
+
+        return numOfMoves;
+    }
+
+    // S134.
+    public static int calculateMinimumRange(int[] listeners, int[] towers) {
+        Arrays.sort(listeners);
+        Arrays.sort(towers);
+
+        int range = 0;
+        int towerIndex = 0;
+
+        for (int listener : listeners) {
+            while (towerIndex < towers.length - 1
+                    && Math.abs(towers[towerIndex] - listener) >= Math.abs(towers[towerIndex + 1] - listener)) {
+                towerIndex++;
+            }
+
+            range = Math.max(range, Math.abs(towers[towerIndex] - listener));
+        }
+
+        return range;
+    }
+
+    // S135.
+    public static List<Integer> findDenominations(int[] changeArray) {
+        List<Integer> denominations = new ArrayList<>();
+
+        for (int i = 1; i < changeArray.length; i++) {
+            if (changeArray[i] > 0) {
+                denominations.add(i);
+            }
+        }
+
+        return denominations;
+    }
+
+    // S136.
+    public static int rangeBitwiseAnd(int m, int n) {
+        int result = m;
+
+        for (int i = m + 1; i <= n; i++) {
+            result &= i;
+        }
+
+        return result;
+    }
+
+    // S137.
+    public static int smallestWindowLength(String str) {
+        int n = str.length();
+        int distinctCount = countDistinctChars(str);
+
+        Map<Character, Integer> charCount = new HashMap<>();
+        Set<Character> windowChars = new HashSet<>();
+
+        int windowStart = 0;
+        int windowEnd = 0;
+        int minWindowLength = Integer.MAX_VALUE;
+
+        while (windowEnd < n) {
+            char currentChar = str.charAt(windowEnd);
+            charCount.put(currentChar, charCount.getOrDefault(currentChar, 0) + 1);
+            windowChars.add(currentChar);
+
+            while (windowChars.size() == distinctCount) {
+                int currentWindowLength = windowEnd - windowStart + 1;
+                minWindowLength = Math.min(minWindowLength, currentWindowLength);
+
+                char startChar = str.charAt(windowStart);
+                charCount.put(startChar, charCount.get(startChar) - 1);
+                if (charCount.get(startChar) == 0) {
+                    windowChars.remove(startChar);
+                }
+
+                windowStart++;
+            }
+
+            windowEnd++;
+        }
+
+        return minWindowLength;
+    }
+
+    private static int countDistinctChars(String str) {
+        Set<Character> distinctChars = new HashSet<>();
+        for (char c : str.toCharArray()) {
+            distinctChars.add(c);
+        }
+        return distinctChars.size();
+    }
+
+    // S138.
+    static class JumpingNode {
+        int position;
+        int steps;
+
+        JumpingNode(int position, int steps) {
+            this.position = position;
+            this.steps = steps;
+        }
+    }
+
+    public static int minJumpsToReach(int target) {
+        if (target == 0) {
+            return 0;
+        }
+
+        Queue<JumpingNode> queue = new LinkedList<>();
+        queue.offer(new JumpingNode(0, 0));
+
+        while (!queue.isEmpty()) {
+            JumpingNode current = queue.poll();
+
+            if (current.position == target) {
+                return current.steps;
+            }
+
+            // Generate the next possible jumps
+            int nextPosition = current.position + current.steps + 1;
+            queue.offer(new JumpingNode(nextPosition, current.steps + 1));
+
+            nextPosition = current.position - (current.steps + 1);
+            queue.offer(new JumpingNode(nextPosition, current.steps + 1));
+        }
+
+        return -1;
+    }
+
+    // S139.
+    public static int findApproximateMedian(int[] nums) {
+        int n = nums.length;
+        int k = n / 2; // Target rank for the median
+
+        shuffle(nums);
+
+        int left = 0;
+        int right = n - 1;
+
+        while (left <= right) {
+            int pivotIndex = partition(nums, left, right);
+            if (pivotIndex == k) {
+                return nums[pivotIndex];
+            } else if (pivotIndex < k) {
+                left = pivotIndex + 1;
+            } else {
+                right = pivotIndex - 1;
+            }
+        }
+
+        return -1;
+    }
+
+    private static int partition(int[] nums, int left, int right) {
+        int pivotIndex = getPivotIndex(left, right);
+        int pivotValue = nums[pivotIndex];
+
+        swap(nums, pivotIndex, right);
+
+        int i = left;
+        for (int j = left; j < right; j++) {
+            if (nums[j] < pivotValue) {
+                swap(nums, i, j);
+                i++;
+            }
+        }
+
+        // Move the pivot value to its final sorted position
+        swap(nums, i, right);
+
+        return i;
+    }
+
+    private static int getPivotIndex(int left, int right) {
+        Random rand = new Random();
+        return rand.nextInt(right - left + 1) + left;
+    }
+
+    private static void shuffle(int[] nums) {
+        Random rand = new Random();
+        for (int i = nums.length - 1; i > 0; i--) {
+            int j = rand.nextInt(i + 1);
+            swap(nums, i, j);
+        }
+    }
+
+    // S140.
+    static class EloRatingSystem {
+        private static final int INITIAL_RATING = 1200;
+        private static final int K_FACTOR = 32;
+
+        private Map<String, Integer> ratings;
+
+        public EloRatingSystem() {
+            ratings = new HashMap<>();
+        }
+
+        public void addPlayer(String playerName) {
+            ratings.put(playerName, INITIAL_RATING);
+        }
+
+        public int getRating(String playerName) {
+            return ratings.getOrDefault(playerName, 0);
+        }
+
+        public void updateRating(String winner, String loser) {
+            int winnerRating = ratings.getOrDefault(winner, 0);
+            int loserRating = ratings.getOrDefault(loser, 0);
+
+            double expectedScoreWinner = getExpectedScore(winnerRating, loserRating);
+            double expectedScoreLoser = getExpectedScore(loserRating, winnerRating);
+
+            int ratingChangeWinner = (int) (K_FACTOR * (1 - expectedScoreWinner));
+            int ratingChangeLoser = (int) (K_FACTOR * (0 - expectedScoreLoser));
+
+            ratings.put(winner, winnerRating + ratingChangeWinner);
+            ratings.put(loser, loserRating + ratingChangeLoser);
+        }
+
+        private double getExpectedScore(int playerRating, int opponentRating) {
+            return 1.0 / (1 + Math.pow(10, (opponentRating - playerRating) / 400.0));
+        }
+    }
+
     public static void main(String[] args) {
         /*
          * Q1.
@@ -7255,15 +7574,182 @@ public class QuestionsAndSolutions {
          */
         System.out.println("========= Q130 ==========");
         BloomFilter filter = new BloomFilter(1000);
-        
+
         filter.add(10);
         filter.add(20);
         filter.add(30);
-        
+
         System.out.println(filter.check(10)); // true
         System.out.println(filter.check(20)); // true
         System.out.println(filter.check(30)); // true
         System.out.println(filter.check(40)); // false
 
+        /*
+         * Q131.
+         * You are given a 2-d matrix where each cell consists of either /, \, or an
+         * empty space. Write an algorithm that determines into how many regions the
+         * slashes divide the space.
+         * For example, suppose the input for a three-by-six grid is the following:
+         * " \    /    "
+         * "  \  /     "
+         * "   \/      "
+         * Considering the edges of the matrix as boundaries, this divides the grid into
+         * three triangles, so you should return 3.
+         */
+        System.out.println("========= Q131 ==========");
+        char[][] grid = {
+                { '\\', ' ', ' ', ' ', ' ', '/' },
+                { ' ', '\\', ' ', ' ', '/', ' ' },
+                { ' ', ' ', '\\', '/', ' ', ' ' }
+        };
+
+        int regions = countRegions(grid);
+        System.out.println("Number of regions: " + regions);
+
+        /*
+         * Q132.
+         * You are given a list of N numbers, in which each number is located at most k
+         * places away from its sorted position. For example, if k = 1, a given element
+         * at index 4 might end up at indices 3, 4, or 5.
+         * Come up with an algorithm that sorts this list in O(N log k) time.
+         */
+        System.out.println("========= Q132 ==========");
+        int[] array = { 3, 1, 4, 2, 5 };
+        int positionFromSorted = 2;
+
+        sortWithKDistance(array, positionFromSorted);
+
+        for (int num : array) {
+            System.out.print(num + " ");
+        }
+        System.out.println();
+
+        /*
+         * Q133.
+         * There are M people sitting in a row of N seats, where M < N. Your task is to
+         * redistribute people such that there are no gaps between any of them, while
+         * keeping overall movement to a minimum.
+         * For example, suppose you are faced with an input of [0, 1, 1, 0, 1, 0, 0, 0,
+         * 1], where 0 represents an empty seat and 1 represents a person. In this case,
+         * one solution would be to place the person on the right in the fourth seat. We
+         * can consider the cost of a solution to be the sum of the absolute distance
+         * each person must move, so that the cost here would be five.
+         * Given an input such as the one above, return the lowest possible cost of
+         * moving people to remove all gaps.
+         */
+        System.out.println("========= Q133 ==========");
+        int[] seats = { 0, 1, 1, 0, 1, 0, 0, 0, 1 };
+        int lowestCost = lowestCost(seats);
+        System.out.println("Lowest Cost: " + lowestCost);
+
+        /*
+         * Q134.
+         * You are the technical director of WSPT radio, serving listeners nationwide.
+         * For simplicity's sake we can consider each listener to live along a
+         * horizontal line stretching from 0 (west) to 1000 (east).
+         * Given a list of N listeners, and a list of M radio towers, each placed at
+         * various locations along this line, determine what the minimum broadcast range
+         * would have to be in order for each listener's home to be covered.
+         * For example, suppose listeners = [1, 5, 11, 20], and towers = [4, 8, 15]. In
+         * this case the minimum range would be 5, since that would be required for the
+         * tower at position 15 to reach the listener at position 20.
+         */
+        System.out.println("========= Q134 ==========");
+        int[] listeners = { 1, 5, 11, 20 };
+        int[] towers = { 4, 8, 15 };
+
+        int minimumRange = calculateMinimumRange(listeners, towers);
+        System.out.println("Minimum Broadcast Range: " + minimumRange);
+
+        /*
+         * Q135.
+         * You are given an array of length N, where each element i represents the
+         * number of ways we can produce i units of change. For example, [1, 0, 1, 1, 2]
+         * would indicate that there is only one way to make 0, 2, or 3 units, and two
+         * ways of making 4 units.
+         * Given such an array, determine the denominations that must be in use. In the
+         * case above, for example, there must be coins with value 2, 3, and 4.
+         */
+        System.out.println("========= Q135 ==========");
+        int[] changeArray = { 1, 0, 1, 1, 2 };
+
+        List<Integer> denominations = findDenominations(changeArray);
+        System.out.println("Denominations: " + denominations);
+
+        /*
+         * Q136.
+         * Write a function that returns the bitwise AND of all integers between M and
+         * N, inclusive.
+         */
+        System.out.println("========= Q136 ==========");
+        int rangeM = 5;
+        int rangeN = 7;
+
+        int bitwiseAND = rangeBitwiseAnd(rangeM, rangeN);
+        System.out.println("Bitwise AND: " + bitwiseAND);
+
+        /*
+         * Q137.
+         * Given a string, find the length of the smallest window that contains every
+         * distinct character. Characters may appear more than once in the window.
+         * For example, given "jiujitsu", you should return 5, corresponding to the
+         * final five letters.
+         */
+        System.out.println("========= Q137 ==========");
+        String stringToFindSmallestWindow = "jiujitsu";
+        int smallestWindow = smallestWindowLength(stringToFindSmallestWindow);
+        System.out.println("Smallest Window Length: " + smallestWindow);
+
+        /*
+         * Q138.
+         * Starting from 0 on a number line, you would like to make a series of jumps
+         * that lead to the integer N.
+         * On the ith jump, you may move exactly i places to the left or right.
+         * Find a path with the fewest number of jumps required to get from 0 to N.
+         */
+        System.out.println("========= Q138 ==========");
+        int targetToReach = 5;
+        int fewestJumps = minJumpsToReach(targetToReach);
+        System.out.println("Minimum jumps to reach " + targetToReach + ": " + fewestJumps);
+
+        /*
+         * Q139.
+         * Create an algorithm to efficiently compute the approximate median of a list
+         * of numbers.
+         * More precisely, given an unordered list of N numbers, find an element whose
+         * rank is between N / 4 and 3 * N / 4, with a high level of certainty, in less
+         * than O(N) time.
+         */
+        System.out.println("========= Q139 ==========");
+        int[] unorderedList = { 9, 5, 2, 8, 1, 7, 6, 3, 4 };
+        int approximateMedian = findApproximateMedian(unorderedList);
+        System.out.println("Approximate Median: " + approximateMedian);
+
+        /*
+         * Q140.
+         * In chess, the Elo rating system is used to calculate player strengths based
+         * on game results.
+         * A simplified description of the Elo system is as follows. Every player begins
+         * at the same score. For each subsequent game, the loser transfers some points
+         * to the winner, where the amount of points transferred depends on how unlikely
+         * the win is. For example, a 1200-ranked player should gain much more points
+         * for beating a 2000-ranked player than for beating a 1300-ranked player.
+         * Implement this system.
+         */
+        System.out.println("========= Q140 ==========");
+        EloRatingSystem elo = new EloRatingSystem();
+
+        elo.addPlayer("Player 1");
+        elo.addPlayer("Player 2");
+
+        System.out.println("Player 1 rating: " + elo.getRating("Player 1"));
+        System.out.println("Player 2 rating: " + elo.getRating("Player 2"));
+
+        elo.updateRating("Player 1", "Player 2");
+
+        System.out.println("Player 1 rating after update: " + elo.getRating("Player 1"));
+        System.out.println("Player 2 rating after update: " + elo.getRating("Player 2"));
+
     }
 }
+

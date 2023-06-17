@@ -7258,3 +7258,478 @@ console.log(`Check 20: ${filter.check(20)}`); // true
 console.log(`Check 30: ${filter.check(30)}`); // true
 console.log(`Check 40: ${filter.check(40)}`); // false
 console.log('\n');
+
+/*
+* Q131.
+* You are given a 2-d matrix where each cell consists of either /, \, or an
+* empty space. Write an algorithm that determines into how many regions the
+* slashes divide the space.
+* For example, suppose the input for a three-by-six grid is the following:
+* " \    /    "
+* "  \  /     "
+* "   \/      "
+* Considering the edges of the matrix as boundaries, this divides the grid into
+* three triangles, so you should return 3.
+*/
+function countRegions(grid) {
+    const m = grid.length;
+    const n = grid[0].length;
+    let visited = new Array(m).fill(false).map(() => new Array(n).fill(false));
+    let count = 0;
+
+    for (let i = 0; i < m; i++) {
+        for (let j = 0; i < n; j++) {
+            if (!visited[i][j]) {
+                count = dfsSpace(grid, i, j, visited);
+            }
+        }
+    }
+
+    return count;
+}
+
+function dfsSpace(grid, i, j, visited) {
+    const m = grid.length;
+    const n = grid[0].length;
+
+    if (i < 0 || i >= m || j < 0 || j >= n || visited[i][j]) {
+        return 0; // If the cell is out of bounds or already visited
+    }
+
+    visited[i][j] = true;
+
+    if (grid[i][j] == '/' || grid[i][j] == '\\') {
+        return 0; // If the cell is a wall
+    } else {
+        dfs(grid, visited, i - 1, j);
+        dfs(grid, visited, i + 1, j);
+        dfs(grid, visited, i, j - 1);
+        dfs(grid, visited, i, j + 1);
+    }
+
+    return 1; // If the cell is a region
+}
+
+console.log('========= Q131 =========');
+const grid = [
+    ['\\', ' ', ' ', ' ', ' ', '/'],
+    [' ', '\\', ' ', ' ', '/', ' '],
+    [' ', ' ', '\\', '/', ' ', ' '],
+];
+
+const regions = countRegions(grid);
+console.log(`Number of regions: ${regions}`);
+console.log('\n');
+
+/*
+* Q132.
+* You are given a list of N numbers, in which each number is located at most k
+* places away from its sorted position. For example, if k = 1, a given element
+* at index 4 might end up at indices 3, 4, or 5.
+* Come up with an algorithm that sorts this list in O(N log k) time.
+*/
+function sortWithDistance(arr, k) {
+    let minHeap = [];
+
+    for (let i = 0; i <= k; i++) {
+        minHeap.push(arr[i]);
+    }
+    minHeap.sort((a, b) => a - b);
+
+    let index = 0;
+
+    for (let i = k + 1; i < arr.length; i++) {
+        arr[index++] = minHeap.shift();
+        minHeap.push(arr[i]);
+        minHeap.sort((a, b) => a - b);
+    }
+
+    while (minHeap.length > 0) {
+        arr[index++] = minHeap.shift();
+    }
+}
+
+console.log('========= Q132 =========');
+const array = [3, 1, 4, 2, 5];
+const positionFromSorted = 2;
+
+sortWithDistance(array, positionFromSorted);
+console.log(`Sorted array: ${array}`);
+console.log('\n');
+
+/*
+* Q133.
+* There are M people sitting in a row of N seats, where M < N. Your task is to
+* redistribute people such that there are no gaps between any of them, while
+* keeping overall movement to a minimum.
+* For example, suppose you are faced with an input of [0, 1, 1, 0, 1, 0, 0, 0,
+* 1], where 0 represents an empty seat and 1 represents a person. In this case,
+* one solution would be to place the person on the right in the fourth seat. We
+* can consider the cost of a solution to be the sum of the absolute distance
+* each person must move, so that the cost here would be five.
+* Given an input such as the one above, return the lowest possible cost of
+* moving people to remove all gaps.
+*/
+function lowestCost(seats) {
+    let currentSeats = [];
+
+    for (let i = 0; i < seats.length; i++) {
+        if (seats[i] === 1) {
+            currentSeats.push(i);
+        }
+    }
+
+    const mid = Math.floor(currentSeats.length / 2);
+    const pivot = currentSeats[mid];
+
+    let minCost = 0;
+    let peopleOnLeft = 0;
+    let peopleOnRight = 0;
+    for (let i = 0; i < currentSeats.length; i++) {
+        minCost += Math.abs(currentSeats[i] - pivot);
+
+        if (currentSeats[i] < pivot) {
+            peopleOnLeft++;
+        } else if (currentSeats[i] > pivot) {
+            peopleOnRight++;
+        }
+    }
+
+    return minCost - (adjustNumOfMoves(peopleOnLeft) + adjustNumOfMoves(peopleOnRight));
+}
+
+function adjustNumOfMoves(numOfPeople) {
+    let numOfMoves = 0;
+
+    while (numOfPeople > 0) {
+        numOfMoves += numOfPeople;
+        numOfPeople--;
+    }
+
+    return numOfMoves;
+}
+
+console.log('========= Q133 =========');
+const seats = [0, 1, 1, 0, 1, 0, 0, 0, 1];
+const minMoves = lowestCost(seats);
+console.log(`Lowest cost: ${minMoves}`);
+console.log('\n');
+
+/*
+* Q134.
+* You are the technical director of WSPT radio, serving listeners nationwide.
+* For simplicity's sake we can consider each listener to live along a
+* horizontal line stretching from 0 (west) to 1000 (east).
+* Given a list of N listeners, and a list of M radio towers, each placed at
+* various locations along this line, determine what the minimum broadcast range
+* would have to be in order for each listener's home to be covered.
+* For example, suppose listeners = [1, 5, 11, 20], and towers = [4, 8, 15]. In
+* this case the minimum range would be 5, since that would be required for the
+* tower at position 15 to reach the listener at position 20.
+*/
+function calculateMinimumRange(listeners, towers) {
+    listeners.sort((a, b) => a - b);
+    towers.sort((a, b) => a - b);
+
+    let range = 0;
+    let towerIndex = 0;
+
+    for (let listener of listeners) {
+        while (towerIndex < towers.length - 1 && Math.abs(towers[towerIndex] - listener) >= Math.abs(towers[towerIndex + 1] - listener)) {
+            towerIndex++;
+        }
+
+        range = Math.max(range, Math.abs(towers[towerIndex] - listener));
+    }
+
+    return range;
+}
+
+console.log('========= Q134 =========');
+const listeners = [1, 5, 11, 20];
+const towers = [4, 8, 15];
+
+const minimumRange = calculateMinimumRange(listeners, towers);
+console.log(`Minimum Broadcast Range: ${minimumRange}`);
+console.log('\n');
+
+/*
+* Q135.
+* You are given an array of length N, where each element i represents the
+* number of ways we can produce i units of change. For example, [1, 0, 1, 1, 2]
+* would indicate that there is only one way to make 0, 2, or 3 units, and two
+* ways of making 4 units.
+* Given such an array, determine the denominations that must be in use. In the
+* case above, for example, there must be coins with value 2, 3, and 4.
+*/
+function findDenominations(changeArray) {
+    let denominations = [];
+
+    for (let i = 1; i < changeArray.length; i++) {
+        if (changeArray[i] > 0) {
+            denominations.push(i);
+        }
+    }
+
+    return denominations;
+}
+
+console.log('========= Q135 =========');
+const changeArray = [1, 0, 1, 1, 2];
+const denominations = findDenominations(changeArray);
+console.log(`Denominations: ${denominations}`);
+console.log('\n');
+
+/*
+* Q136.
+* Write a function that returns the bitwise AND of all integers between M and N, inclusive.
+*/
+function rangeBitwiseAnd(m, n) {
+    let result = m;
+
+    for (let i = m + 1; i <= n; i++) {
+        result &= i;
+    }
+
+    return result;
+}
+
+console.log('========= Q136 =========');
+const rangeM = 5;
+const rangeN = 7;
+
+const bitwiseAnd = rangeBitwiseAnd(rangeM, rangeN);
+console.log(`Bitwise AND: ${bitwiseAnd}`);
+console.log('\n');
+
+/*
+* Q137.
+* Given a string, find the length of the smallest window that contains every
+* distinct character. Characters may appear more than once in the window.
+* For example, given "jiujitsu", you should return 5, corresponding to the
+* final five letters.
+*/
+function smallestWindowLength(str) {
+    const n = str.length;
+    let distinctCount = coundDistinctChars(str);
+
+    let charCount = new Map();
+    let windowChars = new Set();
+
+    let windowStart = 0;
+    let windowEnd = 0;
+    let minWindowLength = n;
+
+    while (windowEnd < n) {
+        const currentChar = str[windowEnd];
+        charCount.set(currentChar, charCount.get(currentChar) + 1 || 1);
+        windowChars.add(currentChar);
+
+        while (windowChars.size === distinctCount) {
+            const currentWindowLength = windowEnd - windowStart + 1;
+            minWindowLength = Math.min(minWindowLength, currentWindowLength);
+
+            const startChar = str[windowStart];
+            charCount.set(startChar, charCount.get(startChar) - 1);
+            if (charCount.get(startChar) === 0) {
+                windowChars.delete(startChar);
+            }
+
+            windowStart++;
+        }
+        windowEnd++;
+    }
+
+    return minWindowLength;
+}
+
+function coundDistinctChars(str) {
+    let distinctChars = new Set();
+
+    for (let char of str) {
+        distinctChars.add(char);
+    }
+
+    return distinctChars.size;
+}
+
+console.log('========= Q137 =========');
+const stringToFindSmallestWindow = 'jiujitsu';
+const smallestWindow = smallestWindowLength(stringToFindSmallestWindow);
+console.log(`Smallest Window Length: ${smallestWindow}`);
+console.log('\n');
+
+/*
+* Q138.
+* Starting from 0 on a number line, you would like to make a series of jumps
+* that lead to the integer N.
+* On the ith jump, you may move exactly i places to the left or right.
+* Find a path with the fewest number of jumps required to get from 0 to N.
+*/
+class JumpingNode {
+    constructor(position, steps) {
+        this.position = position;
+        this.steps = steps;
+    }
+}
+
+function minJumpsToReach(target) {
+    if (target === 0) {
+        return 0;
+    }
+
+    let queue = [];
+    queue.push(new JumpingNode(0, 0));
+
+    while (queue.length > 0) {
+        const current = queue.shift();
+
+        if (current.position === target) {
+            return current.steps;
+        }
+
+        // Generate the next possible jumps
+        let nextPosition = current.position + current.steps + 1;
+        queue.push(new JumpingNode(nextPosition, current.steps + 1));
+
+        nextPosition = current.position - (current.steps + 1)
+        queue.push(new JumpingNode(nextPosition, current.steps + 1));
+    }
+
+    return -1;
+}
+
+console.log('========= Q138 =========');
+const targetToReach = 5;
+const fewestJumps = minJumpsToReach(targetToReach);
+console.log(`Fewest Jumps to reach ${targetToReach}: ${fewestJumps}`);
+console.log('\n');
+
+/*
+* Q139.
+* Create an algorithm to efficiently compute the approximate median of a list
+* of numbers.
+* More precisely, given an unordered list of N numbers, find an element whose
+* rank is between N / 4 and 3 * N / 4, with a high level of certainty, in less
+* than O(N) time.
+*/
+function findApproximateMedian(nums) {
+    const n = nums.length;
+    const k = Math.floor(n / 2); // Target rank for the median
+
+    shuffle(nums);
+
+    let left = 0;
+    let right = n - 1;
+
+    while (left <= right) {
+        const pivotIndex = partition(nums, left, right);
+
+        if (pivotIndex === k) {
+            return nums[k];
+        } else if (pivotIndex < k) {
+            left = pivotIndex + 1;
+        } else {
+            right = pivotIndex - 1;
+        }
+    }
+
+    return -1;
+}
+
+function partition(nums, left, right) {
+    let pivotIndex = getPivotIndex(left, right);
+    let pivotValue = nums[pivotIndex];
+
+    swap(nums, pivotIndex, right);
+
+    let i = left;
+    for (let j = left; j < right; j++) {
+        if (nums[j] < pivotValue) {
+            swap(nums, i, j);
+            i++;
+        }
+    }
+
+    swap(nums, i, right);
+
+    return i;
+}
+
+function getPivotIndex(left, right) {
+    return Math.floor(Math.random() * (right - left + 1)) + left;
+}
+
+function shuffle(nums) {
+    for (let i = nums.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        swap(nums, i, j);
+    }
+}
+
+console.log('========= Q139 =========');
+const unorderedList = [9, 5, 2, 8, 1, 7, 6, 3, 4];
+const approximateMedian = findApproximateMedian(unorderedList);
+console.log(`Approximate Median: ${approximateMedian}`);
+console.log('\n');
+
+/*
+* Q140.
+* In chess, the Elo rating system is used to calculate player strengths based
+* on game results.
+* A simplified description of the Elo system is as follows. Every player begins
+* at the same score. For each subsequent game, the loser transfers some points
+* to the winner, where the amount of points transferred depends on how unlikely
+* the win is. For example, a 1200-ranked player should gain much more points
+* for beating a 2000-ranked player than for beating a 1300-ranked player.
+* Implement this system.
+*/
+class EloRatingSystem {
+    static #_INITIAL_RATING = 1200;
+    static #_K_FACTOR = 32;
+    #_ratings;
+
+    constructor() {
+        this.#_ratings = new Map();
+    }
+
+    addPlayer(playerName) {
+        this.#_ratings.set(playerName, EloRatingSystem.#_INITIAL_RATING);
+    }
+
+    getRating(playerName) {
+        return this.#_ratings.get(playerName) || 0;
+    }
+
+    updateRating(winner, loser) {
+        const winnerRating = this.#_ratings.get(winner) || 0;
+        const loserRating = this.#_ratings.get(loser) || 0;
+
+        const expectedScoreWinner = this.getExpectedScore(winnerRating, loserRating);
+        const expectedScoreLoser = this.getExpectedScore(loserRating, winnerRating);
+
+        const ratingChangeWinner = Math.round(EloRatingSystem.#_K_FACTOR * (1 - expectedScoreWinner));
+        const ratingChangeLoser = Math.round(EloRatingSystem.#_K_FACTOR * (0 - expectedScoreLoser));
+
+        this.#_ratings.set(winner, winnerRating + ratingChangeWinner);
+        this.#_ratings.set(loser, loserRating + ratingChangeLoser);
+    }
+
+    getExpectedScore(playerRating, opponentRating) {
+        return 1.0 / (1.0 + Math.pow(10, (opponentRating - playerRating) / 400));
+    }
+}
+
+console.log('========= Q140 =========');
+const eloRatingSystem = new EloRatingSystem();
+eloRatingSystem.addPlayer('Player 1');
+eloRatingSystem.addPlayer('Player 2');
+
+console.log(`Player 1 Rating: ${eloRatingSystem.getRating('Player 1')}`);
+console.log(`Player 2 Rating: ${eloRatingSystem.getRating('Player 2')}`);
+
+eloRatingSystem.updateRating('Player 1', 'Player 2');
+
+console.log(`Player 1 Rating after update: ${eloRatingSystem.getRating('Player 1')}`);
+console.log(`Player 2 Rating after update: ${eloRatingSystem.getRating('Player 2')}`);
+console.log('\n');
