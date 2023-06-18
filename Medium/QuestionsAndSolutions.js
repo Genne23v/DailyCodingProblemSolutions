@@ -1370,6 +1370,10 @@ class Stack {
         return this.#_stack.pop();
     }
 
+    peek() {
+        return this.#_stack[this.#_stack.length - 1];
+    }
+
     isEmpty() {
         return this.#_stack.length === 0;
     }
@@ -7278,9 +7282,9 @@ function countRegions(grid) {
     let count = 0;
 
     for (let i = 0; i < m; i++) {
-        for (let j = 0; i < n; j++) {
+        for (let j = 0; j < n; j++) {
             if (!visited[i][j]) {
-                count = dfsSpace(grid, i, j, visited);
+                count += dfsSpace(grid, i, j, visited);
             }
         }
     }
@@ -7291,7 +7295,7 @@ function countRegions(grid) {
 function dfsSpace(grid, i, j, visited) {
     const m = grid.length;
     const n = grid[0].length;
-
+    // console.log(`i: ${i}, j: ${j}`);
     if (i < 0 || i >= m || j < 0 || j >= n || visited[i][j]) {
         return 0; // If the cell is out of bounds or already visited
     }
@@ -7301,10 +7305,10 @@ function dfsSpace(grid, i, j, visited) {
     if (grid[i][j] == '/' || grid[i][j] == '\\') {
         return 0; // If the cell is a wall
     } else {
-        dfs(grid, visited, i - 1, j);
-        dfs(grid, visited, i + 1, j);
-        dfs(grid, visited, i, j - 1);
-        dfs(grid, visited, i, j + 1);
+        dfsSpace(grid, i - 1, j, visited);
+        dfsSpace(grid, i + 1, j, visited);
+        dfsSpace(grid, i, j - 1, visited);
+        dfsSpace(grid, i, j + 1, visited);
     }
 
     return 1; // If the cell is a region
@@ -7322,12 +7326,12 @@ console.log(`Number of regions: ${regions}`);
 console.log('\n');
 
 /*
-* Q132.
-* You are given a list of N numbers, in which each number is located at most k
-* places away from its sorted position. For example, if k = 1, a given element
-* at index 4 might end up at indices 3, 4, or 5.
-* Come up with an algorithm that sorts this list in O(N log k) time.
-*/
+ * Q132.
+ * You are given a list of N numbers, in which each number is located at most k
+ * places away from its sorted position. For example, if k = 1, a given element
+ * at index 4 might end up at indices 3, 4, or 5.
+ * Come up with an algorithm that sorts this list in O(N log k) time.
+ */
 function sortWithDistance(arr, k) {
     let minHeap = [];
 
@@ -7358,18 +7362,18 @@ console.log(`Sorted array: ${array}`);
 console.log('\n');
 
 /*
-* Q133.
-* There are M people sitting in a row of N seats, where M < N. Your task is to
-* redistribute people such that there are no gaps between any of them, while
-* keeping overall movement to a minimum.
-* For example, suppose you are faced with an input of [0, 1, 1, 0, 1, 0, 0, 0,
-* 1], where 0 represents an empty seat and 1 represents a person. In this case,
-* one solution would be to place the person on the right in the fourth seat. We
-* can consider the cost of a solution to be the sum of the absolute distance
-* each person must move, so that the cost here would be five.
-* Given an input such as the one above, return the lowest possible cost of
-* moving people to remove all gaps.
-*/
+ * Q133.
+ * There are M people sitting in a row of N seats, where M < N. Your task is to
+ * redistribute people such that there are no gaps between any of them, while
+ * keeping overall movement to a minimum.
+ * For example, suppose you are faced with an input of [0, 1, 1, 0, 1, 0, 0, 0,
+ * 1], where 0 represents an empty seat and 1 represents a person. In this case,
+ * one solution would be to place the person on the right in the fourth seat. We
+ * can consider the cost of a solution to be the sum of the absolute distance
+ * each person must move, so that the cost here would be five.
+ * Given an input such as the one above, return the lowest possible cost of
+ * moving people to remove all gaps.
+ */
 function lowestCost(seats) {
     let currentSeats = [];
 
@@ -7395,7 +7399,10 @@ function lowestCost(seats) {
         }
     }
 
-    return minCost - (adjustNumOfMoves(peopleOnLeft) + adjustNumOfMoves(peopleOnRight));
+    return (
+        minCost -
+        (adjustNumOfMoves(peopleOnLeft) + adjustNumOfMoves(peopleOnRight))
+    );
 }
 
 function adjustNumOfMoves(numOfPeople) {
@@ -7416,17 +7423,17 @@ console.log(`Lowest cost: ${minMoves}`);
 console.log('\n');
 
 /*
-* Q134.
-* You are the technical director of WSPT radio, serving listeners nationwide.
-* For simplicity's sake we can consider each listener to live along a
-* horizontal line stretching from 0 (west) to 1000 (east).
-* Given a list of N listeners, and a list of M radio towers, each placed at
-* various locations along this line, determine what the minimum broadcast range
-* would have to be in order for each listener's home to be covered.
-* For example, suppose listeners = [1, 5, 11, 20], and towers = [4, 8, 15]. In
-* this case the minimum range would be 5, since that would be required for the
-* tower at position 15 to reach the listener at position 20.
-*/
+ * Q134.
+ * You are the technical director of WSPT radio, serving listeners nationwide.
+ * For simplicity's sake we can consider each listener to live along a
+ * horizontal line stretching from 0 (west) to 1000 (east).
+ * Given a list of N listeners, and a list of M radio towers, each placed at
+ * various locations along this line, determine what the minimum broadcast range
+ * would have to be in order for each listener's home to be covered.
+ * For example, suppose listeners = [1, 5, 11, 20], and towers = [4, 8, 15]. In
+ * this case the minimum range would be 5, since that would be required for the
+ * tower at position 15 to reach the listener at position 20.
+ */
 function calculateMinimumRange(listeners, towers) {
     listeners.sort((a, b) => a - b);
     towers.sort((a, b) => a - b);
@@ -7435,7 +7442,11 @@ function calculateMinimumRange(listeners, towers) {
     let towerIndex = 0;
 
     for (let listener of listeners) {
-        while (towerIndex < towers.length - 1 && Math.abs(towers[towerIndex] - listener) >= Math.abs(towers[towerIndex + 1] - listener)) {
+        while (
+            towerIndex < towers.length - 1 &&
+            Math.abs(towers[towerIndex] - listener) >=
+                Math.abs(towers[towerIndex + 1] - listener)
+        ) {
             towerIndex++;
         }
 
@@ -7454,14 +7465,14 @@ console.log(`Minimum Broadcast Range: ${minimumRange}`);
 console.log('\n');
 
 /*
-* Q135.
-* You are given an array of length N, where each element i represents the
-* number of ways we can produce i units of change. For example, [1, 0, 1, 1, 2]
-* would indicate that there is only one way to make 0, 2, or 3 units, and two
-* ways of making 4 units.
-* Given such an array, determine the denominations that must be in use. In the
-* case above, for example, there must be coins with value 2, 3, and 4.
-*/
+ * Q135.
+ * You are given an array of length N, where each element i represents the
+ * number of ways we can produce i units of change. For example, [1, 0, 1, 1, 2]
+ * would indicate that there is only one way to make 0, 2, or 3 units, and two
+ * ways of making 4 units.
+ * Given such an array, determine the denominations that must be in use. In the
+ * case above, for example, there must be coins with value 2, 3, and 4.
+ */
 function findDenominations(changeArray) {
     let denominations = [];
 
@@ -7481,9 +7492,9 @@ console.log(`Denominations: ${denominations}`);
 console.log('\n');
 
 /*
-* Q136.
-* Write a function that returns the bitwise AND of all integers between M and N, inclusive.
-*/
+ * Q136.
+ * Write a function that returns the bitwise AND of all integers between M and N, inclusive.
+ */
 function rangeBitwiseAnd(m, n) {
     let result = m;
 
@@ -7503,12 +7514,12 @@ console.log(`Bitwise AND: ${bitwiseAnd}`);
 console.log('\n');
 
 /*
-* Q137.
-* Given a string, find the length of the smallest window that contains every
-* distinct character. Characters may appear more than once in the window.
-* For example, given "jiujitsu", you should return 5, corresponding to the
-* final five letters.
-*/
+ * Q137.
+ * Given a string, find the length of the smallest window that contains every
+ * distinct character. Characters may appear more than once in the window.
+ * For example, given "jiujitsu", you should return 5, corresponding to the
+ * final five letters.
+ */
 function smallestWindowLength(str) {
     const n = str.length;
     let distinctCount = coundDistinctChars(str);
@@ -7560,12 +7571,12 @@ console.log(`Smallest Window Length: ${smallestWindow}`);
 console.log('\n');
 
 /*
-* Q138.
-* Starting from 0 on a number line, you would like to make a series of jumps
-* that lead to the integer N.
-* On the ith jump, you may move exactly i places to the left or right.
-* Find a path with the fewest number of jumps required to get from 0 to N.
-*/
+ * Q138.
+ * Starting from 0 on a number line, you would like to make a series of jumps
+ * that lead to the integer N.
+ * On the ith jump, you may move exactly i places to the left or right.
+ * Find a path with the fewest number of jumps required to get from 0 to N.
+ */
 class JumpingNode {
     constructor(position, steps) {
         this.position = position;
@@ -7592,7 +7603,7 @@ function minJumpsToReach(target) {
         let nextPosition = current.position + current.steps + 1;
         queue.push(new JumpingNode(nextPosition, current.steps + 1));
 
-        nextPosition = current.position - (current.steps + 1)
+        nextPosition = current.position - (current.steps + 1);
         queue.push(new JumpingNode(nextPosition, current.steps + 1));
     }
 
@@ -7606,13 +7617,13 @@ console.log(`Fewest Jumps to reach ${targetToReach}: ${fewestJumps}`);
 console.log('\n');
 
 /*
-* Q139.
-* Create an algorithm to efficiently compute the approximate median of a list
-* of numbers.
-* More precisely, given an unordered list of N numbers, find an element whose
-* rank is between N / 4 and 3 * N / 4, with a high level of certainty, in less
-* than O(N) time.
-*/
+ * Q139.
+ * Create an algorithm to efficiently compute the approximate median of a list
+ * of numbers.
+ * More precisely, given an unordered list of N numbers, find an element whose
+ * rank is between N / 4 and 3 * N / 4, with a high level of certainty, in less
+ * than O(N) time.
+ */
 function findApproximateMedian(nums) {
     const n = nums.length;
     const k = Math.floor(n / 2); // Target rank for the median
@@ -7674,16 +7685,16 @@ console.log(`Approximate Median: ${approximateMedian}`);
 console.log('\n');
 
 /*
-* Q140.
-* In chess, the Elo rating system is used to calculate player strengths based
-* on game results.
-* A simplified description of the Elo system is as follows. Every player begins
-* at the same score. For each subsequent game, the loser transfers some points
-* to the winner, where the amount of points transferred depends on how unlikely
-* the win is. For example, a 1200-ranked player should gain much more points
-* for beating a 2000-ranked player than for beating a 1300-ranked player.
-* Implement this system.
-*/
+ * Q140.
+ * In chess, the Elo rating system is used to calculate player strengths based
+ * on game results.
+ * A simplified description of the Elo system is as follows. Every player begins
+ * at the same score. For each subsequent game, the loser transfers some points
+ * to the winner, where the amount of points transferred depends on how unlikely
+ * the win is. For example, a 1200-ranked player should gain much more points
+ * for beating a 2000-ranked player than for beating a 1300-ranked player.
+ * Implement this system.
+ */
 class EloRatingSystem {
     static #_INITIAL_RATING = 1200;
     static #_K_FACTOR = 32;
@@ -7705,18 +7716,30 @@ class EloRatingSystem {
         const winnerRating = this.#_ratings.get(winner) || 0;
         const loserRating = this.#_ratings.get(loser) || 0;
 
-        const expectedScoreWinner = this.getExpectedScore(winnerRating, loserRating);
-        const expectedScoreLoser = this.getExpectedScore(loserRating, winnerRating);
+        const expectedScoreWinner = this.getExpectedScore(
+            winnerRating,
+            loserRating
+        );
+        const expectedScoreLoser = this.getExpectedScore(
+            loserRating,
+            winnerRating
+        );
 
-        const ratingChangeWinner = Math.round(EloRatingSystem.#_K_FACTOR * (1 - expectedScoreWinner));
-        const ratingChangeLoser = Math.round(EloRatingSystem.#_K_FACTOR * (0 - expectedScoreLoser));
+        const ratingChangeWinner = Math.round(
+            EloRatingSystem.#_K_FACTOR * (1 - expectedScoreWinner)
+        );
+        const ratingChangeLoser = Math.round(
+            EloRatingSystem.#_K_FACTOR * (0 - expectedScoreLoser)
+        );
 
         this.#_ratings.set(winner, winnerRating + ratingChangeWinner);
         this.#_ratings.set(loser, loserRating + ratingChangeLoser);
     }
 
     getExpectedScore(playerRating, opponentRating) {
-        return 1.0 / (1.0 + Math.pow(10, (opponentRating - playerRating) / 400));
+        return (
+            1.0 / (1.0 + Math.pow(10, (opponentRating - playerRating) / 400))
+        );
     }
 }
 
@@ -7730,6 +7753,607 @@ console.log(`Player 2 Rating: ${eloRatingSystem.getRating('Player 2')}`);
 
 eloRatingSystem.updateRating('Player 1', 'Player 2');
 
-console.log(`Player 1 Rating after update: ${eloRatingSystem.getRating('Player 1')}`);
-console.log(`Player 2 Rating after update: ${eloRatingSystem.getRating('Player 2')}`);
+console.log(
+    `Player 1 Rating after update: ${eloRatingSystem.getRating('Player 1')}`
+);
+console.log(
+    `Player 2 Rating after update: ${eloRatingSystem.getRating('Player 2')}`
+);
+console.log('\n');
+
+/*
+ * Q141.
+ * You are given a string consisting of the letters x and y, such as xyxxxyxyy.
+ * In addition, you have an operation called flip, which changes a single x to y
+ * or vice versa.
+ * Determine how many times you would need to apply this operation to ensure
+ * that all x's come before all y's. In the preceding example, it suffices to
+ * flip the second and sixth characters, so you should return 2.
+ */
+function countFlips(str) {
+    let flips = 0;
+    let yCount = 0;
+
+    for (let i = 0; i < str.length; i++) {
+        if (str[i] === 'x') {
+            if (yCount > 0) {
+                flips++;
+                yCount = 0;
+            }
+        } else {
+            yCount++;
+        }
+    }
+
+    return flips;
+}
+
+console.log('========= Q141 =========');
+const stringToFlip = 'xyxxxyxyy';
+const flips = countFlips(stringToFlip);
+console.log(`Number of flips required: ${flips}`);
+console.log('\n');
+
+/*
+ * Q142.
+ * At a party, there is a single person who everyone knows, but who does not
+ * know anyone in return (the "celebrity"). To help figure out who this is, you
+ * have access to an O(1) method called knows(a, b), which returns True if
+ * person a knows person b, else False.
+ * Given a list of N people and the above operation, find a way to identify the
+ * celebrity in O(N) time.
+ */
+function findCelebrity(party) {
+    const n = party.length;
+    let candidate = 0;
+
+    for (let i = 1; i < n; i++) {
+        if (knows(candidate, i, party)) {
+            candidate = i;
+        }
+    }
+
+    if (isCelebrity(candidate, party)) {
+        return candidate;
+    }
+
+    return -1;
+}
+
+function knows(a, b, party) {
+    return party[a][b];
+}
+
+function isCelebrity(person, party) {
+    const n = party.length;
+
+    for (let i = 0; i < n; i++) {
+        if (
+            i !== person &&
+            (knows(person, i, party) || !knows(i, person, party))
+        ) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+console.log('========= Q142 =========');
+const party = [
+    [0, 1, 0, 1],
+    [0, 0, 0, 1],
+    [0, 1, 0, 1],
+    [0, 0, 0, 0],
+];
+const celebrity = findCelebrity(party);
+
+if (celebrity !== -1) {
+    console.log(`Celebrity found: Person ${celebrity}`);
+} else {
+    console.log('No celebrity found');
+}
+console.log('\n');
+
+/*
+ * Q143.
+ * Write a program to determine how many distinct ways there are to create a max
+ * heap from a list of N given integers.
+ * For example, if N = 3, and our integers are [1, 2, 3], there are two ways,
+ * shown below.
+ * "   3      3    "
+ * "  / \    / \   "
+ * " 1   2  2   1  "
+ */
+function countDistinctWays(N) {
+    let dp = new Array(N + 1).fill(0).map(() => new Array(N + 1).fill(0));
+    let nck = new Array(N + 1).fill(0).map(() => new Array(N + 1).fill(0));
+
+    computeBinomialCoefficients(N, nck);
+
+    for (let n = 1; n <= N; n++) {}
+
+    let totalDistinctWays = 0;
+    for (let h = 1; h <= N; h++) {
+        totalDistinctWays += dp[N][h];
+    }
+
+    return totalDistinctWays;
+}
+
+function computeBinomialCoefficients(N, nck) {
+    for (let n = 0; n <= N; n++) {
+        nck[n][0] = 1; // C(n, 0) = 1
+
+        for (let k = 1; k <= n; k++) {
+            nck[n][k] = nck[n - 1][k - 1] + nck[n - 1][k];
+        }
+    }
+}
+
+console.log('========= Q143 =========');
+const numsForMaxheap = 3;
+const distinctWays = countDistinctWays(numsForMaxheap);
+console.log(
+    `Distinct ways to create a max heap with ${numsForMaxheap} elements: ${distinctWays}`
+);
+console.log('\n');
+
+/*
+ * Q144.
+ * Given an integer n, find the next biggest integer with the same number of
+ * 1-bits on. For example, given the number 6 (0110 in binary), return 9 (1001).
+ */
+function getNextIntegerWithSameBits(n) {
+    let c = n;
+    let c0 = 0;
+    let c1 = 0;
+
+    // Count trailing zeros
+    while ((c & 1) === 0 && c !== 0) {
+        c0++;
+        c >>= 1;
+    }
+
+    // Count ones
+    while ((c & 1) === 1) {
+        c1++;
+        c >>= 1;
+    }
+
+    // If n is a sequence of 1s followed by 0s or if n is 0, there is no bigger integer
+    if (c0 + c1 === 31 || c0 + c1 === 0) {
+        return -1;
+    }
+
+    // Position of rightmost non-trailing zero
+    let p = c0 + c1;
+
+    // Flip rightmost non-trailing zero
+    n |= 1 << p;
+
+    // Clear all bits to the right of p
+    n &= ~((1 << p) - 1);
+
+    // Insert (c1 - 1) ones on the right
+    n |= (1 << (c1 - 1)) - 1;
+
+    return n;
+}
+
+console.log('========= Q144 =========');
+const nToFindNextBiggestInt = 6;
+const nextBiggestInt = getNextIntegerWithSameBits(nToFindNextBiggestInt);
+console.log(
+    `Next biggest integer with same number of 1-bits: ${nextBiggestInt}`
+);
+console.log('\n');
+
+/*
+ * Q145.
+ * reduce (also known as fold) is a function that takes in an array, a combining
+ * function, and an initial value and builds up a result by calling the
+ * combining function on each element of the array, left to right. For example,
+ * we can write sum() in terms of reduce:
+ * " def add(a, b):                    "
+ * "     return a + b                  "
+ * "                                   "
+ * " def sum(lst):                     "
+ * "     return reduce(lst, add, 0)    "
+ * This should call add on the initial value with the first element of the
+ * array, and then the result of that with the second element of the array, and
+ * so on until we reach the end, when we return the sum of the array.
+ * Implement your own version of reduce.
+ */
+function reduce(array, combiner, initialValue) {
+    let result = initialValue;
+
+    for (let i = 0; i < array.length; i++) {
+        result = combiner(result, array[i]);
+    }
+
+    return result;
+}
+
+console.log('========= Q145 =========');
+const numbersToSum = [1, 2, 3, 4, 5];
+const sum = reduce(numbersToSum, (a, b) => a + b, 0);
+console.log(`Sum: ${sum}`);
+
+const strings = ['Hello', ' ', 'World', '!'];
+const concat = reduce(strings, (a, b) => a + b, '');
+console.log(`Concatenation: ${concat}`);
+console.log('\n');
+
+/*
+ * Q146.
+ * Given a binary search tree and a range [a, b] (inclusive), return the sum of
+ * the elements of the binary search tree within the range.
+ * For example, given the following tree:
+ * "     5         "
+ * "    / \        "
+ * "   3   8       "
+ * "  / \ / \      "
+ * " 2  4 6  10    "
+ * and the range [4, 9], return 23 (5 + 4 + 6 + 8).
+ */
+function rangeSum(root, low, high) {
+    if (!root) {
+        return 0;
+    }
+
+    if (root.val >= low && root.val <= high) {
+        return (
+            root.val +
+            rangeSum(root.left, low, high) +
+            rangeSum(root.right, low, high)
+        );
+    }
+
+    if (root.val < low) {
+        return rangeSum(root.right, low, high);
+    }
+
+    if (root.val > high) {
+        return rangeSum(root.left, low, high);
+    }
+
+    return 0;
+}
+
+console.log('========= Q146 =========');
+const treeToRangeSum = new TreeNode(5);
+treeToRangeSum.left = new TreeNode(3);
+treeToRangeSum.right = new TreeNode(8);
+treeToRangeSum.left.left = new TreeNode(2);
+treeToRangeSum.left.right = new TreeNode(4);
+treeToRangeSum.right.left = new TreeNode(6);
+treeToRangeSum.right.right = new TreeNode(10);
+
+const rangeSumInTree = rangeSum(treeToRangeSum, 4, 9);
+console.log(`Range sum: ${rangeSumInTree}`); // Output: 23
+console.log('\n');
+
+/*
+ * Q147.
+ * You are given a set of synonyms, such as (big, large) and (eat, consume).
+ * Using this set, determine if two sentences with the same number of words are
+ * equivalent.
+ * For example, the following two sentences are equivalent:
+ * "He wants to eat food."
+ * "He wants to consume food."
+ * Note that the synonyms (a, b) and (a, c) do not necessarily imply (b, c):
+ * consider the case of (coach, bus) and (coach, teacher).
+ * Follow-up: what if we can assume that (a, b) and (a, c) do in fact imply (b,
+ * c)?
+ */
+class UnionFind {
+    #_parent;
+
+    constructor(n) {
+        this.#_parent = new Array(n);
+
+        for (let i = 0; i < n; i++) {
+            this.#_parent[i] = i;
+        }
+    }
+
+    find(x) {
+        if (this.#_parent[x] !== x) {
+            this.#_parent[x] = this.find(this.#_parent[x]);
+        }
+        return this.#_parent[x];
+    }
+
+    union(x, y) {
+        const rootX = this.find(x);
+        const rootY = this.find(y);
+        if (rootX !== rootY) {
+            this.#_parent[rootX] = rootY;
+        }
+    }
+}
+
+function areSentencesEquivalent(sentence1, sentence2, synonyms) {
+    let wordIndexMap = new Map();
+    let index = 0;
+
+    for (const synonymPair of synonyms) {
+        const word1 = synonymPair[0];
+        const word2 = synonymPair[1];
+
+        if (!wordIndexMap.has(word1)) {
+            wordIndexMap.set(word1, index++);
+        }
+        if (!wordIndexMap.has(word2)) {
+            wordIndexMap.set(word2, index++);
+        }
+    }
+
+    const n = wordIndexMap.size;
+    const uf = new UnionFind(n);
+
+    for (const synonymPair of synonyms) {
+        const index1 = wordIndexMap.get(synonymPair[0]);
+        const index2 = wordIndexMap.get(synonymPair[1]);
+        uf.union(index1, index2);
+    }
+
+    const words1 = sentence1.split(' ');
+    const words2 = sentence2.split(' ');
+
+    if (words1.length !== words2.length) {
+        return false;
+    }
+
+    for (let i = 0; i < words1.length; i++) {
+        const word1 = words1[i];
+        const word2 = words2[i];
+
+        if (word1 === word2) {
+            continue;
+        }
+
+        if (!wordIndexMap.has(word1) || !wordIndexMap.has(word2)) {
+            return false;
+        }
+
+        const index1 = wordIndexMap.get(word1);
+        const index2 = wordIndexMap.get(word2);
+
+        if (uf.find(index1) !== uf.find(index2)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+console.log('========= Q147 =========');
+const synonyms = [
+    ['big', 'large'],
+    ['eat', 'consume'],
+];
+const sentenceToCompare1 = 'He wants to eat food.';
+const sentenceToCompare2 = 'He wants to consume food.';
+
+const areSentencesEqual = areSentencesEquivalent(
+    sentenceToCompare1,
+    sentenceToCompare2,
+    synonyms
+);
+console.log(`Are sentences equal: ${areSentencesEqual}`); // Output: true
+console.log('\n');
+
+/*
+ * Q148.
+ * You are given a huge list of airline ticket prices between different cities
+ * around the world on a given day. These are all direct flights. Each element
+ * in the list has the format (source_city, destination, price).
+ * Consider a user who is willing to take up to k connections from their origin
+ * city A to their destination B. Find the cheapest fare possible for this
+ * journey and print the itinerary for that journey.
+ * For example, our traveler wants to go from JFK to LAX with up to 3
+ * connections, and our input flights are as follows:
+ * " [                         "
+ * "     ('JFK', 'ATL', 150),  "
+ * "     ('ATL', 'SFO', 400),  "
+ * "     ('ORD', 'LAX', 200),  "
+ * "     ('LAX', 'DFW', 80),   "
+ * "     ('JFK', 'HKG', 800),  "
+ * "     ('ATL', 'ORD', 90),   "
+ * "     ('JFK', 'LAX', 500),  "
+ * " ]                         "
+ * Due to some improbably low flight prices, the cheapest itinerary would be JFK
+ * -> ATL -> ORD -> LAX, costing $440.
+ */
+class Flight {
+    constructor(source, destination, price) {
+        this.source = source;
+        this.destination = destination;
+        this.price = price;
+    }
+}
+
+class City {
+    constructor(city, cost) {
+        this.city = city;
+        this.cost = cost;
+    }
+
+    compareTo(other) {
+        return this.cost - other.cost;
+    }
+}
+
+function findCheapestItinerary(flights, source, destination, maxConnections) {
+    let graph = buildConnectionGraph(flights);
+    let bestPrices = new Map();
+    let connections = new Map();
+    let previousCities = new Map();
+
+    let queue = [];
+    queue.push(new City(source, 0));
+    bestPrices.set(source, 0);
+    connections.set(source, 0);
+
+    while (queue.length > 0) {
+        const current = queue.shift();
+        const currentCity = current.city;
+        const currentCost = current.cost;
+        const currentConnections = connections.get(currentCity);
+
+        if (currentConnections > maxConnections) {
+            continue;
+        }
+
+        if (currentCity === destination) {
+            continue;
+        }
+
+        let currentFlights = graph.get(currentCity) || [];
+
+        for (const flight of currentFlights) {
+            const newCost = currentCost + flight.price;
+            const newConnections = currentConnections + 1;
+
+            if (
+                !bestPrices.has(flight.destination) ||
+                newCost < bestPrices.get(flight.destination) ||
+                (newCost === bestPrices.get(flight.destination) &&
+                    newConnections < connections.get(flight.destination))
+            ) {
+                bestPrices.set(flight.destination, newCost);
+                connections.set(flight.destination, newConnections);
+                previousCities.set(flight.destination, currentCity);
+                queue.push(new City(flight.destination, newCost));
+            }
+        }
+    }
+
+    let itinerary = [];
+    let currentCity = destination;
+
+    while (currentCity) {
+        itinerary.unshift(currentCity);
+        currentCity = previousCities.get(currentCity);
+    }
+
+    return itinerary;
+}
+
+function buildConnectionGraph(flights) {
+    let graph = new Map();
+
+    for (const flight of flights) {
+        if (!graph.has(flight.source)) {
+            graph.set(flight.source, new Array());
+        }
+        graph.get(flight.source).push(flight);
+    }
+
+    return graph;
+}
+
+console.log('========= Q148 =========');
+const flights = [
+    new Flight('JFK', 'ATL', 150),
+    new Flight('ATL', 'SFO', 400),
+    new Flight('ORD', 'LAX', 200),
+    new Flight('LAX', 'DFW', 80),
+    new Flight('JFK', 'HKG', 800),
+    new Flight('ATL', 'ORD', 90),
+    new Flight('JFK', 'LAX', 500),
+];
+
+const source = 'JFK';
+const destination = 'LAX';
+const maxConnections = 3;
+
+const itinerary = findCheapestItinerary(
+    flights,
+    source,
+    destination,
+    maxConnections
+);
+console.log(`Cheapest itinerary: ${itinerary}`); // Output: JFK -> ATL -> ORD -> LAX
+console.log('\n');
+
+/*
+ * Q149.
+ * Write a program that determines the smallest number of perfect squares that
+ * sum up to N.
+ * Here are a few examples:
+ * Given N = 4, return 1 (4)
+ * Given N = 17, return 2 (16 + 1)
+ * Given N = 18, return 2 (9 + 9)
+ */
+function numSquares(n) {
+    let dp = new Array(n + 1).fill(Number.MAX_SAFE_INTEGER);
+    dp[0] = 0;
+
+    for (let i = 1; i <= n; i++) {
+        for (let j = 1; j * j <= i; j++) {
+            dp[i] = Math.min(dp[i], dp[i - j * j] + 1);
+        }
+    }
+
+    return dp[n];
+}
+
+console.log('========= Q149 =========');
+const n1 = 4;
+const n2 = 17;
+const n3 = 18;
+
+console.log(`Number of perfect squares for ${n1}: ${numSquares(n1)}`); // Output: 1
+console.log(`Number of perfect squares for ${n2}: ${numSquares(n2)}`); // Output: 2
+console.log(`Number of perfect squares for ${n3}: ${numSquares(n3)}`); // Output: 2
+console.log('\n');
+
+/*
+ * Q150.
+ * You are given a histogram consisting of rectangles of different heights.
+ * These heights are represented in an input list, such that [1, 3, 2, 5]
+ * corresponds to the following diagram:
+ * "       x   "
+ * "       x   "
+ * "   x   x   "
+ * "   x x x   "
+ * " x x x x   "
+ * Determine the area of the largest rectangle that can be formed only from the
+ * bars of the histogram. For the diagram above, for example, this would be six,
+ * representing the 2 x 3 area at the bottom right.
+ */
+function largestRectangleAreaInHistogram(heights) {
+    let maxArea = 0;
+    let stack = new Stack();
+
+    let i = 0;
+    while (i < heights.length) {
+        if (stack.isEmpty() || heights[i] >= heights[stack.peek()]) {
+            stack.push(i);
+            i++;
+        } else {
+            const top = stack.pop();
+            const area =
+                heights[top] * (stack.isEmpty() ? i : i - stack.peek() - 1);
+            maxArea = Math.max(maxArea, area);
+        }
+    }
+
+    while (!stack.isEmpty()) {
+        const top = stack.pop();
+        const area =
+            heights[top] * (stack.isEmpty() ? i : i - stack.peek() - 1);
+        maxArea = Math.max(maxArea, area);
+    }
+
+    return maxArea;
+}
+
+console.log('========= Q150 =========');
+const histogramHeights = [1, 3, 2, 5];
+const largestArea = largestRectangleAreaInHistogram(histogramHeights);
+console.log(`Largest rectangle area: ${largestArea}`); // Output: 6
 console.log('\n');

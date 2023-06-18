@@ -21,6 +21,7 @@ import java.util.Queue;
 import java.util.Collections;
 import java.util.EmptyStackException;
 import java.util.NoSuchElementException;
+import java.util.function.BiFunction;
 
 public class QuestionsAndSolutions {
     // S1.
@@ -4764,6 +4765,393 @@ public class QuestionsAndSolutions {
         }
     }
 
+    // S141.
+    public static int countFlips(String str) {
+        int flips = 0;
+        int yCount = 0;
+
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+
+            if (c == 'x') {
+                if (yCount > 0) {
+                    flips++;
+                    yCount = 0;
+                }
+            } else if (c == 'y') {
+                yCount++;
+            }
+        }
+
+        return flips;
+    }
+
+    // S142.
+    public static int findCelebrity(int[][] party) {
+        int n = party.length;
+        int candidate = 0;
+
+        for (int i = 1; i < n; i++) {
+            if (knows(candidate, i, party)) {
+                candidate = i;
+            }
+        }
+
+        if (isCelebrity(candidate, party)) {
+            return candidate;
+        }
+
+        return -1;
+    }
+
+    private static boolean knows(int a, int b, int[][] party) {
+        return party[a][b] == 1;
+    }
+
+    private static boolean isCelebrity(int person, int[][] party) {
+        int n = party.length;
+
+        for (int i = 0; i < n; i++) {
+            if (i != person && (knows(person, i, party) || !knows(i, person, party))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // S143.
+    public static long[][] calculateBinomialCoefficients(int n) {
+        long[][] nCr = new long[n + 1][n + 1];
+
+        for (int i = 0; i <= n; i++) {
+            nCr[i][0] = 1;
+            nCr[i][i] = 1;
+        }
+
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j < i; j++) {
+                nCr[i][j] = nCr[i - 1][j - 1] + nCr[i - 1][j];
+            }
+        }
+
+        return nCr;
+    }
+
+    public static int getLeftSubtreeSize(int totalElements) {
+        if (totalElements == 1)
+            return 0;
+
+        int h = (int) (Math.log(totalElements) / Math.log(2));
+
+        int maxLastLevelNode = (int) Math.pow(2, h) - 1;
+        int lastLevelNodes = Math.min(totalElements - maxLastLevelNode, maxLastLevelNode / 2);
+
+        int leftSubtreeSize = maxLastLevelNode / 2 + lastLevelNodes;
+
+        return leftSubtreeSize;
+    }
+
+    public static long countMaxHeapWays(int totalElements) {
+        if (totalElements <= 1)
+            return 1;
+
+        int leftSubtreeSize = getLeftSubtreeSize(totalElements);
+        long leftSubtreeWays = countMaxHeapWays(leftSubtreeSize);
+
+        long[][] nCr = calculateBinomialCoefficients(totalElements - 1);
+        long combinations = nCr[totalElements - 1][leftSubtreeSize];
+
+        return leftSubtreeWays * combinations;
+    }
+
+    // S144.
+    public static int getNextIntegerWithSameBits(int n) {
+        int c = n;
+        int c0 = 0;
+        int c1 = 0;
+
+        // Count trailing zeros
+        while ((c & 1) == 0 && c != 0) {
+            c0++;
+            c >>= 1;
+        }
+
+        // Count ones
+        while ((c & 1) == 1) {
+            c1++;
+            c >>= 1;
+        }
+
+        // If n is a sequence of 1s followed by 0s or if n is 0, there is no bigger
+        // integer
+        if (c0 + c1 == 31 || c0 + c1 == 0) {
+            return -1;
+        }
+
+        // Position of the rightmost non-trailing zero
+        int p = c0 + c1;
+
+        // Flip the rightmost non-trailing zero
+        n |= (1 << p);
+
+        // Clear all bits to the right of p
+        n &= ~((1 << p) - 1);
+
+        // Insert (c1 - 1) ones on the right
+        n |= (1 << (c1 - 1)) - 1;
+
+        return n;
+    }
+
+    // S145.
+    public static <T> T reduce(T[] array, BiFunction<T, T, T> combiner, T initialValue) {
+        T result = initialValue;
+        for (T element : array) {
+            result = combiner.apply(result, element);
+        }
+        return result;
+    }
+
+    // S146.
+    public static int rangeSum(TreeNode<Integer> root, int low, int high) {
+        if (root == null) {
+            return 0;
+        }
+
+        if (root.val >= low && root.val <= high) {
+            return root.val + rangeSum(root.left, low, high) + rangeSum(root.right, low, high);
+        }
+
+        if (root.val < low) {
+            return rangeSum(root.right, low, high);
+        }
+
+        if (root.val > high) {
+            return rangeSum(root.left, low, high);
+        }
+
+        return 0;
+    }
+
+    // S147.
+    static class UnionFind {
+        private int[] parent;
+
+        public UnionFind(int n) {
+            parent = new int[n];
+            for (int i = 0; i < n; i++) {
+                parent[i] = i;
+            }
+        }
+
+        public int find(int x) {
+            if (parent[x] != x) {
+                parent[x] = find(parent[x]);
+            }
+            return parent[x];
+        }
+
+        public void union(int x, int y) {
+            int rootX = find(x);
+            int rootY = find(y);
+            if (rootX != rootY) {
+                parent[rootX] = rootY;
+            }
+        }
+    }
+
+    public static boolean areSentencesEquivalent(String sentence1, String sentence2, String[][] synonyms) {
+        Map<String, Integer> wordIndexMap = new HashMap<>();
+        int index = 0;
+
+        for (String[] synonymPair : synonyms) {
+            String word1 = synonymPair[0];
+            String word2 = synonymPair[1];
+
+            if (!wordIndexMap.containsKey(word1)) {
+                wordIndexMap.put(word1, index++);
+            }
+            if (!wordIndexMap.containsKey(word2)) {
+                wordIndexMap.put(word2, index++);
+            }
+        }
+
+        int n = wordIndexMap.size();
+        UnionFind uf = new UnionFind(n);
+
+        for (String[] synonymPair : synonyms) {
+            int index1 = wordIndexMap.get(synonymPair[0]);
+            int index2 = wordIndexMap.get(synonymPair[1]);
+            uf.union(index1, index2);
+        }
+
+        String[] words1 = sentence1.split(" ");
+        String[] words2 = sentence2.split(" ");
+
+        if (words1.length != words2.length) {
+            return false;
+        }
+
+        for (int i = 0; i < words1.length; i++) {
+            String word1 = words1[i];
+            String word2 = words2[i];
+
+            if (word1.equals(word2)) {
+                continue;
+            }
+
+            if (!wordIndexMap.containsKey(word1) || !wordIndexMap.containsKey(word2)) {
+                return false;
+            }
+
+            int index1 = wordIndexMap.get(word1);
+            int index2 = wordIndexMap.get(word2);
+
+            if (uf.find(index1) != uf.find(index2)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // S148.
+    static class Flight {
+        String source;
+        String destination;
+        int price;
+
+        public Flight(String source, String destination, int price) {
+            this.source = source;
+            this.destination = destination;
+            this.price = price;
+        }
+    }
+
+    static class City implements Comparable<City> {
+        String city;
+        int cost;
+
+        public City(String city, int cost) {
+            this.city = city;
+            this.cost = cost;
+        }
+
+        @Override
+        public int compareTo(City other) {
+            return Integer.compare(this.cost, other.cost);
+        }
+    }
+
+    public static List<String> findItinerary(List<Flight> flights, String source, String destination,
+            int maxConnections) {
+        Map<String, List<Flight>> graph = buildGraph(flights);
+        Map<String, Integer> bestPrices = new HashMap<>();
+        Map<String, Integer> connections = new HashMap<>();
+        Map<String, String> previousCities = new HashMap<>();
+
+        PriorityQueue<City> queue = new PriorityQueue<>();
+        queue.add(new City(source, 0));
+        bestPrices.put(source, 0);
+        connections.put(source, 0);
+
+        while (!queue.isEmpty()) {
+            City current = queue.poll();
+            String currentCity = current.city;
+            int currentCost = current.cost;
+            int currentConnections = connections.get(currentCity);
+
+            if (currentConnections > maxConnections) {
+                continue;
+            }
+
+            if (currentCity.equals(destination)) {
+                continue;
+            }
+
+            List<Flight> currentFlights = graph.getOrDefault(currentCity, new ArrayList<>());
+
+            for (Flight flight : currentFlights) {
+                int newCost = currentCost + flight.price;
+                int newConnections = currentConnections + 1;
+
+                if (!bestPrices.containsKey(flight.destination) || newCost < bestPrices.get(flight.destination)
+                        || (newCost == bestPrices.get(flight.destination)
+                                && newConnections < connections.get(flight.destination))) {
+                    bestPrices.put(flight.destination, newCost);
+                    connections.put(flight.destination, newConnections);
+                    previousCities.put(flight.destination, currentCity);
+                    queue.add(new City(flight.destination, newCost));
+                }
+            }
+        }
+
+        List<String> itinerary = new ArrayList<>();
+        String currentCity = destination;
+
+        while (currentCity != null) {
+            itinerary.add(0, currentCity);
+            currentCity = previousCities.get(currentCity);
+        }
+
+        return itinerary;
+    }
+
+    private static Map<String, List<Flight>> buildGraph(List<Flight> flights) {
+        Map<String, List<Flight>> graph = new HashMap<>();
+
+        for (Flight flight : flights) {
+            if (!graph.containsKey(flight.source)) {
+                graph.put(flight.source, new ArrayList<>());
+            }
+            graph.get(flight.source).add(flight);
+        }
+
+        return graph;
+    }
+
+    // S149.
+    public static int numSquares(int n) {
+        int[] dp = new int[n + 1];
+        Arrays.fill(dp, Integer.MAX_VALUE);
+        dp[0] = 0;
+
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j * j <= i; j++) {
+                dp[i] = Math.min(dp[i], dp[i - j * j] + 1);
+            }
+        }
+
+        return dp[n];
+    }
+
+    // S150.
+    public static int largestRectangleAreaInHistogram(int[] heights) {
+        int maxArea = 0;
+        Stack<Integer> stack = new Stack<>();
+
+        int i = 0;
+        while (i < heights.length) {
+            if (stack.isEmpty() || heights[i] >= heights[stack.peek()]) {
+                stack.push(i);
+                i++;
+            } else {
+                int top = stack.pop();
+                int area = heights[top] * (stack.isEmpty() ? i : (i - stack.peek() - 1));
+                maxArea = Math.max(maxArea, area);
+            }
+        }
+
+        while (!stack.isEmpty()) {
+            int top = stack.pop();
+            int area = heights[top] * (stack.isEmpty() ? i : (i - stack.peek() - 1));
+            maxArea = Math.max(maxArea, area);
+        }
+
+        return maxArea;
+    }
+
     public static void main(String[] args) {
         /*
          * Q1.
@@ -7749,6 +8137,218 @@ public class QuestionsAndSolutions {
 
         System.out.println("Player 1 rating after update: " + elo.getRating("Player 1"));
         System.out.println("Player 2 rating after update: " + elo.getRating("Player 2"));
+
+        /*
+         * Q141.
+         * You are given a string consisting of the letters x and y, such as xyxxxyxyy.
+         * In addition, you have an operation called flip, which changes a single x to y
+         * or vice versa.
+         * Determine how many times you would need to apply this operation to ensure
+         * that all x's come before all y's. In the preceding example, it suffices to
+         * flip the second and sixth characters, so you should return 2.
+         */
+        System.out.println("========= Q141 ==========");
+        String stringToFlip = "xyxxxyxyy";
+        int flips = countFlips(stringToFlip);
+        System.out.println("Number of flips required: " + flips);
+
+        /*
+         * Q142.
+         * At a party, there is a single person who everyone knows, but who does not
+         * know anyone in return (the "celebrity"). To help figure out who this is, you
+         * have access to an O(1) method called knows(a, b), which returns True if
+         * person a knows person b, else False.
+         * Given a list of N people and the above operation, find a way to identify the
+         * celebrity in O(N) time.
+         */
+        System.out.println("========= Q142 ==========");
+        int[][] party = {
+                { 0, 1, 0, 1 },
+                { 0, 0, 0, 1 },
+                { 0, 1, 0, 1 },
+                { 0, 0, 0, 0 }
+        };
+
+        int celebrity = findCelebrity(party);
+
+        if (celebrity != -1) {
+            System.out.println("Celebrity found: Person " + celebrity);
+        } else {
+            System.out.println("No celebrity found.");
+        }
+
+        /*
+         * Q143.
+         * Write a program to determine how many distinct ways there are to create a max
+         * heap from a list of N given integers.
+         * For example, if N = 3, and our integers are [1, 2, 3], there are two ways,
+         * shown below.
+         * "   3      3    "
+         * "  / \    / \   "
+         * " 1   2  2   1  "
+         */
+        System.out.println("========= Q143 ==========");
+        int numsForMaxheap = 5;
+        long distinctWays = countMaxHeapWays(numsForMaxheap);
+        System.out.println("Distinct ways to create a max heap with " + numsForMaxheap + " elements: " + distinctWays);
+
+        /*
+         * Q144.
+         * Given an integer n, find the next biggest integer with the same number of
+         * 1-bits on. For example, given the number 6 (0110 in binary), return 9 (1001).
+         */
+        System.out.println("========= Q144 ==========");
+        int nToFindNextBiggestInt = 6;
+        int nextInteger = getNextIntegerWithSameBits(nToFindNextBiggestInt);
+        System.out.println("Next integer with the same number of 1-bits: " + nextInteger);
+
+        /*
+         * Q145.
+         * reduce (also known as fold) is a function that takes in an array, a combining
+         * function, and an initial value and builds up a result by calling the
+         * combining function on each element of the array, left to right. For example,
+         * we can write sum() in terms of reduce:
+         * " def add(a, b):                    "
+         * "     return a + b                  "
+         * "                                   "
+         * " def sum(lst):                     "
+         * "     return reduce(lst, add, 0)    "
+         * This should call add on the initial value with the first element of the
+         * array, and then the result of that with the second element of the array, and
+         * so on until we reach the end, when we return the sum of the array.
+         * Implement your own version of reduce.
+         */
+        System.out.println("========= Q145 ==========");
+        Integer[] numbersToSum = { 1, 2, 3, 4, 5 };
+        Integer sum = reduce(numbersToSum, (first, second) -> first + second, 0);
+        System.out.println("Sum: " + sum);
+
+        String[] strings = { "Hello", " ", "World", "!" };
+        String concat = reduce(strings, (first, second) -> first + second, "");
+        System.out.println("Concatenation: " + concat);
+
+        /*
+         * Q146.
+         * Given a binary search tree and a range [a, b] (inclusive), return the sum of
+         * the elements of the binary search tree within the range.
+         * For example, given the following tree:
+         * "     5         "
+         * "    / \        "
+         * "   3   8       "
+         * "  / \ / \      "
+         * " 2  4 6  10    "
+         * and the range [4, 9], return 23 (5 + 4 + 6 + 8).
+         */
+        System.out.println("========= Q146 ==========");
+        TreeNode<Integer> treeToRangeSum = new TreeNode<>(5);
+        treeToRangeSum.left = new TreeNode<>(3);
+        treeToRangeSum.right = new TreeNode<>(8);
+        treeToRangeSum.left.left = new TreeNode<>(2);
+        treeToRangeSum.left.right = new TreeNode<>(4);
+        treeToRangeSum.right.left = new TreeNode<>(6);
+        treeToRangeSum.right.right = new TreeNode<>(10);
+
+        int rangeSum = rangeSum(treeToRangeSum, 4, 9);
+        System.out.println("Sum: " + rangeSum); // Output: 23
+
+        /*
+         * Q147.
+         * You are given a set of synonyms, such as (big, large) and (eat, consume).
+         * Using this set, determine if two sentences with the same number of words are
+         * equivalent.
+         * For example, the following two sentences are equivalent:
+         * "He wants to eat food."
+         * "He wants to consume food."
+         * Note that the synonyms (a, b) and (a, c) do not necessarily imply (b, c):
+         * consider the case of (coach, bus) and (coach, teacher).
+         * Follow-up: what if we can assume that (a, b) and (a, c) do in fact imply (b,
+         * c)?
+         */
+        System.out.println("========= Q147 ==========");
+        String sentenceToCompare1 = "He wants to eat food.";
+        String sentenceToCompare2 = "He wants to consume food.";
+
+        String[][] synonyms = { { "big", "large" }, { "eat", "consume" } };
+
+        boolean areEquivalent = areSentencesEquivalent(sentenceToCompare1, sentenceToCompare2, synonyms);
+        System.out.println("Are sentences equivalent? " + areEquivalent); // Output: true
+
+        /*
+         * Q148.
+         * You are given a huge list of airline ticket prices between different cities
+         * around the world on a given day. These are all direct flights. Each element
+         * in the list has the format (source_city, destination, price).
+         * Consider a user who is willing to take up to k connections from their origin
+         * city A to their destination B. Find the cheapest fare possible for this
+         * journey and print the itinerary for that journey.
+         * For example, our traveler wants to go from JFK to LAX with up to 3
+         * connections, and our input flights are as follows:
+         * " [                         "
+         * "     ('JFK', 'ATL', 150),  "
+         * "     ('ATL', 'SFO', 400),  "
+         * "     ('ORD', 'LAX', 200),  "
+         * "     ('LAX', 'DFW', 80),   "
+         * "     ('JFK', 'HKG', 800),  "
+         * "     ('ATL', 'ORD', 90),   "
+         * "     ('JFK', 'LAX', 500),  "
+         * " ]                         "
+         * Due to some improbably low flight prices, the cheapest itinerary would be JFK
+         * -> ATL -> ORD -> LAX, costing $440.
+         */
+        System.out.println("========= Q148 ==========");
+        List<Flight> flights = new ArrayList<>();
+        flights.add(new Flight("JFK", "ATL", 150));
+        flights.add(new Flight("ATL", "SFO", 400));
+        flights.add(new Flight("ORD", "LAX", 200));
+        flights.add(new Flight("LAX", "DFW", 80));
+        flights.add(new Flight("JFK", "HKG", 800));
+        flights.add(new Flight("ATL", "ORD", 90));
+        flights.add(new Flight("JFK", "LAX", 500));
+
+        String source = "JFK";
+        String destination = "LAX";
+        int maxConnections = 3;
+
+        List<String> itinerary = findItinerary(flights, source, destination, maxConnections);
+
+        System.out.println("Cheapest Itinerary: " + itinerary);
+
+        /*
+         * Q149.
+         * Write a program that determines the smallest number of perfect squares that
+         * sum up to N.
+         * Here are a few examples:
+         * Given N = 4, return 1 (4)
+         * Given N = 17, return 2 (16 + 1)
+         * Given N = 18, return 2 (9 + 9)
+         */
+        System.out.println("========= Q149 ==========");
+        int n1 = 4;
+        int n2 = 17;
+        int n3 = 18;
+
+        System.out.println("Number of perfect squares for " + n1 + ": " + numSquares(n1));
+        System.out.println("Number of perfect squares for " + n2 + ": " + numSquares(n2));
+        System.out.println("Number of perfect squares for " + n3 + ": " + numSquares(n3));
+
+        /*
+         * Q150.
+         * You are given a histogram consisting of rectangles of different heights.
+         * These heights are represented in an input list, such that [1, 3, 2, 5]
+         * corresponds to the following diagram:
+         * "       x   "
+         * "       x   "
+         * "   x   x   "
+         * "   x x x   "
+         * " x x x x   "
+         * Determine the area of the largest rectangle that can be formed only from the
+         * bars of the histogram. For the diagram above, for example, this would be six,
+         * representing the 2 x 3 area at the bottom right.
+         */
+        System.out.println("========= Q150 ==========");
+        int[] histogramHeights = { 1, 3, 2, 5 };
+        int largestArea = largestRectangleAreaInHistogram(histogramHeights);
+        System.out.println("Largest rectangle area: " + largestArea); // Output: 6
 
     }
 }
