@@ -21,7 +21,11 @@ import java.util.Queue;
 import java.util.Collections;
 import java.util.EmptyStackException;
 import java.util.NoSuchElementException;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.IntBinaryOperator;
 import java.util.function.BiFunction;
+import java.util.function.IntUnaryOperator;
 
 public class QuestionsAndSolutions {
     // S1.
@@ -4821,48 +4825,91 @@ public class QuestionsAndSolutions {
     }
 
     // S143.
-    public static long[][] calculateBinomialCoefficients(int n) {
-        long[][] nCr = new long[n + 1][n + 1];
+    public static int countMaxHeapWays(int n) {
+        int[] dp = new int[n + 1];
+        // Number of ways to choose j elements form i elements
+        int[][] nck = new int[n + 1][n + 1];
+        int[] log2 = new int[n + 1];
 
         for (int i = 0; i <= n; i++) {
-            nCr[i][0] = 1;
-            nCr[i][i] = 1;
+            dp[i] = -1;
         }
 
-        for (int i = 1; i <= n; i++) {
-            for (int j = 1; j < i; j++) {
-                nCr[i][j] = nCr[i - 1][j - 1] + nCr[i - 1][j];
+        for (int i = 0; i <= n; i++) {
+            for (int j = 0; j <= n; j++) {
+                nck[i][j] = -1;
             }
         }
 
-        return nCr;
+        int currLog2 = -1;
+        int currentPow2 = 1;
+
+        for (int i = 1; i <= n; i++) {
+            if (currentPow2 == i) {
+                currLog2++;
+                currentPow2 *= 2;
+            }
+            log2[i] = currLog2;
+        }
+
+        return numberOfHeaps(dp, nck, log2, n);
     }
 
-    public static int getLeftSubtreeSize(int totalElements) {
-        if (totalElements == 1)
-            return 0;
-
-        int h = (int) (Math.log(totalElements) / Math.log(2));
-
-        int maxLastLevelNode = (int) Math.pow(2, h) - 1;
-        int lastLevelNodes = Math.min(totalElements - maxLastLevelNode, maxLastLevelNode / 2);
-
-        int leftSubtreeSize = maxLastLevelNode / 2 + lastLevelNodes;
-
-        return leftSubtreeSize;
-    }
-
-    public static long countMaxHeapWays(int totalElements) {
-        if (totalElements <= 1)
+    private static int numberOfHeaps(int[] dp, int[][] nck, int[] log2, int n) {
+        if (n <= 1) {
             return 1;
+        }
 
-        int leftSubtreeSize = getLeftSubtreeSize(totalElements);
-        long leftSubtreeWays = countMaxHeapWays(leftSubtreeSize);
+        if (dp[n] != -1) {
+            return dp[n];
+        }
 
-        long[][] nCr = calculateBinomialCoefficients(totalElements - 1);
-        long combinations = nCr[totalElements - 1][leftSubtreeSize];
+        int left = getLeft(log2, n);
+        int ans = (choose(nck, n - 1, left) * numberOfHeaps(dp, nck, log2, left))
+                * (numberOfHeaps(dp, nck, log2, n - 1 - left));
+        return dp[n] = ans;
+    }
 
-        return leftSubtreeWays * combinations;
+    private static int getLeft(int[] log2, int n) {
+        if (n == 1) {
+            return 0;
+        }
+
+        int h = log2[n];
+
+        // Max number of elements that can be present in the hth level of any heap
+        int numh = (1 << h); // 2^h
+
+        // Number of elements that are actually present in the last level
+        int last = n - ((1 << h) - 1); // (2^h) - 1
+
+        if (last >= (numh / 2)) {
+            return (1 << h) - 1; // If more than half-filled
+        } else {
+            return (1 << h) - 1 - ((numh / 2) - last);
+        }
+    }
+
+    private static int choose(int[][] nck, int n, int k) {
+        if (k > n) {
+            return 0;
+        }
+
+        if (n <= 1) {
+            return 1;
+        }
+
+        if (k == 0) {
+            return 1;
+        }
+
+        if (nck[n][k] != -1) {
+            return nck[n][k];
+        }
+
+        int answer = choose(nck, n - 1, k - 1) + choose(nck, n - 1, k);
+        nck[n][k] = answer;
+        return answer;
     }
 
     // S144.
@@ -5150,6 +5197,491 @@ public class QuestionsAndSolutions {
         }
 
         return maxArea;
+    }
+
+    // S151.
+    static class Song implements Comparable<Song> {
+        int song;
+        int listIndex;
+        int nextIndex;
+
+        public Song(int song, int listIndex, int nextIndex) {
+            this.song = song;
+            this.listIndex = listIndex;
+            this.nextIndex = nextIndex;
+        }
+
+        @Override
+        public int compareTo(Song other) {
+            return Integer.compare(this.song, other.song);
+        }
+    }
+
+    public static List<Integer> createPlaylist(List<List<Integer>> rankedLists) {
+        List<Integer> playlist = new ArrayList<>();
+        PriorityQueue<Song> pq = new PriorityQueue<>();
+        int[] currentIndexList = new int[rankedLists.size()];
+
+        for (int i = 0; i < rankedLists.size(); i++) {
+            List<Integer> rankedList = rankedLists.get(i);
+            currentIndexList[i] = 0;
+            if (!rankedList.isEmpty()) {
+                pq.offer(new Song(rankedList.get(0), i, 0));
+            }
+        }
+
+        while (!pq.isEmpty()) {
+            Song element = pq.poll();
+            int song = element.song;
+            int listIndex = element.listIndex;
+            int nextIndex = element.nextIndex;
+            boolean isInOtherList = false;
+
+            if (!playlist.contains(song)) {
+                for (int i = 0; i < rankedLists.size(); i++) {
+                    if (i == listIndex) {
+                        continue;
+                    }
+
+                    List<Integer> rankedList = rankedLists.get(i);
+                    if (rankedList.contains(song)) {
+                        isInOtherList = true;
+                        int index = rankedList.indexOf(song);
+
+                        if (currentIndexList[i] >= index) {
+                            playlist.add(song);
+                        }
+                    }
+                }
+
+                if (!isInOtherList) {
+                    playlist.add(song);
+                }
+            }
+
+            // Move to the next song in the current ranked list
+            nextIndex++;
+            currentIndexList[listIndex] = nextIndex;
+            List<Integer> rankedList = rankedLists.get(listIndex);
+            if (nextIndex < rankedList.size()) {
+                pq.offer(new Song(rankedList.get(nextIndex), listIndex, nextIndex));
+            }
+        }
+
+        return playlist;
+    }
+
+    // S152.
+    public static boolean isValidCode(Map<Integer, Integer> guesses) {
+        for (int code = 123456; code <= 987654; code++) {
+            if (hasCorrectScore(code, guesses)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean hasCorrectScore(int code, Map<Integer, Integer> guesses) {
+        String codeStr = String.valueOf(code);
+
+        for (Map.Entry<Integer, Integer> entry : guesses.entrySet()) {
+            int guess = entry.getKey();
+            int correctScore = entry.getValue();
+
+            int count = 0;
+            String guessStr = String.valueOf(guess);
+            for (int i = 0; i < 6; i++) {
+                if (codeStr.charAt(i) == guessStr.charAt(i)) {
+                    count++;
+                }
+            }
+
+            if (count != correctScore) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // S153.
+    public static IntBinaryOperator createAdder(int numArgs) {
+        return (int... values) -> {
+            if (values.length != numArgs) {
+                throw new IllegalArgumentException("Invalid number of arguments");
+            }
+
+            int count = 0;
+            int sum = 0;
+            for (int value : values) {
+                if (count == 0 || count == 1 || count % 2 != 0) {
+                    sum += value;
+                } else {
+                    sum -= value;
+                }
+                count++;
+            }
+
+            return sum;
+        };
+    }
+
+    @FunctionalInterface
+    public interface IntBinaryOperator {
+        int apply(int... values);
+    }
+    // @FunctionalInterface
+    // public interface IntFunction {
+    // IntFunction apply(int value);
+
+    // int getResult();
+    // }
+
+    // public static IntFunction addSubtract(int num) {
+    // int count = 0;
+
+    // IntFunction innerAddSubtract = value -> {
+    // if (value == null)
+    // return num;
+
+    // if (count % 2 == 0) {
+    // num -= value;
+    // } else {
+    // num += value;
+    // }
+    // count++;
+    // return addSubtract(num);
+    // };
+
+    // innerAddSubtract.getResult = () -> num;
+
+    // count++;
+    // return innerAddSubtract;
+    // }
+
+    // S154.
+    static int longestSubsequence(int v[]) {
+        if (v.length == 0)
+            return 0;
+
+        int[] tail = new int[v.length];
+        int length = 1; // Always points empty slot in tail
+        tail[0] = v[0];
+
+        for (int i = 1; i < v.length; i++) {
+
+            if (v[i] > tail[length - 1]) {
+                tail[length++] = v[i];
+            } else {
+                // find the largest value just smaller than
+                // v[i] in tail
+                // v[i] will extend a subsequence and
+                // discard older subsequence
+                int idx = Arrays.binarySearch(
+                        tail, 0, length - 1, v[i]);
+
+                // this negative value stores the
+                // appropriate place where the element is
+                // supposed to be stored
+                if (idx < 0)
+                    idx = -1 * idx - 1;
+
+                tail[idx] = v[i];
+            }
+        }
+        return length;
+
+    }
+
+    // S155.
+    public static String rearrangeCharacters(String s) {
+        char[] chars = s.toCharArray();
+        Map<Character, Integer> freqMap = new HashMap<>();
+        PriorityQueue<Character> maxHeap = new PriorityQueue<>((a, b) -> freqMap.get(b) - freqMap.get(a));
+
+        for (char c : chars) {
+            freqMap.put(c, freqMap.getOrDefault(c, 0) + 1);
+        }
+
+        maxHeap.addAll(freqMap.keySet());
+
+        StringBuilder result = new StringBuilder();
+        while (!maxHeap.isEmpty()) {
+            char currChar = maxHeap.poll();
+
+            if (result.length() > 0 && result.charAt(result.length() - 1) == currChar) {
+                return null;
+            }
+
+            result.append(currChar);
+
+            freqMap.put(currChar, freqMap.get(currChar) - 1);
+
+            if (freqMap.get(currChar) > 0) {
+                maxHeap.add(currChar);
+            }
+        }
+
+        if (result.length() == s.length()) {
+            return result.toString();
+        }
+
+        return null;
+    }
+
+    // S156.
+    static class MergeIterators<T extends Comparable<T>> implements Iterator<T> {
+        private Iterator<T> iterator1;
+        private Iterator<T> iterator2;
+        private T nextElement;
+
+        public MergeIterators(Iterator<T> iterator1, Iterator<T> iterator2) {
+            this.iterator1 = iterator1;
+            this.iterator2 = iterator2;
+            this.nextElement = getNext();
+        }
+
+        @Override
+        public boolean hasNext() {
+            return nextElement != null;
+        }
+
+        @Override
+        public T next() {
+            T currentElement = nextElement;
+            nextElement = getNext();
+            return currentElement;
+        }
+
+        private T getNext() {
+            if (iterator1.hasNext() && iterator2.hasNext()) {
+                T element1 = iterator1.next();
+                T element2 = iterator2.next();
+                if (element1.compareTo(element2) <= 0) {
+                    iterator2 = prependIterator(iterator2, element2);
+                    return element1;
+                } else {
+                    iterator1 = prependIterator(iterator1, element1);
+                    return element2;
+                }
+            } else if (iterator1.hasNext()) {
+                return iterator1.next();
+            } else if (iterator2.hasNext()) {
+                return iterator2.next();
+            } else {
+                return null;
+            }
+        }
+
+        private Iterator<T> prependIterator(final Iterator<T> iterator, final T element) {
+            return new Iterator<T>() {
+                private boolean isElementReturned = false;
+
+                @Override
+                public boolean hasNext() {
+                    return !isElementReturned || iterator.hasNext();
+                }
+
+                @Override
+                public T next() {
+                    if (!isElementReturned) {
+                        isElementReturned = true;
+                        return element;
+                    } else {
+                        return iterator.next();
+                    }
+                }
+            };
+        }
+    }
+
+    // S157.
+    static class StockTracker {
+        private Map<Long, Double> data;
+        private double sum;
+        private double max;
+        private double min;
+        private int count;
+
+        public StockTracker() {
+            this.data = new HashMap<>();
+            this.sum = 0.0;
+            this.max = Double.MIN_VALUE;
+            this.min = Double.MAX_VALUE;
+            this.count = 0;
+        }
+
+        public void add(long timestamp, double price) {
+            if (data.containsKey(timestamp)) {
+                update(timestamp, price);
+            } else {
+                data.put(timestamp, price);
+                sum += price;
+                max = Math.max(max, price);
+                min = Math.min(min, price);
+                count++;
+            }
+        }
+
+        public void update(long timestamp, double price) {
+            if (data.containsKey(timestamp)) {
+                double oldPrice = data.get(timestamp);
+                sum += price - oldPrice;
+                max = Math.max(max, price);
+                min = Math.min(min, price);
+                data.put(timestamp, price);
+            }
+        }
+
+        public void remove(long timestamp) {
+            if (data.containsKey(timestamp)) {
+                double price = data.get(timestamp);
+                data.remove(timestamp);
+                sum -= price;
+                count--;
+                if (count == 0) {
+                    max = Double.MIN_VALUE;
+                    min = Double.MAX_VALUE;
+                } else if (price == max) {
+                    max = data.values().stream().max(Double::compare).orElse(Double.MIN_VALUE);
+                } else if (price == min) {
+                    min = data.values().stream().min(Double::compare).orElse(Double.MAX_VALUE);
+                }
+            }
+        }
+
+        public double max() {
+            return max;
+        }
+
+        public double min() {
+            return min;
+        }
+
+        public double average() {
+            return sum / count;
+        }
+    }
+
+    // S158.
+    public static int calculateHIndex(int[] citations) {
+        Arrays.sort(citations);
+        int n = citations.length;
+        int hIndex = 0;
+
+        for (int i = n - 1; i >= 0; i--) {
+            int c = citations[i];
+            if (c >= n - i) {
+                hIndex++;
+            } else {
+                break;
+            }
+        }
+
+        return hIndex;
+    }
+
+    // S159.
+    public static String encode(Object obj) {
+        if (obj == null) {
+            return "null";
+        } else if (obj instanceof Number || obj instanceof Boolean) {
+            return obj.toString();
+        } else if (obj instanceof String) {
+            return "\"" + escapeString((String) obj) + "\"";
+        } else if (obj instanceof List || obj.getClass().isArray()) {
+            Iterable<?> iterable = obj instanceof List ? (List<?>) obj : Arrays.asList((Object[]) obj);
+            StringBuilder sb = new StringBuilder();
+            sb.append("[");
+            boolean isFirst = true;
+            for (Object item : iterable) {
+                if (!isFirst) {
+                    sb.append(", ");
+                }
+                sb.append(encode(item));
+                isFirst = false;
+            }
+            sb.append("]");
+            return sb.toString();
+        } else if (obj instanceof Map) {
+            Map<?, ?> map = (Map<?, ?>) obj;
+            StringBuilder sb = new StringBuilder();
+            sb.append("{");
+            boolean isFirst = true;
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                if (!isFirst) {
+                    sb.append(", ");
+                }
+                sb.append(encode(entry.getKey()));
+                sb.append(": ");
+                sb.append(encode(entry.getValue()));
+                isFirst = false;
+            }
+            sb.append("}");
+            return sb.toString();
+        } else {
+            throw new IllegalArgumentException("Unsupported type: " + obj.getClass().getName());
+        }
+    }
+
+    private static String escapeString(String str) {
+        StringBuilder sb = new StringBuilder();
+        for (char c : str.toCharArray()) {
+            if (c == '"') {
+                sb.append("\\\"");
+            } else if (c == '\\') {
+                sb.append("\\\\");
+            } else if (c == '\b') {
+                sb.append("\\b");
+            } else if (c == '\f') {
+                sb.append("\\f");
+            } else if (c == '\n') {
+                sb.append("\\n");
+            } else if (c == '\r') {
+                sb.append("\\r");
+            } else if (c == '\t') {
+                sb.append("\\t");
+            } else if (c >= 0x0000 && c <= 0x001F) {
+                sb.append(String.format("\\u%04x", (int) c));
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
+    // S160.
+    public static int[] divideWithoutDividionOperator(int dividend, int divisor) {
+        if (divisor == 0) {
+            throw new ArithmeticException("Cannot divide by zero");
+        }
+
+        if (dividend == 0) {
+            return new int[] { 0, 0 };
+        }
+
+        int sign = (dividend > 0) ^ (divisor > 0) ? -1 : 1;
+
+        long positiveDividend = Math.abs((long) dividend);
+        long positiveDivisor = Math.abs((long) divisor);
+
+        int quotient = 0;
+        long remainder = 0;
+
+        // Perform repeated subtraction until dividend is less than divisor
+        for (int i = 31; i >= 0; i--) {
+            if ((remainder + (positiveDivisor << i)) <= positiveDividend) {
+                remainder += positiveDivisor << i;
+                quotient |= 1 << i;
+            }
+        }
+        System.out.println(quotient);
+        System.out.println(remainder);
+        quotient *= sign;
+        remainder = sign * dividend - (quotient * divisor);
+
+        return new int[] { quotient, (int) remainder };
     }
 
     public static void main(String[] args) {
@@ -8188,8 +8720,8 @@ public class QuestionsAndSolutions {
          * " 1   2  2   1  "
          */
         System.out.println("========= Q143 ==========");
-        int numsForMaxheap = 5;
-        long distinctWays = countMaxHeapWays(numsForMaxheap);
+        int numsForMaxheap = 3;
+        int distinctWays = countMaxHeapWays(numsForMaxheap);
         System.out.println("Distinct ways to create a max heap with " + numsForMaxheap + " elements: " + distinctWays);
 
         /*
@@ -8349,6 +8881,217 @@ public class QuestionsAndSolutions {
         int[] histogramHeights = { 1, 3, 2, 5 };
         int largestArea = largestRectangleAreaInHistogram(histogramHeights);
         System.out.println("Largest rectangle area: " + largestArea); // Output: 6
+
+        /*
+         * Q151.
+         * You have access to ranked lists of songs for various users. Each song is
+         * represented as an integer, and more preferred songs appear earlier in each
+         * list. For example, the list [4, 1, 7] indicates that a user likes song 4 the
+         * best, followed by songs 1 and 7.
+         * Given a set of these ranked lists, interleave them to create a playlist that
+         * satisfies everyone's priorities.
+         * For example, suppose your input is {[1, 7, 3], [2, 1, 6, 7, 9], [3, 9, 5]}.
+         * In this case a satisfactory playlist could be [2, 1, 6, 7, 3, 9, 5].
+         */
+        System.out.println("========= Q151 ==========");
+        List<List<Integer>> rankedLists = new ArrayList<>();
+        rankedLists.add(List.of(1, 7, 3));
+        rankedLists.add(List.of(2, 1, 6, 7, 9));
+        rankedLists.add(List.of(3, 9, 5));
+
+        List<Integer> playlist = createPlaylist(rankedLists);
+        System.out.println("Playlist: " + playlist);
+
+        /*
+         * Q152.
+         * Mastermind is a two-player game in which the first player attempts to guess
+         * the secret code of the second. In this version, the code may be any six-digit
+         * number with all distinct digits.
+         * Each turn the first player guesses some number, and the second player
+         * responds by saying how many digits in this number correctly matched their
+         * location in the secret code. For example, if the secret code were 123456,
+         * then a guess of 175286 would score two, since 1 and 6 were correctly placed.
+         * Write an algorithm which, given a sequence of guesses and their scores,
+         * determines whether there exists some secret code that could have produced
+         * them.
+         * For example, for the following scores you should return True, since they
+         * correspond to the secret code 123456:
+         * {175286: 2, 293416: 3, 654321: 0}
+         * However, it is impossible for any key to result in the following scores, so
+         * in this case you should return False:
+         * {123456: 4, 345678: 4, 567890: 4}
+         */
+        System.out.println("========= Q152 ==========");
+        Map<Integer, Integer> guesses1 = new HashMap<>();
+        guesses1.put(175286, 2);
+        guesses1.put(293416, 3);
+        guesses1.put(654321, 0);
+        System.out.println("IsValidCode: " + isValidCode(guesses1)); // true
+
+        Map<Integer, Integer> guesses2 = new HashMap<>();
+        guesses2.put(123456, 4);
+        guesses2.put(345678, 4);
+        guesses2.put(567890, 4);
+        System.out.println("IsValidCode: " + isValidCode(guesses2)); // false
+
+        /*
+         * Q153.
+         * Write a function, add_subtract, which alternately adds and subtracts curried
+         * arguments. Here are some sample operations:
+         * add_subtract(7) -> 7
+         * add_subtract(1)(2)(3) -> 1 + 2 - 3 -> 0
+         * add_subtract(-5)(10)(3)(9) -> -5 + 10 - 3 + 9 -> 11
+         */
+        System.out.println("========= Q153 ==========");
+        // System.out.println(addSubtract(7)); // Output: 7
+        // System.out.println(addSubtract(1).apply(2).apply(3)); // Output: 0
+        // System.out.println(addSubtract(-5).apply(10).apply(3).apply(9)); // Output:
+        // 11
+
+        IntBinaryOperator adder1 = createAdder(1);
+        IntBinaryOperator adder2 = createAdder(3);
+        IntBinaryOperator adder3 = createAdder(4);
+
+        System.out.println(adder1.apply(7));
+        System.out.println(adder2.apply(1, 2, 3));
+        System.out.println(adder3.apply(-5, 10, 3, 9));
+
+        /*
+         * Q154.
+         * Describe an algorithm to compute the longest increasing subsequence of an
+         * array of numbers in O(n log n) time.
+         */
+        System.out.println("========= Q154 ==========");
+        int A[] = { 2, 5, 3, 7, 11, 8, 10, 13, 6 };
+        System.out.println(
+                "Length of Longest Increasing Subsequence is "
+                        + longestSubsequence(A));
+
+        /*
+         * Q155.
+         * Given a string s, rearrange the characters so that any two adjacent
+         * characters are not the same. If this is not possible, return null.
+         * For example, if s = yyz then return yzy. If s = yyy then return null.
+         */
+        System.out.println("========= Q155 ==========");
+        String strToRearrange1 = "yyz";
+        String strToRearrange2 = "yyy";
+
+        System.out.println(rearrangeCharacters(strToRearrange1)); // Output: yzy
+        System.out.println(rearrangeCharacters(strToRearrange2)); // Output: null
+
+        /*
+         * Q156.
+         * Given two sorted iterators, merge it into one iterator.
+         * For example, given these two iterators:
+         * foo = iter([5, 10, 15])
+         * bar = iter([3, 8, 9])
+         * You should be able to do:
+         * 
+         * " for num in merge_iterators(foo, bar): "
+         * "     print(num)                        "
+         * # 3
+         * # 5
+         * # 8
+         * # 9
+         * # 10
+         * # 15
+         * Bonus: Make it work without pulling in the contents of the iterators in
+         * memory.
+         */
+        System.out.println("========= Q156 ==========");
+        Iterator<Integer> iterator1 = List.of(5, 10, 15).iterator();
+        Iterator<Integer> iterator2 = List.of(3, 8, 9).iterator();
+
+        MergeIterators<Integer> mergeIterator = new MergeIterators<>(iterator1, iterator2);
+        while (mergeIterator.hasNext()) {
+            System.out.println(mergeIterator.next());
+        }
+
+        /*
+         * Q157.
+         * You’re tracking stock price at a given instance of time. Implement an API
+         * with the following functions: add(), update(), remove(), which
+         * adds/updates/removes a datapoint for the stock price you are tracking. The
+         * data is given as (timestamp, price), where timestamp is specified in unix
+         * epoch time.
+         * Also, provide max(), min(), and average() functions that give the
+         * max/min/average of all values seen thus far.
+         */
+        System.out.println("========= Q157 ==========");
+        StockTracker tracker = new StockTracker();
+
+        tracker.add(1622750400, 100.0);
+        tracker.add(1622836800, 120.0);
+        tracker.add(1622923200, 150.0);
+
+        tracker.update(1622836800, 110.0);
+
+        tracker.remove(1622923200);
+
+        System.out.println("Max: " + tracker.max());
+        System.out.println("Min: " + tracker.min());
+        System.out.println("Average: " + tracker.average());
+
+        /*
+         * Q158.
+         * The h-index is a metric used to measure the impact and productivity of a
+         * scientist or researcher.
+         * A scientist has index h if h of their N papers have at least h citations
+         * each, and the other N - h papers have no more than h citations each. If there
+         * are multiple possible values for h, the maximum value is used.
+         * Given an array of natural numbers, with each value representing the number of
+         * citations of a researcher's paper, return the h-index of that researcher.
+         * For example, if the array was:
+         * [4, 0, 0, 2, 3]
+         * This means the researcher has 5 papers with 4, 1, 0, 2, and 3 citations
+         * respectively. The h-index for this researcher is 2, since they have 2 papers
+         * with at least 2 citations and the remaining 3 papers have no more than 2
+         * citations.
+         */
+        System.out.println("========= Q158 ==========");
+        int[] citations = { 4, 0, 0, 2, 3 };
+        int hIndex = calculateHIndex(citations);
+        System.out.println("H-Index: " + hIndex); // Output: H-Index: 2
+
+        /*
+         * Q159.
+         * Write a function that takes in a number, string, list, or dictionary and
+         * returns its JSON encoding. It should also handle nulls.
+         * For example, given the following input:
+         * [None, 123, ["a", "b"], {"c":"d"}]
+         * You should return the following, as a string:
+         * '[null, 123, ["a", "b"], {"c": "d"}]'
+         */
+        System.out.println("========= Q159 ==========");
+        Object object = new Object[] { null, 123, new String[] { "a", "b" }, new HashMap<String, String>() {
+            {
+                put("c", "d");
+            }
+        } };
+
+        List<Object> test = Arrays.asList(object);
+
+        System.out.println(object instanceof String[]);
+        System.out.println(test instanceof List);
+        String json = encode(test);
+        System.out.println(json);
+
+        /*
+         * Q160.
+         * Implement integer division without using the division operator. Your function
+         * should return a tuple of (dividend, remainder) and it should take two
+         * numbers, the product and divisor.
+         * For example, calling divide(10, 3) should return (3, 1) since the divisor is
+         * 3 and the remainder is 1.
+         * Bonus: Can you do it in O(log n) time?
+         */
+        System.out.println("========= Q160 ==========");
+        int dividendForTuple = 10;
+        int divisorForTuple = 3;
+        int[] outcome = divideWithoutDividionOperator(dividendForTuple, divisorForTuple);
+        System.out.println("Quotient: " + outcome[0]);
+        System.out.println("Remainder: " + outcome[1]);
 
     }
 }

@@ -7865,35 +7865,87 @@ console.log('\n');
  * "  / \    / \   "
  * " 1   2  2   1  "
  */
-function countDistinctWays(N) {
-    let dp = new Array(N + 1).fill(0).map(() => new Array(N + 1).fill(0));
-    let nck = new Array(N + 1).fill(0).map(() => new Array(N + 1).fill(0));
+function countMaxHeapWays(n) {
+    let dp = new Array(n + 1).fill(-1);
+    let nck = new Array(n + 1).fill(-1).map(() => new Array(n + 1).fill(-1));
+    let log2 = new Array(n + 1).fill(-1);
 
-    computeBinomialCoefficients(N, nck);
+    let currLog2 = -1;
+    let currPower2 = 1;
 
-    for (let n = 1; n <= N; n++) {}
-
-    let totalDistinctWays = 0;
-    for (let h = 1; h <= N; h++) {
-        totalDistinctWays += dp[N][h];
+    for (let i = 1; i <= n; i++) {
+        if (currPower2 === i) {
+            currLog2++;
+            currPower2 *= 2;
+        }
+        log2[i] = currLog2;
     }
 
-    return totalDistinctWays;
+    return numberOfHeaps(dp, nck, log2, n);
 }
 
-function computeBinomialCoefficients(N, nck) {
-    for (let n = 0; n <= N; n++) {
-        nck[n][0] = 1; // C(n, 0) = 1
-
-        for (let k = 1; k <= n; k++) {
-            nck[n][k] = nck[n - 1][k - 1] + nck[n - 1][k];
-        }
+function numberOfHeaps(dp, nck, log2, n) {
+    if (n <= 1) {
+        return 1;
     }
+
+    if (dp[n] !== -1) {
+        return dp[n];
+    }
+
+    const left = getLeft(log2, n);
+    const ans =
+        choose(nck, n - 1, left) *
+        numberOfHeaps(dp, nck, log2, left) *
+        numberOfHeaps(dp, nck, log2, n - 1 - left);
+    return (dp[n] = ans);
+}
+
+function getLeft(log2, n) {
+    if (n === 1) {
+        return 0;
+    }
+
+    const h = log2[n];
+
+    // Max number of elements that can be present in the hth level of any heap
+    const numh = 1 << h; // 2^h
+
+    // Number of elements that are actually present in the last level
+    const last = n - ((1 << h) - 1); // (2^h) - 1
+
+    if (last >= numh / 2) {
+        return (1 << h) - 1; // If more than half-filled
+    } else {
+        return (1 << h) - 1 - (numh / 2 - last);
+    }
+}
+
+function choose(nck, n, k) {
+    if (k > n) {
+        return 0;
+    }
+
+    if (n <= 1) {
+        return 1;
+    }
+
+    if (k === 0) {
+        return 1;
+    }
+
+    if (nck[n][k] !== -1) {
+        return nck[n][k];
+    }
+
+    const answer = choose(nck, n - 1, k - 1) + choose(nck, n - 1, k);
+    nck[n][k] = answer;
+    return answer;
 }
 
 console.log('========= Q143 =========');
 const numsForMaxheap = 3;
-const distinctWays = countDistinctWays(numsForMaxheap);
+const distinctWays = countMaxHeapWays(numsForMaxheap);
 console.log(
     `Distinct ways to create a max heap with ${numsForMaxheap} elements: ${distinctWays}`
 );
@@ -8356,4 +8408,603 @@ console.log('========= Q150 =========');
 const histogramHeights = [1, 3, 2, 5];
 const largestArea = largestRectangleAreaInHistogram(histogramHeights);
 console.log(`Largest rectangle area: ${largestArea}`); // Output: 6
+console.log('\n');
+
+/*
+ * Q151.
+ * You have access to ranked lists of songs for various users. Each song is
+ * represented as an integer, and more preferred songs appear earlier in each
+ * list. For example, the list [4, 1, 7] indicates that a user likes song 4 the
+ * best, followed by songs 1 and 7.
+ * Given a set of these ranked lists, interleave them to create a playlist that
+ * satisfies everyone's priorities.
+ * For example, suppose your input is {[1, 7, 3], [2, 1, 6, 7, 9], [3, 9, 5]}.
+ * In this case a satisfactory playlist could be [2, 1, 6, 7, 3, 9, 5].
+ */
+class Song {
+    constructor(song, listIndex, nextIndex) {
+        this.song = song;
+        this.listIndex = listIndex;
+        this.nextIndex = nextIndex;
+    }
+}
+
+function createPlaylist(rankedLists) {
+    let playlist = [];
+    let pq = [];
+    let currentIndexList = new Array(rankedLists.length).fill(0);
+
+    for (let i = 0; i < rankedLists.length; i++) {
+        const rankedList = rankedLists[i];
+
+        if (rankedList.length > 0) {
+            pq.push(new Song(rankedList[0], i, 0));
+        }
+    }
+
+    while (pq.length > 0) {
+        const element = pq.shift();
+        const song = element.song;
+        const listIndex = element.listIndex;
+        let nextIndex = element.nextIndex;
+        let isInOtherList = false;
+
+        if (!playlist.includes(song)) {
+            for (let i = 0; i < rankedLists.length; i++) {
+                if (i !== listIndex) {
+                    const rankedList = rankedLists[i];
+
+                    if (rankedList.includes(song)) {
+                        isInOtherList = true;
+                        const index = rankedList.indexOf(song);
+
+                        if (currentIndexList[i] >= index) {
+                            playlist.push(song);
+                        }
+                    }
+                }
+            }
+
+            if (!isInOtherList) {
+                playlist.push(song);
+            }
+        }
+
+        // Move to the next song in the current ranked list
+        nextIndex++;
+        currentIndexList[listIndex] = nextIndex;
+        const rankedList = rankedLists[listIndex];
+        if (nextIndex < rankedList.length) {
+            pq.push(new Song(rankedList[nextIndex], listIndex, nextIndex));
+            pq.sort((a, b) => a.song - b.song);
+        }
+    }
+
+    return playlist;
+}
+
+console.log('========= Q151 =========');
+const rankedLists = [
+    [1, 7, 3],
+    [2, 1, 6, 7, 9],
+    [3, 9, 5],
+];
+
+const playlist = createPlaylist(rankedLists);
+console.log(`Playlist: ${playlist}`);
+console.log('\n');
+
+/*
+ * Q152.
+ * Mastermind is a two-player game in which the first player attempts to guess
+ * the secret code of the second. In this version, the code may be any six-digit
+ * number with all distinct digits.
+ * Each turn the first player guesses some number, and the second player
+ * responds by saying how many digits in this number correctly matched their
+ * location in the secret code. For example, if the secret code were 123456,
+ * then a guess of 175286 would score two, since 1 and 6 were correctly placed.
+ * Write an algorithm which, given a sequence of guesses and their scores,
+ * determines whether there exists some secret code that could have produced
+ * them.
+ * For example, for the following scores you should return True, since they
+ * correspond to the secret code 123456:
+ * {175286: 2, 293416: 3, 654321: 0}
+ * However, it is impossible for any key to result in the following scores, so
+ * in this case you should return False:
+ * {123456: 4, 345678: 4, 567890: 4}
+ */
+function isValideCode(guesses) {
+    for (let code = 123456; code <= 987654; code++) {
+        if (hasCorrectScore(code, guesses)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function hasCorrectScore(code, guesses) {
+    const codeStr = code.toString();
+
+    for (const [key, value] of guesses) {
+        const correctScore = value;
+
+        let count = 0;
+        const guessStr = key.toString();
+        for (let i = 0; i < 6; i++) {
+            if (guessStr[i] === codeStr[i]) {
+                count++;
+            }
+        }
+
+        if (count !== correctScore) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+console.log('========= Q152 =========');
+const guesses1 = new Map();
+guesses1.set(175286, 2);
+guesses1.set(293416, 3);
+guesses1.set(654321, 0);
+console.log(`Is valid code: ${isValideCode(guesses1)}`); // Output: true
+
+const guesses2 = new Map();
+guesses2.set(123456, 4);
+guesses2.set(345678, 4);
+guesses2.set(567890, 4);
+console.log(`Is valid code: ${isValideCode(guesses2)}`); // Output: false
+console.log('\n');
+
+/*
+ * Q153.
+ * Write a function, add_subtract, which alternately adds and subtracts curried
+ * arguments. Here are some sample operations:
+ * add_subtract(7) -> 7
+ * add_subtract(1)(2)(3) -> 1 + 2 - 3 -> 0
+ * add_subtract(-5)(10)(3)(9) -> -5 + 10 - 3 + 9 -> 11
+ */
+function addSubtract(num) {
+    let count = 0;
+    function innerAddSubtract(value) {
+        if (arguments.length === 0) {
+            return num;
+        }
+
+        if (count % 2 === 0) {
+            num = num - value;
+        } else {
+            num = num + value;
+        }
+
+        count++;
+        return innerAddSubtract;
+    }
+
+    innerAddSubtract.toString = function () {
+        return num;
+    };
+
+    count++;
+    return innerAddSubtract;
+}
+
+console.log('========= Q153 =========');
+console.log(`${addSubtract(7)}`);
+console.log(`${addSubtract(1)(2)(3)}`);
+console.log(`${addSubtract(-5)(10)(3)(9)}`);
+console.log('\n');
+
+/*
+ * Q154.
+ * Describe an algorithm to compute the longest increasing subsequence of an array of numbers in O(n log n) time.
+ */
+function longestSubsequence(v) {
+    if (v.length === 0) {
+        return 0;
+    }
+
+    let tail = new Array(v.length).fill(0);
+    let length = 1;
+    tail[0] = v[0];
+
+    for (let i = 1; i < v.length; i++) {
+        if (v[i] > tail[length - 1]) {
+            tail[length++] = v[i];
+        } else {
+            // find the largest value just smaller than v[i] in tail
+            // v[i] will extend a subsequence and discard older sequence
+            let idx = binarySearch(tail, 0, length - 1, v[i]);
+
+            // this negative value stores the
+            // appropriate place where the element is
+            // supposed to be stored
+            if (idx < 0) idx = -1 * idx - 1;
+
+            tail[idx] = v[i];
+        }
+    }
+
+    return length;
+}
+
+function binarySearch(tail, l, r, key) {
+    while (r - l > 1) {
+        let m = l + Math.floor((r - l) / 2);
+        if (tail[m] >= key) {
+            r = m;
+        } else {
+            l = m;
+        }
+    }
+
+    return r;
+}
+
+console.log('========= Q154 =========');
+const A = [2, 5, 3, 7, 11, 8, 10, 13, 6];
+console.log(
+    `Length of Longest Increasing Subsequence is ${longestSubsequence(A)}`
+);
+console.log('\n');
+
+/*
+ * Q155.
+ * Given a string s, rearrange the characters so that any two adjacent
+ * characters are not the same. If this is not possible, return null.
+ * For example, if s = yyz then return yzy. If s = yyy then return null.
+ */
+function rearrangeCharacters(s) {
+    let freqMap = new Map();
+    let maxHeap = [];
+
+    for (let i = 0; i < s.length; i++) {
+        if (freqMap.has(s[i])) {
+            freqMap.set(s[i], freqMap.get(s[i]) + 1);
+        } else {
+            freqMap.set(s[i], 1);
+        }
+    }
+
+    for (const key of freqMap.keys()) {
+        maxHeap.push(key);
+    }
+    maxHeap.sort((a, b) => freqMap.get(b) - freqMap.get(a));
+
+    let result = '';
+
+    while (maxHeap.length > 0) {
+        const currChar = maxHeap.shift();
+
+        if (result.length > 0 && result[result.length - 1] === currChar) {
+            return null;
+        }
+        result += currChar;
+
+        freqMap.set(currChar, freqMap.get(currChar) - 1);
+
+        if (freqMap.get(currChar) > 0) {
+            maxHeap.push(currChar);
+        }
+    }
+
+    if (result.length === s.length) {
+        return result;
+    }
+
+    return null;
+}
+
+console.log('========= Q155 =========');
+const strToRearrange1 = 'yyz';
+const strToRearrange2 = 'yyy';
+
+console.log(`Rearrange characters: ${rearrangeCharacters(strToRearrange1)}`);
+console.log(`Rearrange characters: ${rearrangeCharacters(strToRearrange2)}`);
+console.log('\n');
+
+/*
+ * Q156.
+ * Given two sorted iterators, merge it into one iterator.
+ * For example, given these two iterators:
+ * foo = iter([5, 10, 15])
+ * bar = iter([3, 8, 9])
+ * You should be able to do:
+ *
+ * " for num in merge_iterators(foo, bar): "
+ * "     print(num)                        "
+ * # 3
+ * # 5
+ * # 8
+ * # 9
+ * # 10
+ * # 15
+ * Bonus: Make it work without pulling in the contents of the iterators in
+ * memory.
+ */
+class MergeIterator {
+    #_iterator1;
+    #_iterator2;
+    #_nextElement;
+
+    constructor(iterator1, iterator2) {
+        this.#_iterator1 = iterator1;
+        this.#_iterator2 = iterator2;
+        this.#_nextElement = this.getNext();
+    }
+
+    getNext() {
+        if (this.#_iterator1.hasNext() && this.#_iterator2.hasNext()) {
+            const element1 = this.#_iterator1.next();
+            const element2 = this.#_iterator2.next();
+
+            if (element1.value < element2.value) {
+                this.#_iterator2.index--;
+                return element1;
+            } else {
+                this.#_iterator1.index--;
+                return element2;
+            }
+        } else if (this.#_iterator1.hasNext()) {
+            return this.#_iterator1.next();
+        } else if (this.#_iterator2.hasNext()) {
+            return this.#_iterator2.next();
+        } else {
+            return null;
+        }
+    }
+
+    next() {
+        const currentElement = this.#_nextElement;
+        this.#_nextElement = this.getNext();
+        return currentElement.value;
+    }
+
+    hasNext() {
+        return this.#_nextElement !== null;
+    }
+}
+
+const iterator1 = {
+    items: [5, 10, 15],
+    index: 0,
+    hasNext() {
+        return this.index < this.items.length;
+    },
+    next() {
+        if (this.index < this.items.length) {
+            return { value: this.items[this.index++], done: false };
+        } else {
+            return { done: true };
+        }
+    },
+};
+
+const iterator2 = {
+    items: [3, 8, 9],
+    index: 0,
+    hasNext() {
+        return this.index < this.items.length;
+    },
+    next() {
+        if (this.index < this.items.length) {
+            return { value: this.items[this.index++], done: false };
+        } else {
+            return { done: true };
+        }
+    },
+};
+
+console.log('========= Q156 =========');
+const mergeIterator = new MergeIterator(iterator1, iterator2);
+while (mergeIterator.hasNext()) {
+    console.log(mergeIterator.next());
+}
+console.log('\n');
+
+/*
+ * Q157.
+ * You’re tracking stock price at a given instance of time. Implement an API
+ * with the following functions: add(), update(), remove(), which
+ * adds/updates/removes a datapoint for the stock price you are tracking. The
+ * data is given as (timestamp, price), where timestamp is specified in unix
+ * epoch time.
+ * Also, provide max(), min(), and average() functions that give the
+ * max/min/average of all values seen thus far.
+ */
+class StockTracker {
+    #_data;
+    #_max;
+    #_min;
+    #_sum;
+    #_count;
+
+    constructor() {
+        this.#_data = new Map();
+        this.#_max = Number.MIN_SAFE_INTEGER;
+        this.#_min = Number.MAX_SAFE_INTEGER;
+        this.#_sum = 0;
+        this.#_count = 0;
+    }
+
+    add(timestamp, price) {
+        if (this.#_data.has(timestamp)) {
+            this.update(timestamp, price);
+        } else {
+            this.#_data.set(timestamp, price);
+            this.#_max = Math.max(this.#_max, price);
+            this.#_min = Math.min(this.#_min, price);
+            this.#_sum += price;
+            this.#_count++;
+        }
+    }
+
+    update(timestamp, price) {
+        if (this.#_data.has(timestamp)) {
+            const oldPrice = this.#_data.get(timestamp);
+            this.#_sum += price - oldPrice;
+            this.#_max = Math.max(this.#_max, price);
+            this.#_min = Math.min(this.#_min, price);
+            this.#_data.set(timestamp, price);
+        }
+    }
+
+    remove(timestamp) {
+        if (this.#_data.has(timestamp)) {
+            const price = this.#_data.get(timestamp);
+            this.#_data.delete(timestamp);
+            this.#_sum -= price;
+            this.#_count--;
+
+            if (this.#_count === 0) {
+                this.#_max = Number.MIN_SAFE_INTEGER;
+                this.#_min = Number.MAX_SAFE_INTEGER;
+            } else if (price === this.#_max) {
+                this.#_max = Math.max(
+                    ...this.#_data.values(),
+                    Number.MIN_SAFE_INTEGER
+                );
+            } else if (price === this.#_min) {
+                this.#_min = Math.min(
+                    ...this.#_data.values(),
+                    Number.MAX_SAFE_INTEGER
+                );
+            }
+        }
+    }
+
+    get max() {
+        return this.#_max;
+    }
+
+    get min() {
+        return this.#_min;
+    }
+
+    average() {
+        return this.#_sum / this.#_count;
+    }
+}
+
+console.log('========= Q157 =========');
+const stockTracker = new StockTracker();
+stockTracker.add(1622750400, 100.0);
+stockTracker.add(1622836800, 120.0);
+stockTracker.add(1622923200, 150.0);
+
+stockTracker.update(1622836800, 110.0);
+
+stockTracker.remove(1622923200);
+
+console.log(`Max: ${stockTracker.max}`);
+console.log(`Min: ${stockTracker.min}`);
+console.log(`Average: ${stockTracker.average()}`);
+console.log('\n');
+
+/*
+ * Q158.
+ * The h-index is a metric used to measure the impact and productivity of a
+ * scientist or researcher.
+ * A scientist has index h if h of their N papers have at least h citations
+ * each, and the other N - h papers have no more than h citations each. If there
+ * are multiple possible values for h, the maximum value is used.
+ * Given an array of natural numbers, with each value representing the number of
+ * citations of a researcher's paper, return the h-index of that researcher.
+ * For example, if the array was:
+ * [4, 0, 0, 2, 3]
+ * This means the researcher has 5 papers with 4, 1, 0, 2, and 3 citations
+ * respectively. The h-index for this researcher is 2, since they have 2 papers
+ * with at least 2 citations and the remaining 3 papers have no more than 2
+ * citations.
+ */
+function calculateHIndex(citations) {
+    citations.sort();
+    const n = citations.length;
+    let hIndex = 0;
+
+    for (let i = n - 1; i >= 0; i--) {
+        const c = citations[i];
+        if (c >= n - i) {
+            hIndex++;
+        } else {
+            break;
+        }
+    }
+
+    return hIndex;
+}
+
+console.log('========= Q158 =========');
+const citations = [4, 0, 0, 2, 3];
+console.log(`H-Index: ${calculateHIndex(citations)}`);
+console.log('\n');
+
+/*
+ * Q159.
+ * Write a function that takes in a number, string, list, or dictionary and
+ * returns its JSON encoding. It should also handle nulls.
+ * For example, given the following input:
+ * [None, 123, ["a", "b"], {"c":"d"}]
+ * You should return the following, as a string:
+ * '[null, 123, ["a", "b"], {"c": "d"}]'
+ */
+function encode(obj) {
+    if (obj === null) {
+        return 'null';
+    } else if (typeof obj === 'number') {
+        return obj.toString();
+    } else if (typeof obj === 'string') {
+        return `"${obj}"`;
+    } else if (Array.isArray(obj)) {
+        const items = obj.map((item) => encode(item));
+        return `[${items.join(',')}]`;
+    } else if (typeof obj === 'object') {
+        const items = Object.entries(obj).map(([key, value]) => {
+            return `"${key}":${encode(value)}`;
+        });
+        return `{${items.join(',')}}`;
+    }
+}
+
+console.log('========= Q159 =========');
+const obj = [null, 123, ['a', 'b'], { c: 'd' }];
+console.log(`JSON: ${encode(obj)}`);
+console.log('\n');
+
+/*
+ * Q160.
+ * Implement integer division without using the division operator. Your function
+ * should return a tuple of (dividend, remainder) and it should take two
+ * numbers, the product and divisor.
+ * For example, calling divide(10, 3) should return (3, 1) since the divisor is
+ * 3 and the remainder is 1.
+ * Bonus: Can you do it in O(log n) time?
+ */
+function divideWithoutDividionOperator(dividend, divisor) {
+    let quotient = 0;
+    let remainder = 0;
+
+    while (dividend >= divisor) {
+        dividend -= divisor;
+        quotient++;
+    }
+
+    remainder = dividend;
+
+    return [quotient, remainder];
+}
+
+console.log('========= Q160 =========');
+const dividendForTuple = 10;
+const divisorForTuple = 3;
+const outcome = divideWithoutDividionOperator(
+    dividendForTuple,
+    divisorForTuple
+);
+
+console.log(`Quotient: ${outcome[0]}`);
+console.log(`Remainder: ${outcome[1]}`);
 console.log('\n');
