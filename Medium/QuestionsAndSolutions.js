@@ -2849,8 +2849,8 @@ const singleton2 = new TwistedSingleton().getInstance();
 const singleton3 = new TwistedSingleton().getInstance();
 
 console.log(`Singleton 1: ${singleton1}`);
-console.log(`Singleton 2: ${singleton1}`);
-console.log(`Singleton 3: ${singleton1}`);
+console.log(`Singleton 2: ${singleton2}`);
+console.log(`Singleton 3: ${singleton3}`);
 console.log('\n');
 
 /*
@@ -7264,17 +7264,17 @@ console.log(`Check 40: ${filter.check(40)}`); // false
 console.log('\n');
 
 /*
-* Q131.
-* You are given a 2-d matrix where each cell consists of either /, \, or an
-* empty space. Write an algorithm that determines into how many regions the
-* slashes divide the space.
-* For example, suppose the input for a three-by-six grid is the following:
-* " \    /    "
-* "  \  /     "
-* "   \/      "
-* Considering the edges of the matrix as boundaries, this divides the grid into
-* three triangles, so you should return 3.
-*/
+ * Q131.
+ * You are given a 2-d matrix where each cell consists of either /, \, or an
+ * empty space. Write an algorithm that determines into how many regions the
+ * slashes divide the space.
+ * For example, suppose the input for a three-by-six grid is the following:
+ * " \    /    "
+ * "  \  /     "
+ * "   \/      "
+ * Considering the edges of the matrix as boundaries, this divides the grid into
+ * three triangles, so you should return 3.
+ */
 function countRegions(grid) {
     const m = grid.length;
     const n = grid[0].length;
@@ -9007,4 +9007,411 @@ const outcome = divideWithoutDividionOperator(
 
 console.log(`Quotient: ${outcome[0]}`);
 console.log(`Remainder: ${outcome[1]}`);
+console.log('\n');
+
+/*
+ * Q161.
+ * Implement the function embolden(s, lst) which takes in a string s and list of
+ * substrings lst, and wraps all substrings in s with an HTML bold tag <b> and
+ * </b>.
+ * If two bold tags overlap or are contiguous, they should be merged.
+ * For example, given s = abcdefg and lst = ["bc", "ef"], return the string
+ * a<b>bc</b>d<b>ef</b>g.
+ * Given s = abcdefg and lst = ["bcd", "def"], return the string a<b>bcdef</b>g,
+ * since they overlap.
+ */
+function embolden(s, lst) {
+    let bold = new Array(s.length).fill(false);
+
+    for (const substr of lst) {
+        let start = s.indexOf(substr);
+
+        while (start !== -1) {
+            let end = start + substr.length;
+            for (let i = start; i < end; i++) {
+                bold[i] = true;
+            }
+            start = s.indexOf(substr, start + 1);
+        }
+    }
+
+    let result = '';
+    for (let i = 0; i < s.length; i++) {
+        if (bold[i] && (i === 0 || !bold[i - 1])) {
+            result += '<b>';
+        }
+        result += s[i];
+        if (bold[i] && (i === s.length - 1 || !bold[i + 1])) {
+            result += '</b>';
+        }
+    }
+
+    return result;
+}
+
+console.log('========= Q161 =========');
+const strToTag = 'abcdefg';
+const boldTagList = ['bc', 'ef'];
+console.log(`Bold Tag: ${embolden(strToTag, boldTagList)}`);
+console.log('\n');
+
+/*
+ * Q162.
+ * You are given an array of integers representing coin denominations and a
+ * total amount of money. Write a function to compute the fewest number of coins
+ * needed to make up that amount. If it is not possible to make that amount,
+ * return null.
+ * For example, given an array of [1, 5, 10] and an amount 56, return 7 since we
+ * can use 5 dimes, 1 nickel, and 1 penny.
+ * Given an array of [5, 8] and an amount 15, return 3 since we can use 5 5-cent
+ * coins.
+ */
+function computerFewestCoins(coins, amount) {
+    let dp = new Array(amount + 1).fill(amount + 1);
+    dp[0] = 0;
+
+    for (const coin of coins) {
+        for (let i = coin; i <= amount; i++) {
+            dp[i] = Math.min(dp[i], dp[i - coin] + 1);
+        }
+    }
+
+    return dp[amount] > amount ? null : dp[amount];
+}
+
+console.log('========= Q162 =========');
+const coins1 = [1, 5, 10];
+const amount1 = 56;
+console.log(
+    `Fewest number of coins for amount: ${computerFewestCoins(coins1, amount1)}`
+);
+
+const coins2 = [5, 8];
+const amount2 = 15;
+console.log(
+    `Fewest number of coins for amount: ${computerFewestCoins(coins2, amount2)}`
+);
+console.log('\n');
+
+/*
+ * Q163.
+ * You are given a hexadecimal-encoded string that has been XOR'd against a
+ * single char.
+ * Decrypt the message. For example, given the string:
+ * 7a575e5e5d12455d405e561254405d5f1276535b5e4b12715d565b5c551262405d505e575f
+ * You should be able to decrypt it and get:
+ * Hello world from Daily Coding Problem
+ */
+function decrypt(encodedString) {
+    let decryptedString = '';
+    for (let key = 0; key < 256; key++) {
+        let candidate = '';
+        for (let i = 0; i < encodedString.length; i += 2) {
+            const hex = encodedString.substring(i, i + 2);
+            const decimal = parseInt(hex, 16);
+            const decryptedChar = String.fromCharCode(decimal ^ key);
+            candidate += decryptedChar;
+        }
+
+        if (isMeaningfulText(candidate)) {
+            decryptedString += candidate;
+            break;
+        }
+    }
+    return decryptedString;
+}
+
+function isMeaningfulText(candidate) {
+    const regex = /^[a-zA-Z0-9 ,.?!]+$/;
+    return regex.test(candidate);
+}
+
+console.log('========= Q163 =========');
+const hexString =
+    '7a575e5e5d12455d405e561254405d5f1276535b5e4b12715d565b5c551262405d505e575f';
+console.log(`Decrypted message: ${decrypt(hexString)}`);
+console.log('\n');
+
+/*
+ * Q164.
+ * How would you explain the difference between an API and SDK to a
+ * non-technical person?
+ */
+console.log('========= Q164 =========');
+/*
+API is a set of rules and protocols that allow different software 
+applications to communicate with each other. It defines how different
+components of software can interact and exchange information. An API acts as
+an interface that enables developers to access certain features or
+functionality of a software system without having to understand all the
+underlying details.
+ 
+Software Development Kit:
+SDK is a collection of tools, libraries, and resources that developers can
+use to build applications for a specific platform or framework. It provides a
+set of pre-built components, sample code, and documentation that makes it
+easier and more efficient to develop software for a particular environment.
+An SDK typically includes the necessary tools, compilers, and debuggers
+needed to create applications.
+*/
+console.log('\n');
+
+/*
+ * Q165.
+ * How would you explain web cookies to someone non-technical?
+ */
+console.log('========= Q165 =========');
+/*
+Web cookies are small pieces of information that websites store on your
+computer or device. Think of them as tiny notes that a website can write and
+read. When you visit a website, it may create a cookie and send it to your
+browser. The next time you visit that website, your browser sends the cookie
+back, allowing the website to recognize you.
+Cookies serve various purposes. They can remember your preferences, such as
+your language choice or login information, so you don't have to enter them
+repeatedly. Cookies also help websites track your activities and gather
+information about how you interact with the site. For example, they can
+remember items you added to a shopping cart or personalize content based on
+your browsing history.
+Cookies are generally harmless and enable a smoother browsing experience.
+However, some people have concerns about privacy and security. It's important
+to note that cookies can only store information that the website provides or
+that you willingly provide. They cannot access personal files on your
+computer.
+Modern web browsers offer settings to control cookie behavior. You can choose
+to block or delete cookies, or configure your browser to prompt you before
+accepting cookies from websites. This gives you control over your privacy
+while still allowing you to enjoy the benefits that cookies provide on the
+web.
+*/
+console.log('\n');
+
+/*
+ * Q166.
+ * Given an array of integers, return the largest range, inclusive, of integers
+ * that are all included in the array.
+ * For example, given the array [9, 6, 1, 3, 8, 10, 12, 11], return (8, 12)
+ * since 8, 9, 10, 11, and 12 are all in the array.
+ */
+function findLargestRange(nums) {
+    let set = new Set();
+    for (const num of nums) {
+        set.add(num);
+    }
+
+    let maxRangeStart = 0;
+    let maxRangeEnd = 0;
+
+    for (const num of nums) {
+        if (!set.has(num - 1)) {
+            const currentRangeStart = num;
+            let currentRangeEnd = num;
+
+            while (set.has(currentRangeEnd + 1)) {
+                currentRangeEnd++;
+            }
+
+            if (
+                currentRangeEnd - currentRangeStart >
+                maxRangeEnd - maxRangeStart
+            ) {
+                maxRangeStart = currentRangeStart;
+                maxRangeEnd = currentRangeEnd;
+            }
+        }
+    }
+
+    return [maxRangeStart, maxRangeEnd];
+}
+
+console.log('========= Q166 =========');
+const numsToFindIncludedArray = [9, 6, 1, 3, 8, 10, 12, 11];
+console.log(`Largest range: ${findLargestRange(numsToFindIncludedArray)}`);
+console.log('\n');
+
+/*
+ * Q167.
+ * You are given an unsorted list of 999,000 unique integers, each from 1 and
+ * 1,000,000. Find the missing 1000 numbers. What is the computational and space
+ * complexity of your solution?
+ */
+function findMissingNumbers(numbers) {
+    let numberSet = new Set(numbers);
+    let missingNumbers = [];
+    let count = 0;
+
+    for (let i = 1; i <= 1000000; i++) {
+        if (!numberSet.has(i)) {
+            missingNumbers.push(i);
+            count++;
+        }
+        if (count === 1000) {
+            break;
+        }
+    }
+
+    return missingNumbers;
+}
+
+console.log('========= Q167 =========');
+let uniqueNumbers = [];
+
+for (let i = 0; i < 1000000; i++) {
+    if ((Math.floor(Math.random() * 1000) + 1) % 1000 === 0) {
+        i++;
+    }
+    uniqueNumbers.push(i);
+}
+
+const missingNumbers = findMissingNumbers(uniqueNumbers);
+
+console.log(`Missing numbers: `);
+console.log(missingNumbers);
+let i = 1;
+for (const num of missingNumbers) {
+    console.log(`${i++}: ${num}`);
+}
+console.log('\n');
+
+/*
+ * Q168.
+ * Given an array of strings, group anagrams together.
+ * For example, given the following array:
+ * ['eat', 'ate', 'apt', 'pat', 'tea', 'now']
+ * Return:
+ * [['eat', 'ate', 'tea'],
+ * ['apt', 'pat'],
+ * ['now']]
+ */
+function groupAnagrams(strs) {
+    let map = new Map();
+
+    for (const word of strs) {
+        const sortedWord = word.split('').sort().join('');
+
+        if (!map.has(sortedWord)) {
+            map.set(sortedWord, []);
+        }
+        map.get(sortedWord).push(word);
+    }
+
+    return Array.from(map.values());
+}
+
+console.log('========= Q168 =========');
+const strs = ['eat', 'ate', 'apt', 'pat', 'tea', 'now'];
+const anagramGroups = groupAnagrams(strs);
+console.log(`Grouped anagrams: `);
+console.log(anagramGroups);
+console.log('\n');
+
+/*
+ * Q169.
+ * You are given a list of jobs to be done, where each job is represented by a
+ * start time and end time. Two jobs are compatible if they don't overlap. Find
+ * the largest subset of compatible jobs.
+ * For example, given the following jobs (there is no guarantee that jobs will
+ * be sorted):
+ * [(0, 6),
+ * (1, 4),
+ * (3, 5),
+ * (3, 8),
+ * (4, 7),
+ * (5, 9),
+ * (6, 10),
+ * (8, 11)]
+ * Return:
+ * [(1, 4),
+ * (4, 7),
+ * (8, 11)]
+ */
+class Job {
+    constructor(start, end) {
+        this.start = start;
+        this.end = end;
+    }
+}
+
+function findLargestSubset(jobs) {
+    let result = [];
+    if (!jobs || jobs.length === 0) {
+        return result;
+    }
+
+    jobs.sort((a, b) => a.end - b.end);
+    result.push(jobs[0]);
+    let lastEndTime = jobs[0].end;
+
+    for (let i = 1; i < jobs.length; i++) {
+        const currentJob = jobs[i];
+        if (currentJob.start >= lastEndTime) {
+            result.push(currentJob);
+            lastEndTime = currentJob.end;
+        }
+    }
+
+    return result;
+}
+
+console.log('========= Q169 =========');
+const jobs = [
+    new Job(0, 6),
+    new Job(1, 4),
+    new Job(3, 5),
+    new Job(3, 8),
+    new Job(4, 7),
+    new Job(5, 9),
+    new Job(6, 10),
+    new Job(8, 11),
+];
+
+const largestSubset = findLargestSubset(jobs);
+console.log(largestSubset);
+console.log('\n');
+
+/*
+ * Q170.
+ * Given a linked list and an integer k, remove the k-th node from the end of
+ * the list and return the head of the list.
+ * k is guaranteed to be smaller than the length of the list.
+ * Do this in one pass.
+ */
+function removeKthNodeFromEnd(head, k) {
+    let dummy = new ListNode(0);
+    dummy.next = head;
+    let fast = dummy;
+    let slow = dummy;
+
+    for (let i = 0; i <= k; i++) {
+        fast = fast.next;
+    }
+
+    while (fast) {
+        fast = fast.next;
+        slow = slow.next;
+    }
+
+    slow.next = slow.next.next;
+
+    return dummy.next;
+}
+
+console.log('========= Q170 =========');
+const headToRemoveKth = new ListNode(1);
+headToRemoveKth.next = new ListNode(2);
+headToRemoveKth.next.next = new ListNode(3);
+headToRemoveKth.next.next.next = new ListNode(4);
+headToRemoveKth.next.next.next.next = new ListNode(5);
+
+const kthFromLast = 2;
+let updatedHead = removeKthNodeFromEnd(headToRemoveKth, kthFromLast);
+
+let printUpdatedHead = '';
+while (updatedHead) {
+    printUpdatedHead += `${updatedHead.value} -> `;
+    updatedHead = updatedHead.next;
+}
+printUpdatedHead += 'null';
+
+console.log(`${printUpdatedHead}`);
 console.log('\n');

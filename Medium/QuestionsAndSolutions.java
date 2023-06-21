@@ -21,11 +21,7 @@ import java.util.Queue;
 import java.util.Collections;
 import java.util.EmptyStackException;
 import java.util.NoSuchElementException;
-import java.util.function.Function;
-import java.util.function.IntFunction;
-import java.util.function.IntBinaryOperator;
 import java.util.function.BiFunction;
-import java.util.function.IntUnaryOperator;
 
 public class QuestionsAndSolutions {
     // S1.
@@ -5684,6 +5680,203 @@ public class QuestionsAndSolutions {
         return new int[] { quotient, (int) remainder };
     }
 
+    // S161.
+    public static String embolden(String s, String[] lst) {
+        boolean[] bold = new boolean[s.length()];
+
+        for (String substr : lst) {
+            int start = s.indexOf(substr);
+            while (start != -1) {
+                int end = start + substr.length();
+                for (int i = start; i < end; i++) {
+                    bold[i] = true;
+                }
+                start = s.indexOf(substr, start + 1);
+            }
+        }
+
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < s.length(); i++) {
+            if (bold[i] && (i == 0 || !bold[i - 1])) {
+                result.append("<b>");
+            }
+            result.append(s.charAt(i));
+            if (bold[i] && (i == s.length() - 1 || !bold[i + 1])) {
+                result.append("</b>");
+            }
+        }
+
+        return result.toString();
+    }
+
+    // S162.
+    public static Integer computeFewestCoins(int[] coins, int amount) {
+        int[] dp = new int[amount + 1];
+        Arrays.fill(dp, amount + 1);
+        dp[0] = 0;
+
+        for (int coin : coins) {
+            for (int i = coin; i <= amount; i++) {
+                dp[i] = Math.min(dp[i], dp[i - coin] + 1);
+            }
+        }
+
+        return dp[amount] > amount ? null : dp[amount];
+    }
+
+    // S163.
+    public static String decrypt(String encodedString) {
+        StringBuilder decryptedString = new StringBuilder();
+        for (char key = 0; key < 256; key++) {
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < encodedString.length(); i += 2) {
+                String hex = encodedString.substring(i, i + 2);
+                int decimal = Integer.parseInt(hex, 16);
+                char decryptedChar = (char) (decimal ^ key);
+                sb.append(decryptedChar);
+            }
+
+            String candidate = sb.toString();
+            if (isMeaningfulText(candidate)) {
+                decryptedString.append(candidate);
+                break;
+            }
+        }
+
+        return decryptedString.toString();
+    }
+
+    private static boolean isMeaningfulText(String str) {
+        return str.matches("[a-zA-Z0-9 ,.?!]+");
+    }
+
+    // S164.
+    // Solution in Q164
+
+    // S165.
+    // Solution in Q165
+
+    // S166.
+    public static int[] findLargestRange(int[] nums) {
+        HashSet<Integer> set = new HashSet<>();
+        for (int num : nums) {
+            set.add(num);
+        }
+
+        int maxRangeStart = 0;
+        int maxRangeEnd = 0;
+
+        for (int num : nums) {
+            if (!set.contains(num - 1)) {
+                int currentRangeStart = num;
+                int currentRangeEnd = num;
+
+                while (set.contains(currentRangeEnd + 1)) {
+                    currentRangeEnd++;
+                }
+
+                if (currentRangeEnd - currentRangeStart > maxRangeEnd - maxRangeStart) {
+                    maxRangeStart = currentRangeStart;
+                    maxRangeEnd = currentRangeEnd;
+                }
+            }
+        }
+
+        return new int[] { maxRangeStart, maxRangeEnd };
+    }
+
+    // S167.
+    public static List<Integer> findMissingNumbers(List<Integer> numbers) {
+        Set<Integer> numberSet = new HashSet<>(numbers);
+        List<Integer> missingNumbers = new ArrayList<>();
+        int count = 0;
+
+        for (int i = 1; i <= 1_000_000; i++) {
+            if (!numberSet.contains(i)) {
+                missingNumbers.add(i);
+                count++;
+            }
+            if (count == 1000) {
+                break;
+            }
+        }
+
+        return missingNumbers;
+    }
+
+    // S168.
+    public static List<List<String>> groupAnagrams(String[] strs) {
+        Map<String, List<String>> map = new HashMap<>();
+
+        for (String word : strs) {
+            char[] chars = word.toCharArray();
+            Arrays.sort(chars);
+            String sortedWord = new String(chars);
+
+            if (!map.containsKey(sortedWord)) {
+                map.put(sortedWord, new ArrayList<>());
+            }
+            map.get(sortedWord).add(word);
+        }
+
+        return new ArrayList<>(map.values());
+    }
+
+    // S169.
+    static class Job {
+        int start;
+        int end;
+
+        public Job(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+    }
+
+    public static List<Job> findLargestSubset(List<Job> jobs) {
+        List<Job> result = new ArrayList<>();
+
+        if (jobs == null || jobs.isEmpty()) {
+            return result;
+        }
+
+        Collections.sort(jobs, Comparator.comparingInt(job -> job.end));
+        result.add(jobs.get(0));
+        int lastEndTime = jobs.get(0).end;
+
+        for (int i = 1; i < jobs.size(); i++) {
+            Job currentJob = jobs.get(i);
+            if (currentJob.start >= lastEndTime) {
+                result.add(currentJob);
+                lastEndTime = currentJob.end;
+            }
+        }
+
+        return result;
+    }
+
+    // S170.
+    public static ListNode removeKthNodeFromEnd(ListNode head, int k) {
+        ListNode dummy = new ListNode(0);
+        dummy.next = head;
+        ListNode fast = dummy;
+        ListNode slow = dummy;
+
+        for (int i = 0; i <= k; i++) {
+            fast = fast.next;
+        }
+
+        while (fast != null) {
+            fast = fast.next;
+            slow = slow.next;
+        }
+
+        slow.next = slow.next.next;
+
+        return dummy.next;
+    }
+
     public static void main(String[] args) {
         /*
          * Q1.
@@ -7502,6 +7695,7 @@ public class QuestionsAndSolutions {
          * "    f()                        "
          * How can we make it print out what we apparently want?
          */
+        System.out.println("========= Q85 ==========");
         /*
          * It will print '3' three times since make_functions() refers to 'i' in its
          * enclosing scope. It should be corrected by using default argument x=i in
@@ -7520,7 +7714,6 @@ public class QuestionsAndSolutions {
          * "for f in functions:            "
          * "    f()                        "
          */
-        System.out.println("========= Q85 ==========");
 
         /*
          * Q86.
@@ -9092,6 +9285,230 @@ public class QuestionsAndSolutions {
         int[] outcome = divideWithoutDividionOperator(dividendForTuple, divisorForTuple);
         System.out.println("Quotient: " + outcome[0]);
         System.out.println("Remainder: " + outcome[1]);
+
+        /*
+         * Q161.
+         * Implement the function embolden(s, lst) which takes in a string s and list of
+         * substrings lst, and wraps all substrings in s with an HTML bold tag <b> and
+         * </b>.
+         * If two bold tags overlap or are contiguous, they should be merged.
+         * For example, given s = abcdefg and lst = ["bc", "ef"], return the string
+         * a<b>bc</b>d<b>ef</b>g.
+         * Given s = abcdefg and lst = ["bcd", "def"], return the string a<b>bcdef</b>g,
+         * since they overlap.
+         */
+        System.out.println("========= Q161 ==========");
+        String strToTag = "abcdefg";
+        String[] boldTagList = { "bc", "ef" };
+        String strWithTag = embolden(strToTag, boldTagList);
+        System.out.println(strWithTag); // Output: a<b>bc</b>d<b>ef</b>g
+
+        /*
+         * Q162.
+         * You are given an array of integers representing coin denominations and a
+         * total amount of money. Write a function to compute the fewest number of coins
+         * needed to make up that amount. If it is not possible to make that amount,
+         * return null.
+         * For example, given an array of [1, 5, 10] and an amount 56, return 7 since we
+         * can use 5 dimes, 1 nickel, and 1 penny.
+         * Given an array of [5, 8] and an amount 15, return 3 since we can use 5 5-cent
+         * coins.
+         */
+        System.out.println("========= Q162 ==========");
+        int[] coins1 = { 1, 5, 10 };
+        int amount1 = 56;
+        int fewestCoins1 = computeFewestCoins(coins1, amount1);
+        System.out.println("Fewest number of coins for amount " + amount1 + ": " + fewestCoins1);
+
+        int[] coins2 = { 5, 8 };
+        int amount2 = 15;
+        int fewestCoins2 = computeFewestCoins(coins2, amount2);
+        System.out.println("Fewest number of coins for amount " + amount2 + ": " + fewestCoins2);
+
+        /*
+         * Q163.
+         * You are given a hexadecimal-encoded string that has been XOR'd against a
+         * single char.
+         * Decrypt the message. For example, given the string:
+         * 7a575e5e5d12455d405e561254405d5f1276535b5e4b12715d565b5c551262405d505e575f
+         * You should be able to decrypt it and get:
+         * Hello world from Daily Coding Problem
+         */
+        System.out.println("========= Q163 ==========");
+        String hexString = "7a575e5e5d12455d405e561254405d5f1276535b5e4b12715d565b5c551262405d505e575f";
+        String decryptedString = decrypt(hexString);
+        System.out.println(decryptedString);
+
+        /*
+         * Q164.
+         * How would you explain the difference between an API and SDK to a
+         * non-technical person?
+         */
+        System.out.println("========= Q164 ==========");
+        /*
+         * Application Programming Interface:
+         * API is a set of rules and protocols that allow different software
+         * applications to communicate with each other. It defines how different
+         * components of software can interact and exchange information. An API acts as
+         * an interface that enables developers to access certain features or
+         * functionality of a software system without having to understand all the
+         * underlying details.
+         * 
+         * Software Development Kit:
+         * SDK is a collection of tools, libraries, and resources that developers can
+         * use to build applications for a specific platform or framework. It provides a
+         * set of pre-built components, sample code, and documentation that makes it
+         * easier and more efficient to develop software for a particular environment.
+         * An SDK typically includes the necessary tools, compilers, and debuggers
+         * needed to create applications.
+         */
+
+        /*
+         * Q165.
+         * How would you explain web cookies to someone non-technical?
+         */
+        System.out.println("========= Q165 ==========");
+        /*
+         * Web Cookies:
+         * Web cookies are small pieces of information that websites store on your
+         * computer or device. Think of them as tiny notes that a website can write and
+         * read. When you visit a website, it may create a cookie and send it to your
+         * browser. The next time you visit that website, your browser sends the cookie
+         * back, allowing the website to recognize you.
+         * Cookies serve various purposes. They can remember your preferences, such as
+         * your language choice or login information, so you don't have to enter them
+         * repeatedly. Cookies also help websites track your activities and gather
+         * information about how you interact with the site. For example, they can
+         * remember items you added to a shopping cart or personalize content based on
+         * your browsing history.
+         * Cookies are generally harmless and enable a smoother browsing experience.
+         * However, some people have concerns about privacy and security. It's important
+         * to note that cookies can only store information that the website provides or
+         * that you willingly provide. They cannot access personal files on your
+         * computer.
+         * Modern web browsers offer settings to control cookie behavior. You can choose
+         * to block or delete cookies, or configure your browser to prompt you before
+         * accepting cookies from websites. This gives you control over your privacy
+         * while still allowing you to enjoy the benefits that cookies provide on the
+         * web.
+         */
+
+        /*
+         * Q166.
+         * Given an array of integers, return the largest range, inclusive, of integers
+         * that are all included in the array.
+         * For example, given the array [9, 6, 1, 3, 8, 10, 12, 11], return (8, 12)
+         * since 8, 9, 10, 11, and 12 are all in the array.
+         */
+        System.out.println("========= Q166 ==========");
+        int[] numsToFindInculdedArray = { 9, 6, 1, 3, 8, 10, 12, 11 };
+        int[] largestRange = findLargestRange(numsToFindInculdedArray);
+        System.out.println("Largest Range: (" + largestRange[0] + ", " + largestRange[1] + ")");
+
+        /*
+         * Q167.
+         * You are given an unsorted list of 999,000 unique integers, each from 1 and
+         * 1,000,000. Find the missing 1000 numbers. What is the computational and space
+         * complexity of your solution?
+         */
+        System.out.println("========= Q167 ==========");
+        List<Integer> uniqueNumbers = new ArrayList<>();
+
+        for (int i = 0; i < 1000000; i++) {
+            Random rand = new Random();
+            if (rand.nextInt(1000) % 1000 == 0) {
+                i++;
+            }
+            uniqueNumbers.add(i);
+        }
+        System.out.println(uniqueNumbers.size());
+        List<Integer> missingNumbers = findMissingNumbers(uniqueNumbers);
+
+        System.out.println("Missing Numbers:");
+        int i = 1;
+        for (int num : missingNumbers) {
+            System.out.print(i + ": ");
+            i++;
+            System.out.println(num);
+        }
+
+        /*
+         * Q168.
+         * Given an array of strings, group anagrams together.
+         * For example, given the following array:
+         * ['eat', 'ate', 'apt', 'pat', 'tea', 'now']
+         * Return:
+         * [['eat', 'ate', 'tea'],
+         * ['apt', 'pat'],
+         * ['now']]
+         */
+        System.out.println("========= Q168 ==========");
+        String[] strs = { "eat", "ate", "apt", "pat", "tea", "now" };
+        List<List<String>> anagramGroups = groupAnagrams(strs);
+
+        for (List<String> group : anagramGroups) {
+            System.out.println(group);
+        }
+
+        /*
+         * Q169.
+         * You are given a list of jobs to be done, where each job is represented by a
+         * start time and end time. Two jobs are compatible if they don't overlap. Find
+         * the largest subset of compatible jobs.
+         * For example, given the following jobs (there is no guarantee that jobs will
+         * be sorted):
+         * [(0, 6),
+         * (1, 4),
+         * (3, 5),
+         * (3, 8),
+         * (4, 7),
+         * (5, 9),
+         * (6, 10),
+         * (8, 11)]
+         * Return:
+         * [(1, 4),
+         * (4, 7),
+         * (8, 11)]
+         */
+        System.out.println("========= Q169 ==========");
+        List<Job> jobs = new ArrayList<>();
+        jobs.add(new Job(0, 6));
+        jobs.add(new Job(1, 4));
+        jobs.add(new Job(3, 5));
+        jobs.add(new Job(3, 8));
+        jobs.add(new Job(4, 7));
+        jobs.add(new Job(5, 9));
+        jobs.add(new Job(6, 10));
+        jobs.add(new Job(8, 11));
+
+        List<Job> largestSubset = findLargestSubset(jobs);
+
+        for (Job job : largestSubset) {
+            System.out.println("(" + job.start + ", " + job.end + ")");
+        }
+
+        /*
+         * Q170.
+         * Given a linked list and an integer k, remove the k-th node from the end of
+         * the list and return the head of the list.
+         * k is guaranteed to be smaller than the length of the list.
+         * Do this in one pass.
+         */
+        System.out.println("========= Q170 ==========");
+        ListNode headToRemoveKth = new ListNode(1);
+        headToRemoveKth.next = new ListNode(2);
+        headToRemoveKth.next.next = new ListNode(3);
+        headToRemoveKth.next.next.next = new ListNode(4);
+        headToRemoveKth.next.next.next.next = new ListNode(5);
+
+        int kthFromLast = 2;
+
+        ListNode updatedHead = removeKthNodeFromEnd(headToRemoveKth, kthFromLast);
+
+        while (updatedHead != null) {
+            System.out.print(updatedHead.val + " ");
+            updatedHead = updatedHead.next;
+        }
 
     }
 }
