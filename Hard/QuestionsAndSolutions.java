@@ -1,11 +1,14 @@
 package Hard;
 
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.List;
 
 class XORNode {
     private int data;
@@ -320,6 +323,378 @@ public class QuestionsAndSolutions {
         return false;
     }
 
+    // S11.
+    public static void segregateColors(char[] colors) {
+        int low = 0;
+        int mid = 0;
+        int high = colors.length - 1;
+
+        while (mid <= high) {
+            if (colors[mid] == 'R') {
+                swap(colors, low, mid);
+                low++;
+                mid++;
+            } else if (colors[mid] == 'G') {
+                mid++;
+            } else if (colors[mid] == 'B') {
+                swap(colors, mid, high);
+                high--;
+            }
+        }
+    }
+
+    public static void swap(char[] colors, int i, int j) {
+        char temp = colors[i];
+        colors[i] = colors[j];
+        colors[j] = temp;
+    }
+
+    // S12.
+    public static int countNQueens(int n) {
+        int[] queens = new int[n];
+        return backtrack(queens, 0);
+    }
+
+    public static int backtrack(int[] queens, int row) {
+        int count = 0;
+        if (row == queens.length) {
+            return 1;
+        }
+
+        for (int col = 0; col < queens.length; col++) {
+            if (isSafe(queens, row, col)) {
+                queens[row] = col;
+                count += backtrack(queens, row + 1);
+            }
+        }
+
+        return count;
+    }
+
+    public static boolean isSafe(int[] queens, int row, int col) {
+        for (int i = 0; i < row; i++) {
+            if (queens[i] == col || queens[i] - i == col - row || queens[i] + i == col + row) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // S13.
+    public static int findNonDuplicated(int[] nums) {
+        int ones = 0; // Count only bits that appear once
+        int twos = 0; // Count only bits that appear twice
+
+        for (int num : nums) {
+            ones = (ones ^ num) & ~twos;
+            twos = (twos ^ num) & ~ones;
+        }
+
+        return ones;
+    }
+
+    // S14.
+    public static List<Integer> findSubset(int[] nums, int target) {
+        List<Integer> subset = new ArrayList<>();
+        boolean targetFound = backtrack(nums, target, 0, subset);
+        return targetFound ? subset : null;
+    }
+
+    private static boolean backtrack(int[] nums, int target, int index, List<Integer> subset) {
+        if (target == 0) {
+            return true;
+        }
+
+        for (int i = index; i < nums.length; i++) {
+            if (nums[i] <= target) {
+                subset.add(nums[i]);
+                boolean targetFound = backtrack(nums, target - nums[i], i + 1, subset);
+
+                if (targetFound) {
+                    return true;
+                }
+                subset.remove(subset.size() - 1);
+            }
+        }
+        return false;
+    }
+
+    // S15.
+    public static String longestPalindromicSubstring(String s) {
+        if (s == null || s.length() < 2) {
+            return s;
+        }
+
+        int start = 0;
+        int maxLength = 1;
+        int n = s.length();
+        boolean[][] dp = new boolean[n][n];
+
+        for (int i = 0; i < n; i++) {
+            dp[i][i] = true;
+        }
+
+        for (int i = 0; i < n - 1; i++) {
+            if (s.charAt(i) == s.charAt(i + 1)) {
+                dp[i][i + 1] = true;
+                start = i;
+                maxLength = 2;
+            }
+        }
+
+        for (int len = 3; len <= n; len++) {
+            for (int i = 0; i <= n - len; i++) {
+                int j = i + len - 1;
+                if (s.charAt(i) == s.charAt(j) && dp[i + 1][j - 1]) {
+                    dp[i][j] = true;
+
+                    if (len > maxLength) {
+                        start = i;
+                        maxLength = len;
+                    }
+                }
+            }
+        }
+
+        return s.substring(start, start + maxLength);
+    }
+
+    // S16.
+    static class LRUCache {
+        class Node {
+            int key;
+            int value;
+            Node prev;
+            Node next;
+
+            public Node(int key, int value) {
+                this.key = key;
+                this.value = value;
+            }
+        }
+
+        private Map<Integer, Node> cache;
+        private int capacity;
+        private Node head;
+        private Node tail;
+
+        public LRUCache(int capacity) {
+            this.cache = new HashMap<>();
+            this.capacity = capacity;
+
+            head = new Node(-1, -1);
+            tail = new Node(-1, -1);
+            head.next = tail;
+            tail.prev = head;
+        }
+
+        public int get(int key) {
+            if (cache.containsKey(key)) {
+                Node node = cache.get(key);
+                removeNode(node);
+                addNodeToHead(node);
+                return node.value;
+            }
+            return -1;
+        }
+
+        public void set(int key, int value) {
+            if (cache.containsKey(key)) {
+                Node node = cache.get(key);
+                node.value = value;
+                removeNode(node);
+                addNodeToHead(node);
+            } else {
+                Node newNode = new Node(key, value);
+                if (cache.size() >= capacity) {
+                    Node tailNode = tail.prev;
+                    removeNode(tailNode);
+                    cache.remove(tail.prev.key);
+                }
+                cache.put(key, newNode);
+                addNodeToHead(newNode);
+            }
+        }
+
+        private void removeNode(Node node) {
+            node.prev.next = node.next;
+            node.next.prev = node.prev;
+        }
+
+        private void addNodeToHead(Node node) {
+            node.next = head.next;
+            node.prev = head;
+            head.next.prev = node;
+            head.next = node;
+        }
+    }
+
+    // S17.
+    public static boolean solveSudoku(int[][] grid) {
+        for (int row = 0; row < 9; row++) {
+            for (int col = 0; col < 9; col++) {
+                if (grid[row][col] == 0) {
+                    for (int digit = 1; digit <= 9; digit++) {
+                        if (isValid(grid, row, col, digit)) {
+                            grid[row][col] = digit;
+                            if (solveSudoku(grid)) {
+                                return true;
+                            }
+                            grid[row][col] = 0;
+                        }
+                    }
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public static boolean isValid(int[][] grid, int row, int col, int digit) {
+        for (int i = 0; i < 9; i++) {
+            if (grid[row][i] == digit || grid[i][col] == digit) {
+                return false;
+            }
+        }
+
+        int subgridStartRow = 3 * (row / 3);
+        int subgridStartCol = 3 * (col / 3);
+
+        for (int i = subgridStartRow; i < subgridStartRow + 3; i++) {
+            for (int j = subgridStartCol; j < subgridStartCol + 3; j++) {
+                if (grid[i][j] == digit) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public static void printGrid(int[][] grid) {
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                System.out.print(grid[i][j] + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    // S18.
+    // Solution in Q18
+
+    // S19.
+    static class KnightsTour {
+        private static final int[] ROW_MOVES = { 2, 1, -1, -2, -2, -1, 1, 2 };
+        private static final int[] COL_MOVES = { 1, 2, 2, 1, -1, -2, -2, -1 };
+
+        public int countKnightTours(int n) {
+            int[][] board = new int[n][n];
+            int count = 0;
+
+            for (int row = 0; row < n; row++) {
+                for (int col = 0; col < n; col++) {
+                    count += findTours(board, row, col, 1);
+                }
+            }
+
+            return count;
+        }
+
+        private int findTours(int[][] board, int row, int col, int moveCount) {
+            int n = board.length;
+
+            if (moveCount == n * n) {
+                return 1;
+            }
+
+            int count = 0;
+            board[row][col] = moveCount;
+
+            for (int i = 0; i < 8; i++) {
+                int nextRow = row + ROW_MOVES[i];
+                int nextCol = col + COL_MOVES[i];
+
+                if (isValidMove(board, nextRow, nextCol)) {
+                    count += findTours(board, nextRow, nextCol, moveCount + 1);
+                }
+            }
+
+            board[row][col] = 0;
+            return count;
+        }
+
+        private boolean isValidMove(int[][] board, int row, int col) {
+            int n = board.length;
+            return (row >= 0 && row < n && col >= 0 && col < n && board[row][col] == 0);
+        }
+    }
+
+    // S20.
+    static class LFUCache {
+        private int capacity;
+        private int minFrequency;
+        private Map<Integer, Integer> keyToValue;
+        private Map<Integer, Integer> keyToFrequency;
+        private Map<Integer, LinkedHashSet<Integer>> frequencyToKeys;
+
+        public LFUCache(int capacity) {
+            this.capacity = capacity;
+            this.minFrequency = 0;
+            this.keyToValue = new HashMap<>();
+            this.keyToFrequency = new HashMap<>();
+            this.frequencyToKeys = new HashMap<>();
+        }
+
+        public int get(int key) {
+            if (!keyToValue.containsKey(key)) {
+                return -1;
+            }
+
+            int frequency = keyToFrequency.get(key);
+            keyToFrequency.put(key, frequency + 1);
+            frequencyToKeys.get(frequency).remove(key);
+
+            if (frequencyToKeys.get(frequency).isEmpty()) {
+                frequencyToKeys.remove(frequency);
+
+                if (minFrequency == frequency) {
+                    minFrequency++;
+                }
+            }
+
+            frequencyToKeys.putIfAbsent(frequency + 1, new LinkedHashSet<>());
+            frequencyToKeys.get(frequency + 1).add(key);
+
+            return keyToValue.get(key);
+        }
+
+        public void set(int key, int value) {
+            if (capacity <= 0) {
+                return;
+            }
+
+            if (keyToValue.containsKey(key)) {
+                keyToValue.put(key, value);
+                get(key);
+                return;
+            }
+
+            if (keyToValue.size() >= capacity) {
+                int evictKey = frequencyToKeys.get(minFrequency).iterator().next();
+                frequencyToKeys.get(minFrequency).remove(evictKey);
+                keyToValue.remove(evictKey);
+                keyToFrequency.remove(evictKey);
+            }
+
+            keyToValue.put(key, value);
+            keyToFrequency.put(key, 1);
+            frequencyToKeys.putIfAbsent(1, new LinkedHashSet<>());
+            frequencyToKeys.get(1).add(key);
+            minFrequency = 1;
+        }
+    }
+
     public static void main(String[] args) {
         /*
          * Q1.
@@ -560,5 +935,205 @@ public class QuestionsAndSolutions {
             System.out.println("Arbitrage is not possible.");
         }
 
+        /*
+         * Q11.
+         * Given an array of strictly the characters 'R', 'G', and 'B', segregate the
+         * values of the array so that all the Rs come first, the Gs come second, and
+         * the Bs come last. You can only swap elements of the array.
+         * Do this in linear time and in-place.
+         * For example, given the array ['G', 'B', 'R', 'R', 'B', 'R', 'G'], it should
+         * become ['R', 'R', 'R', 'G', 'G', 'B', 'B'].
+         */
+        System.out.println("========= Q11 ==========");
+        char[] colors = { 'G', 'B', 'R', 'R', 'B', 'R', 'G' };
+        segregateColors(colors);
+        System.out.println(Arrays.toString(colors));
+
+        /*
+         * Q12.
+         * You have an N by N board. Write a function that, given N, returns the number
+         * of possible arrangements of the board where N queens can be placed on the
+         * board without threatening each other, i.e. no two queens share the same row,
+         * column, or diagonal.
+         */
+        System.out.println("========= Q12 ==========");
+        int N = 4;
+        int count = countNQueens(N);
+        System.out.println("Number of possible arrangements: " + count);
+
+        /*
+         * Q13.
+         * Given an array of integers where every integer occurs three times except for
+         * one integer, which only occurs once, find and return the non-duplicated
+         * integer.
+         * For example, given [6, 1, 3, 3, 3, 6, 6], return 1. Given [13, 19, 13, 13],
+         * return 19.
+         * Do this in O(N) time and O(1) space.
+         */
+        System.out.println("========= Q13 ==========");
+        int[] numsToFindSingleAppearance1 = { 6, 1, 3, 3, 3, 6, 6 };
+        int singleAppearanceInt = findNonDuplicated(numsToFindSingleAppearance1);
+        System.out.println("Non-duplicated integer: " + singleAppearanceInt);
+
+        int[] numsToFindSingleAppearance2 = { 13, 19, 13, 13 };
+        singleAppearanceInt = findNonDuplicated(numsToFindSingleAppearance2);
+        System.out.println("Non-duplicated integer: " + singleAppearanceInt);
+
+        /*
+         * Q14.
+         * Given a list of integers S and a target number k, write a function that
+         * returns a subset of S that adds up to k. If such a subset cannot be made,
+         * then return null.
+         * Integers can appear more than once in the list. You may assume all numbers in
+         * the list are positive.
+         * For example, given S = [12, 1, 61, 5, 9, 2] and k = 24, return [12, 9, 2, 1]
+         * since it sums up to 24.
+         */
+        System.out.println("========= Q1 4 ==========");
+        int[] numsToFindSubset = { 12, 1, 61, 5, 9, 2 };
+        int target = 24;
+        List<Integer> subset = findSubset(numsToFindSubset, target);
+
+        if (subset == null) {
+            System.out.println("No subset found.");
+        } else {
+            System.out.println("Subset: " + subset);
+        }
+
+        /*
+         * Q15.
+         * Given a string, find the longest palindromic contiguous substring. If there
+         * are more than one with the maximum length, return any one.
+         * For example, the longest palindromic substring of "aabcdcb" is "bcdcb". The
+         */
+        System.out.println("========= Q15 ==========");
+        String s1 = "aabcdcb";
+        String s2 = "bananas";
+
+        System.out.println("Longest Palindromic Substring 1: " + longestPalindromicSubstring(s1));
+        System.out.println("Longest Palindromic Substring 2: " + longestPalindromicSubstring(s2));
+
+        /*
+         * Q16.
+         * Implement an LRU (Least Recently Used) cache. It should be able to be
+         * initialized with a cache size n, and contain the following methods:
+         * set(key, value): sets key to value. If there are already n items in the cache
+         * and we are adding a new item, then it should also remove the least recently
+         * used item.
+         * get(key): gets the value at key. If no such key exists, return null.
+         * Each operation should run in O(1) time.
+         */
+        System.out.println("========= Q16 ==========");
+        LRUCache cache = new LRUCache(3);
+
+        cache.set(1, 10);
+        cache.set(2, 20);
+        cache.set(3, 30);
+
+        System.out.println(cache.get(1)); // Output: 10
+        System.out.println(cache.get(2)); // Output: 20
+
+        cache.set(4, 40);
+
+        System.out.println(cache.get(1)); // Output: -1 (not found, as it was evicted)
+        System.out.println(cache.get(3)); // Output: 30
+        System.out.println(cache.get(4)); // Output: 40
+
+        /*
+         * Q17.
+         * Sudoku is a puzzle where you're given a partially-filled 9 by 9 grid with
+         * digits. The objective is to fill the grid with the constraint that every row,
+         * column, and box (3 by 3 subgrid) must contain all of the digits from 1 to 9.
+         * Implement an efficient sudoku solver.
+         */
+        System.out.println("========= Q17 ==========");
+        int[][] grid = {
+                { 5, 3, 0, 0, 7, 0, 0, 0, 0 },
+                { 6, 0, 0, 1, 9, 5, 0, 0, 0 },
+                { 0, 9, 8, 0, 0, 0, 0, 6, 0 },
+                { 8, 0, 0, 0, 6, 0, 0, 0, 3 },
+                { 4, 0, 0, 8, 0, 3, 0, 0, 1 },
+                { 7, 0, 0, 0, 2, 0, 0, 0, 6 },
+                { 0, 6, 0, 0, 0, 0, 2, 8, 0 },
+                { 0, 0, 0, 4, 1, 9, 0, 0, 5 },
+                { 0, 0, 0, 0, 8, 0, 0, 7, 9 }
+        };
+
+        if (solveSudoku(grid)) {
+            printGrid(grid);
+        } else {
+            System.out.println("No solution exists.");
+        }
+
+        /*
+         * Q18.
+         * Implement a file syncing algorithm for two computers over a low-bandwidth
+         * network. What if we know the files in the two computers are mostly the same?
+         */
+        System.out.println("========= Q18 ==========");
+        /*
+         * 1. Establish a TCP connection between the two computers.
+         * 2. Identify the files that need to be synced. Maintain list of files on each
+         * computer and compare the differences.
+         * 3. Use a differential syncing algorithm to transfer only different parts.
+         * - Implement a mechanism to compare files to identify the differences such as
+         * file hashing or timestamp comparison.
+         * - When a file is modified, calculate the difference between old and new
+         * version. This can be done by comparing contents of the files or using delta
+         * encoding techniques.
+         * 4. Transfer the differences over the low-bandwidth network. This can be done
+         * by sending only the modified parts of the files or using compression
+         * techniques to reduce data size.
+         * 5. On the receiving computer, apply the received differences to update the
+         * corresponding files. This can involve patching or merging the changes into
+         * the existing files.
+         * 6. Repeat synching process periodically or whenever changes are detected on
+         * either computer.
+         * 7. Implement error handling and recovery mechanisms to handle network
+         * failures, file conflicts, etc.
+         * 8. Monitor the syncing process and provide feedback to the users about the
+         * progress and status of the synchronization.
+         */
+
+        /*
+         * Q19.
+         * A knight's tour is a sequence of moves by a knight on a chessboard such that
+         * all squares are visited once.
+         * Given N, write a function to return the number of knight's tours on an N by N
+         * chessboard.
+         */
+        System.out.println("========= Q19 ==========");
+        KnightsTour knightsTour = new KnightsTour();
+        int numberOfTours = knightsTour.countKnightTours(5);
+        System.out.println("Number of Knight's Tours on a 5x5 chessboard: " + numberOfTours);
+
+        /*
+         * Q20.
+         * Implement an LFU (Least Frequently Used) cache. It should be able to be
+         * initialized with a cache size n, and contain the following methods:
+         * set(key, value): sets key to value. If there are already n items in the cache
+         * and we are adding a new item, then it should also remove the least frequently
+         * used item. If there is a tie, then the least recently used key should be
+         * removed.
+         * get(key): gets the value at key. If no such key exists, return null.
+         * Each operation should run in O(1) time.
+         */
+        System.out.println("========= Q20 ==========");
+        LFUCache lfuCache = new LFUCache(2);
+
+        lfuCache.set(1, 10);
+        lfuCache.set(2, 20);
+        System.out.println(lfuCache.get(1)); // Output: 10
+
+        lfuCache.set(3, 30);
+        System.out.println(lfuCache.get(2)); // Output: -1
+        System.out.println(lfuCache.get(3)); // Output: 30
+
+        lfuCache.set(4, 40);
+        System.out.println(lfuCache.get(1)); // Output: -1
+        System.out.println(lfuCache.get(3)); // Output: 30
+        System.out.println(lfuCache.get(4)); // Output: 40
+
     }
+
 }

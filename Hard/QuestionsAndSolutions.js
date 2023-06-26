@@ -560,3 +560,574 @@ const rates = [
 
 console.log(`Arbitrage is${hasArbitrage(rates) ? '' : ' not'} possible`);
 console.log('\n');
+
+/*
+ * Q11.
+ * Given an array of strictly the characters 'R', 'G', and 'B', segregate the
+ * values of the array so that all the Rs come first, the Gs come second, and
+ * the Bs come last. You can only swap elements of the array.
+ * Do this in linear time and in-place.
+ * For example, given the array ['G', 'B', 'R', 'R', 'B', 'R', 'G'], it should
+ * become ['R', 'R', 'R', 'G', 'G', 'B', 'B'].
+ */
+function segregateColors(colors) {
+    let low = 0;
+    let mid = 0;
+    let high = colors.length - 1;
+
+    while (mid <= high) {
+        if (colors[mid] == 'R') {
+            swap(colors, low, mid);
+            low++;
+            mid++;
+        } else if (colors[mid] == 'G') {
+            mid++;
+        } else if (colors[mid] == 'B') {
+            swap(colors, mid, high);
+            high--;
+        }
+    }
+}
+
+function swap(colors, i, j) {
+    const temp = colors[i];
+    colors[i] = colors[j];
+    colors[j] = temp;
+}
+
+console.log('========= Q11 =========');
+const colors = ['G', 'B', 'R', 'R', 'B', 'R', 'G'];
+segregateColors(colors);
+console.log(colors);
+console.log('\n');
+
+/*
+ * Q12.
+ * You have an N by N board. Write a function that, given N, returns the number
+ * of possible arrangements of the board where N queens can be placed on the
+ * board without threatening each other, i.e. no two queens share the same row,
+ * column, or diagonal.
+ */
+function countQueens(n) {
+    let queens = new Array(n).fill(-1);
+    return backtrack(queens, 0);
+}
+
+function backtrack(queens, row) {
+    let count = 0;
+    if (row === queens.length) {
+        return 1;
+    }
+
+    for (let col = 0; col < queens.length; col++) {
+        if (isSafe(queens, row, col)) {
+            queens[row] = col;
+            count += backtrack(queens, row + 1);
+        }
+    }
+
+    return count;
+}
+
+function isSafe(queens, row, col) {
+    for (let i = 0; i < row; i++) {
+        if (
+            queens[i] === col ||
+            queens[i] - i === col - row ||
+            queens[i] + i === col + row
+        ) {
+            return false;
+        }
+    }
+    return true;
+}
+
+console.log('========= Q12 =========');
+const N = 4;
+console.log(`Number of possible arrangements: ${countQueens(N)}`);
+console.log('\n');
+
+/*
+ * Q13.
+ * Given an array of integers where every integer occurs three times except for
+ * one integer, which only occurs once, find and return the non-duplicated
+ * integer.
+ * For example, given [6, 1, 3, 3, 3, 6, 6], return 1. Given [13, 19, 13, 13],
+ * return 19.
+ * Do this in O(N) time and O(1) space.
+ */
+function findNonDuplicated(nums) {
+    let ones = 0; // Count only bits that appear once
+    let twos = 0; // Count only bits that appear twice
+
+    for (const num of nums) {
+        ones = (ones ^ num) & ~twos;
+        twos = (twos ^ num) & ~ones;
+    }
+
+    return ones;
+}
+
+console.log('========= Q13 =========');
+const numsToFindSingleAppearance1 = [6, 1, 3, 3, 3, 6, 6];
+const numsToFindSingleAppearance2 = [13, 19, 13, 13];
+
+console.log(
+    `Non-duplicated number: ${findNonDuplicated(numsToFindSingleAppearance1)}`
+);
+console.log(
+    `Non-duplicated number: ${findNonDuplicated(numsToFindSingleAppearance2)}`
+);
+console.log('\n');
+
+/*
+ * Q14.
+ * Given a list of integers S and a target number k, write a function that
+ * returns a subset of S that adds up to k. If such a subset cannot be made,
+ * then return null.
+ * Integers can appear more than once in the list. You may assume all numbers in
+ * the list are positive.
+ * For example, given S = [12, 1, 61, 5, 9, 2] and k = 24, return [12, 9, 2, 1]
+ * since it sums up to 24.
+ */
+function findSubset(nums, target) {
+    let subset = [];
+    const targetFound = backtrack(nums, target, 0, subset);
+    return targetFound ? subset : null;
+}
+
+function backtrack(nums, target, index, subset) {
+    if (target === 0) {
+        return true;
+    }
+
+    for (let i = index; i < nums.length; i++) {
+        if (nums[i] <= target) {
+            subset.push(nums[i]);
+            const targetFound = backtrack(
+                nums,
+                target - nums[i],
+                i + 1,
+                subset
+            );
+
+            if (targetFound) {
+                return true;
+            }
+            subset.pop();
+        }
+    }
+    return false;
+}
+
+console.log('========= Q14 =========');
+const numsToFindSubset = [12, 1, 61, 5, 9, 2];
+const target = 24;
+console.log(`Subset: ${findSubset(numsToFindSubset, target)}`);
+console.log('\n');
+
+/*
+ * Q15.
+ * Given a string, find the longest palindromic contiguous substring. If there
+ * are more than one with the maximum length, return any one.
+ * For example, the longest palindromic substring of "aabcdcb" is "bcdcb". The
+ * longest palindromic substring of "bananas" is "anana".
+ */
+function longestPalindromicSubstring(s) {
+    if (!s || s.length < 2) {
+        return s;
+    }
+
+    let start = 0;
+    let maxLength = 1;
+    const n = s.length;
+    let dp = new Array(n).fill(true).map(() => new Array(n).fill(true));
+
+    for (let i = 0; i < n - 1; i++) {
+        if (s[i] === s[i + 1]) {
+            dp[i][i + 1] = true;
+            start = i;
+            maxLength = 2;
+        }
+    }
+
+    for (let len = 3; len <= n; len++) {
+        for (let i = 0; i <= n - len; i++) {
+            const j = i + len - 1;
+            if (s[i] === s[j] && dp[i + 1][j - 1]) {
+                dp[i][j] = true;
+
+                if (len > maxLength) {
+                    start = i;
+                    maxLength = len;
+                }
+            }
+        }
+    }
+    return s.substring(start, start + maxLength);
+}
+
+console.log('========= Q15 =========');
+const s1 = 'aabcdcb';
+const s2 = 'bananas';
+
+console.log(
+    `Longest palindromic substring1: ${longestPalindromicSubstring(s1)}`
+);
+console.log(
+    `Longest palindromic substring2: ${longestPalindromicSubstring(s2)}`
+);
+console.log('\n');
+
+/*
+ * Q16.
+ * Implement an LRU (Least Recently Used) cache. It should be able to be
+ * initialized with a cache size n, and contain the following methods:
+ * set(key, value): sets key to value. If there are already n items in the cache
+ * and we are adding a new item, then it should also remove the least recently
+ * used item.
+ * get(key): gets the value at key. If no such key exists, return null.
+ * Each operation should run in O(1) time.
+ */
+class LRUCacheNode {
+    constructor(key, value) {
+        this.key = key;
+        this.value = value;
+        this.prev = null;
+        this.next = null;
+    }
+}
+
+class LRUCache {
+    #_capacity;
+    #_cache;
+    #_head;
+    #_tail;
+
+    constructor(capacity) {
+        this.#_capacity = capacity;
+        this.#_cache = new Map();
+
+        this.#_head = new LRUCacheNode(-1, -1);
+        this.#_tail = new LRUCacheNode(-1, -1);
+        this.#_head.next = this.#_tail;
+        this.#_tail.prev = this.#_head;
+    }
+
+    get(key) {
+        if (this.#_cache.has(key)) {
+            const node = this.#_cache.get(key);
+            this.#_removeNode(node);
+            this.#_addNodeToHead(node);
+            return node.value;
+        }
+        return -1;
+    }
+
+    set(key, value) {
+        if (this.#_cache.has(key)) {
+            const node = this.#_cache.get(key);
+            node.value = value;
+            this.#_removeNode(node);
+            this.#_addNodeToHead(node);
+        } else {
+            const newNode = new LRUCacheNode(key, value);
+            if (this.#_cache.size >= this.#_capacity) {
+                const tailNode = this.#_tail.prev;
+                this.#_removeNode(tailNode);
+                this.#_cache.delete(this.#_tail.prev.key);
+            }
+            this.#_cache.set(key, newNode);
+            this.#_addNodeToHead(newNode);
+        }
+    }
+
+    #_removeNode(node) {
+        node.prev.next = node.next;
+        node.next.prev = node.prev;
+    }
+
+    #_addNodeToHead(node) {
+        node.next = this.#_head.next;
+        node.prev = this.#_head;
+        this.#_head.next.prev = node;
+        this.#_head.next = node;
+    }
+}
+
+console.log('========= Q16 =========');
+const cache = new LRUCache(3);
+cache.set(1, 10);
+cache.set(2, 20);
+cache.set(3, 30);
+
+console.log(`Get 1: ${cache.get(1)}`);
+console.log(`Get 2: ${cache.get(2)}`);
+
+cache.set(4, 40);
+
+console.log(`Get 1: ${cache.get(1)}`);
+console.log(`Get 3: ${cache.get(3)}`);
+console.log(`Get 4: ${cache.get(4)}`);
+console.log('\n');
+
+/*
+ * Q17.
+ * Sudoku is a puzzle where you're given a partially-filled 9 by 9 grid with
+ * digits. The objective is to fill the grid with the constraint that every row,
+ * column, and box (3 by 3 subgrid) must contain all of the digits from 1 to 9.
+ * Implement an efficient sudoku solver.
+ */
+function solveSudoku(grid) {
+    for (let row = 0; row < 9; row++) {
+        for (let col = 0; col < 9; col++) {
+            if (grid[row][col] === 0) {
+                for (let digit = 1; digit <= 9; digit++) {
+                    if (isValid(grid, row, col, digit)) {
+                        grid[row][col] = digit;
+                        if (solveSudoku(grid)) {
+                            return true;
+                        } else {
+                            grid[row][col] = 0;
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+function isValid(grid, row, col, digit) {
+    for (let i = 0; i < 9; i++) {
+        if (grid[row][i] === digit || grid[i][col] === digit) {
+            return false;
+        }
+    }
+
+    const subgridStartRow = Math.floor(row / 3) * 3;
+    const subgridStartCol = Math.floor(col / 3) * 3;
+
+    for (let i = subgridStartRow; i < subgridStartRow + 3; i++) {
+        for (let j = subgridStartCol; j < subgridStartCol + 3; j++) {
+            if (grid[i][j] === digit) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+console.log('========= Q17 =========');
+const grid = [
+    [5, 3, 0, 0, 7, 0, 0, 0, 0],
+    [6, 0, 0, 1, 9, 5, 0, 0, 0],
+    [0, 9, 8, 0, 0, 0, 0, 6, 0],
+    [8, 0, 0, 0, 6, 0, 0, 0, 3],
+    [4, 0, 0, 8, 0, 3, 0, 0, 1],
+    [7, 0, 0, 0, 2, 0, 0, 0, 6],
+    [0, 6, 0, 0, 0, 0, 2, 8, 0],
+    [0, 0, 0, 4, 1, 9, 0, 0, 5],
+    [0, 0, 0, 0, 8, 0, 0, 7, 9],
+];
+
+if (solveSudoku(grid)) {
+    console.log(grid);
+} else {
+    console.log('No solution exists');
+}
+console.log('\n');
+
+/*
+ * Q18.
+ * Implement a file syncing algorithm for two computers over a low-bandwidth
+ * network. What if we know the files in the two computers are mostly the same?
+ */
+console.log('========= Q18 =========');
+/*
+ * 1. Establish a TCP connection between the two computers.
+ * 2. Identify the files that need to be synced. Maintain list of files on each
+ * computer and compare the differences.
+ * 3. Use a differential syncing algorithm to transfer only different parts.
+ * - Implement a mechanism to compare files to identify the differences such as
+ * file hashing or timestamp comparison.
+ * - When a file is modified, calculate the difference between old and new
+ * version. This can be done by comparing contents of the files or using delta
+ * encoding techniques.
+ * 4. Transfer the differences over the low-bandwidth network. This can be done
+ * by sending only the modified parts of the files or using compression
+ * techniques to reduce data size.
+ * 5. On the receiving computer, apply the received differences to update the
+ * corresponding files. This can involve patching or merging the changes into
+ * the existing files.
+ * 6. Repeat synching process periodically or whenever changes are detected on
+ * either computer.
+ * 7. Implement error handling and recovery mechanisms to handle network
+ * failures, file conflicts, etc.
+ * 8. Monitor the syncing process and provide feedback to the users about the
+ * progress and status of the synchronization.
+ */
+console.log('\n');
+
+/*
+ * Q19.
+ * A knight's tour is a sequence of moves by a knight on a chessboard such that
+ * all squares are visited once.
+ * Given N, write a function to return the number of knight's tours on an N by N
+ * chessboard.
+ */
+class KnightsTour {
+    #_ROWS_MOVES = [2, 1, -1, -2, -2, -1, 1, 2];
+    #_COLS_MOVES = [1, 2, 2, 1, -1, -2, -2, -1];
+
+    countKnightTours(n) {
+        let board = new Array(n).fill(0).map(() => new Array(n).fill(0));
+        let count = 0;
+
+        for (let row = 0; row < n; row++) {
+            for (let col = 0; col < n; col++) {
+                count += this.#_findTours(board, row, col, 1);
+            }
+        }
+        return count;
+    }
+
+    #_findTours(board, row, col, moveCount) {
+        const n = board.length;
+
+        if (moveCount === n * n) {
+            return 1;
+        }
+
+        let count = 0;
+        board[row][col] = moveCount;
+
+        for (let i = 0; i < 8; i++) {
+            const nextRow = row + this.#_ROWS_MOVES[i];
+            const nextCol = col + this.#_COLS_MOVES[i];
+
+            if (this.#_isValidMove(board, nextRow, nextCol)) {
+                count += this.#_findTours(
+                    board,
+                    nextRow,
+                    nextCol,
+                    moveCount + 1
+                );
+            }
+        }
+
+        board[row][col] = 0;
+        return count;
+    }
+
+    #_isValidMove(board, row, col) {
+        const n = board.length;
+        return (
+            row >= 0 && row < n && col >= 0 && col < n && board[row][col] === 0
+        );
+    }
+}
+
+console.log('========= Q19 =========');
+const knightsTour = new KnightsTour();
+console.log(knightsTour.countKnightTours(5));
+console.log('\n');
+
+/*
+ * Q20.
+ * Implement an LFU (Least Frequently Used) cache. It should be able to be
+ * initialized with a cache size n, and contain the following methods:
+ * set(key, value): sets key to value. If there are already n items in the cache
+ * and we are adding a new item, then it should also remove the least frequently
+ * used item. If there is a tie, then the least recently used key should be
+ * removed.
+ * get(key): gets the value at key. If no such key exists, return null.
+ * Each operation should run in O(1) time.
+ */
+class LFUCache {
+    #_capacity;
+    #_minFrequency;
+    #_keyToValue;
+    #_keyToFrequency;
+    #_frequencyToKeys;
+
+    constructor(capacity) {
+        this.#_capacity = capacity;
+        this.#_minFrequency = 0;
+        this.#_keyToValue = new Map();
+        this.#_keyToFrequency = new Map();
+        this.#_frequencyToKeys = new Map();
+    }
+
+    get(key) {
+        if (!this.#_keyToValue.has(key)) {
+            return -1;
+        }
+
+        const frequency = this.#_keyToFrequency.get(key);
+        this.#_keyToFrequency.set(key, frequency + 1);
+        this.#_frequencyToKeys.get(frequency).delete(key);
+
+        if (this.#_frequencyToKeys.get(frequency).size === 0) {
+            this.#_frequencyToKeys.delete(frequency);
+
+            if (frequency === this.#_minFrequency) {
+                this.#_minFrequency++;
+            }
+        }
+
+        this.#_frequencyToKeys.set(
+            frequency + 1,
+            this.#_frequencyToKeys.get(frequency + 1)
+                ? this.#_frequencyToKeys.get(frequency + 1).add(key)
+                : new Set([key])
+        );
+        
+        return this.#_keyToValue.get(key);
+    }
+
+    set(key, value) {
+        if (this.#_capacity <= 0) {
+            return;
+        }
+
+        if (this.#_keyToValue.has(key)) {
+            this.#_keyToValue.set(key, value);
+            this.get(key);
+            return;
+        }
+
+        if (this.#_keyToValue.size >= this.#_capacity) {
+            const evictKey = this.#_frequencyToKeys
+                .get(this.#_minFrequency)
+                .values()
+                .next().value;
+            this.#_frequencyToKeys.get(this.#_minFrequency).delete(evictKey);
+            this.#_keyToValue.delete(evictKey);
+            this.#_keyToFrequency.delete(evictKey);
+        }
+
+        this.#_keyToValue.set(key, value);
+        this.#_keyToFrequency.set(key, 1);
+        this.#_frequencyToKeys.set(1, this.#_frequencyToKeys.get(1) ? this.#_frequencyToKeys.get(1).add(key) : new Set([key]));
+        this.#_minFrequency = 1;
+    }
+}
+
+console.log('========= Q20 =========');
+const lfuCache = new LFUCache(2);
+
+lfuCache.set(1, 10);
+lfuCache.set(2, 20);
+console.log(lfuCache.get(1)); // Output: 10
+
+lfuCache.set(3, 30);
+console.log(lfuCache.get(2)); // Output: -1
+console.log(lfuCache.get(3)); // Output: 30
+
+lfuCache.set(4, 40);
+console.log(lfuCache.get(1)); // Output: -1
+console.log(lfuCache.get(3)); // Output: 30
+console.log(lfuCache.get(4)); // Output: 40
+console.log('\n');
