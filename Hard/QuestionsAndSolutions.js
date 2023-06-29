@@ -1,3 +1,6 @@
+const { get } = require('http');
+const { sep } = require('path');
+
 /*
  * Q1.
  * Given an array of integers, return a new array such that each element at
@@ -1083,7 +1086,7 @@ class LFUCache {
                 ? this.#_frequencyToKeys.get(frequency + 1).add(key)
                 : new Set([key])
         );
-        
+
         return this.#_keyToValue.get(key);
     }
 
@@ -1110,7 +1113,12 @@ class LFUCache {
 
         this.#_keyToValue.set(key, value);
         this.#_keyToFrequency.set(key, 1);
-        this.#_frequencyToKeys.set(1, this.#_frequencyToKeys.get(1) ? this.#_frequencyToKeys.get(1).add(key) : new Set([key]));
+        this.#_frequencyToKeys.set(
+            1,
+            this.#_frequencyToKeys.get(1)
+                ? this.#_frequencyToKeys.get(1).add(key)
+                : new Set([key])
+        );
         this.#_minFrequency = 1;
     }
 }
@@ -1130,4 +1138,719 @@ lfuCache.set(4, 40);
 console.log(lfuCache.get(1)); // Output: -1
 console.log(lfuCache.get(3)); // Output: 30
 console.log(lfuCache.get(4)); // Output: 40
+console.log('\n');
+
+/*
+ * Q21.
+ * In a directed graph, each node is assigned an uppercase letter. We define a
+ * path's value as the number of most frequently-occurring letter along that
+ * path. For example, if a path in the graph goes through "ABACA", the value of
+ * the path is 3, since there are 3 occurrences of 'A' on the path.
+ * Given a graph with n nodes and m directed edges, return the largest value
+ * path of the graph. If the largest value is infinite, then return null.
+ * The graph is represented with a string and an edge list. The i-th character
+ * represents the uppercase letter of the i-th node. Each tuple in the edge list
+ * (i, j) means there is a directed edge from the i-th node to the j-th node.
+ * Self-edges are possible, as well as multi-edges.
+ * For example, the following input graph:
+ * ABACA
+ * [(0, 1),
+ * (0, 2),
+ * (2, 3),
+ * (3, 4)]
+ * Would have maximum value 3 using the path of vertices [0, 2, 3, 4], (A, A, C,
+ * A).
+ * The following input graph:
+ * A
+ * [(0, 0)]
+ * Should return null, since we have an infinite loop.
+ */
+class DirectedGraph {
+    #_adjacencyList;
+    #_nodeValues;
+
+    constructor(nodes, edges) {
+        this.#_adjacencyList = new Map();
+        this.#_nodeValues = new Array(nodes.length);
+
+        for (let i = 0; i < nodes.length; i++) {
+            this.#_adjacencyList.set(i, new Set());
+            this.#_nodeValues[i] = nodes[i];
+        }
+
+        for (const [from, to] of edges) {
+            this.#_adjacencyList.get(from).add(to);
+        }
+    }
+
+    findLargestValuePath() {
+        const numNodes = this.#_nodeValues.length;
+        let visited = new Array(numNodes).fill(false);
+        let freqMap = new Map();
+        let maxValue = 0;
+
+        for (let i = 0; i < numNodes; i++) {
+            if (!visited[i]) {
+                const pathValue = this.dfs(i, visited, freqMap);
+
+                if (!pathValue) {
+                    return null;
+                }
+                maxValue = Math.max(maxValue, pathValue);
+            }
+        }
+
+        return maxValue;
+    }
+
+    dfs(node, visited, freqMap) {
+        visited[node] = true;
+        const currNode = this.#_nodeValues[node];
+        freqMap.set(currNode, freqMap.get(currNode) + 1 || 1);
+        const neighbors = this.#_adjacencyList.get(node) || new Set();
+        let maxValue = freqMap.get(currNode);
+
+        for (const neighbor of neighbors) {
+            if (visited[neighbor]) {
+                return null;
+            }
+
+            const pathValue = this.dfs(neighbor, visited, freqMap);
+            if (!pathValue) {
+                return null;
+            }
+            maxValue = Math.max(maxValue, pathValue);
+        }
+
+        visited[node] = false;
+        freqMap.set(currNode, freqMap.get(currNode) - 1);
+        if (freqMap.get(currNode) === 0) {
+            freqMap.delete(currNode);
+        }
+
+        return maxValue;
+    }
+}
+
+console.log('========= Q21 =========');
+const nodes1 = 'ABACA';
+const edges1 = [
+    [0, 1],
+    [0, 2],
+    [2, 3],
+    [3, 4],
+];
+const graph1 = new DirectedGraph(nodes1, edges1);
+console.log(graph1.findLargestValuePath()); // Output: 3
+
+const nodes2 = 'A';
+const edges2 = [[0, 0]];
+const graph2 = new DirectedGraph(nodes2, edges2);
+console.log(graph2.findLargestValuePath()); // Output: null
+console.log('\n');
+
+/*
+ * Q22.
+ * Given an array of numbers, find the length of the longest increasing
+ * subsequence in the array. The subsequence does not necessarily have to be
+ * contiguous.
+ * For example, given the array [0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11,
+ * 7, 15], the longest increasing subsequence has length 6: it is 0, 2, 6, 9,
+ * 11, 15.
+ */
+function lengthOfLIS(nums) {
+    const n = nums.length;
+    if (n === 0) {
+        return 0;
+    }
+
+    let dp = new Array(n).fill(0);
+    dp[0] = 1;
+    let maxLength = 1;
+
+    for (let i = 1; i < n; i++) {
+        let maxVal = 0;
+        for (let j = 0; j < i; j++) {
+            if (nums[i] > nums[j]) {
+                maxVal = Math.max(maxVal, dp[j]);
+            }
+        }
+        dp[i] = maxVal + 1;
+        maxLength = Math.max(maxLength, dp[i]);
+    }
+    return maxLength;
+}
+
+console.log('========= Q22 =========');
+const numsToFindLIS = [0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15];
+console.log(lengthOfLIS(numsToFindLIS)); // Output: 6
+console.log('\n');
+
+/*
+ * Q23.
+ * A rule looks like this:
+ * A NE B
+ * This means this means point A is located northeast of point B.
+ * A SW C
+ * means that point A is southwest of C.
+ * Given a list of rules, check if the sum of the rules validate. For example:
+ * A N B
+ * B NE C
+ * C N A
+ * does not validate, since A cannot be both north and south of C.
+ * A NW B
+ * A N B
+ * is considered valid.
+ */
+function validateRules(rules) {
+    let relationships = new Map();
+
+    for (const rule of rules) {
+        const parts = rule.split(' ');
+        const point1 = parts[0];
+        const direction = parts[1];
+        const point2 = parts[2];
+
+        if (!validateRule(relationships, point1, direction, point2)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function validateRule(relationships, point1, direction, point2) {
+    let existingDirection1 = relationships.get(point1) || new Set();
+    let existingDirection2 = relationships.get(point2) || new Set();
+
+    if (
+        existingDirection1.has(directionOpposite(direction)) ||
+        existingDirection2.has(direction)
+    ) {
+        return false;
+    }
+
+    existingDirection1.add(direction);
+    existingDirection2.add(directionOpposite(direction));
+
+    relationships.set(point1, existingDirection1);
+    relationships.set(point2, existingDirection2);
+
+    return true;
+}
+
+function directionOpposite(direction) {
+    switch (direction) {
+        case 'N':
+            return 'S';
+        case 'S':
+            return 'N';
+        case 'E':
+            return 'W';
+        case 'W':
+            return 'E';
+        case 'NE':
+            return 'SW';
+        case 'SW':
+            return 'NE';
+        case 'NW':
+            return 'SE';
+        case 'SE':
+            return 'NW';
+        default:
+            return '';
+    }
+}
+
+function addRelationship(relationships, point1, direction, point2) {
+    if (!relationships.has(point1)) {
+        relationships.set(point1, new Set());
+    }
+    relationships.get(point1).add(direction);
+
+    if (!relationships.has(point2)) {
+        relationships.set(point2, new Set());
+    }
+    relationships.get(point2).add(directionOpposite(direction));
+}
+
+console.log('========= Q23 =========');
+const rules1 = ['A N B', 'C SE B', 'C N A'];
+console.log(validateRules(rules1)); // Output: false
+
+const rules2 = ['A NW B', 'A N B'];
+console.log(validateRules(rules2)); // Output: true
+console.log('\n');
+
+/*
+ * Q24.
+ * We're given a hashmap associating each courseId key with a list of courseIds
+ * values, which represents that the prerequisites of courseId are courseIds.
+ * Return a sorted ordering of courses such that we can finish all courses.
+ * Return null if there is no such ordering.
+ * For example, given {'CSC300': ['CSC100', 'CSC200'], 'CSC200': ['CSC100'],
+ * 'CSC100': []}, should return ['CSC100', 'CSC200', 'CSCS300'].
+ */
+function findCourseOrder(prerequisites) {
+    let graph = new buildGraph(prerequisites);
+    let visited = new Set();
+    let visiting = new Set();
+    let courseOrder = [];
+
+    for (const course of graph.keys()) {
+        if (
+            !visited.has(course) &&
+            !dfs(course, graph, visited, visiting, courseOrder)
+        ) {
+            return null;
+        }
+    }
+
+    return courseOrder;
+}
+
+function buildGraph(prerequisites) {
+    let graph = new Map();
+
+    for (const course of prerequisites.keys()) {
+        graph.set(course, []);
+    }
+
+    for (const course of prerequisites.keys()) {
+        for (const prerequisite of prerequisites.get(course)) {
+            graph.get(course).push(prerequisite);
+        }
+    }
+
+    return graph;
+}
+
+function dfs(course, graph, visited, visiting, courseOrder) {
+    visiting.add(course);
+
+    for (const prerequisite of graph.get(course)) {
+        if (visiting.has(prerequisite)) {
+            return false;
+        }
+
+        if (
+            !visited.has(prerequisite) &&
+            !dfs(prerequisite, graph, visited, visiting, courseOrder)
+        ) {
+            return false;
+        }
+    }
+
+    visiting.delete(course);
+    visited.add(course);
+    courseOrder.push(course);
+    return true;
+}
+
+console.log('========= Q24 =========');
+const prerequisites = new Map();
+prerequisites.set('CSC300', ['CSC100', 'CSC200']);
+prerequisites.set('CSC200', ['CSC100']);
+prerequisites.set('CSC100', []);
+
+const courseOrder = findCourseOrder(prerequisites);
+if (!courseOrder) {
+    console.log('No valid course ordering exists.');
+} else {
+    console.log(`Course ordering: ${courseOrder}`);
+}
+console.log('\n');
+
+/*
+ * Q25.
+ * Given a tree, find the largest tree/subtree that is a BST.
+ * Given a tree, return the size of the largest tree/subtree that is a BST.
+ */
+class TreeNode {
+    constructor(val) {
+        this.val = val;
+        this.left = null;
+        this.right = null;
+    }
+}
+
+class Result {
+    constructor(size, min, max, isBST) {
+        this.size = size;
+        this.min = min;
+        this.max = max;
+        this.isBST = isBST;
+    }
+}
+
+function largestBST(root) {
+    return largestBSTHelper(root).size;
+}
+
+function largestBSTHelper(root) {
+    if (!root) {
+        return new Result(
+            0,
+            Number.MAX_SAFE_INTEGER,
+            Number.MIN_SAFE_INTEGER,
+            true
+        );
+    }
+
+    const left = largestBSTHelper(root.left);
+    const right = largestBSTHelper(root.right);
+
+    if (
+        !left.isBST ||
+        !right.isBST ||
+        root.val < left.max ||
+        root.val > right.min
+    ) {
+        return new Result(Math.max(left.size, right.size), 0, 0, false);
+    }
+
+    const size = left.size + right.size + 1;
+    const min = root.left ? left.min : root.val;
+    const max = root.right ? right.max : root.val;
+
+    return new Result(size, min, max, true);
+}
+
+console.log('========= Q25 =========');
+const root = new TreeNode(10);
+root.left = new TreeNode(5);
+root.right = new TreeNode(15);
+root.left.left = new TreeNode(1);
+root.left.right = new TreeNode(8);
+root.right.right = new TreeNode(7);
+
+console.log(`Size of the largest BST: ${largestBST(root)}`); // Output: 3
+console.log('\n');
+
+/*
+ * Q26.
+ * Given a number represented by a list of digits, find the next greater
+ * permutation of a number, in terms of lexicographic ordering. If there is not
+ * greater permutation possible, return the permutation with the lowest
+ * value/ordering.
+ * For example, the list [1,2,3] should return [1,3,2]. The list [1,3,2] should
+ * return [2,1,3]. The list [3,2,1] should return [1,2,3].
+ * Can you perform the operation without allocating extra memory (disregarding
+ * the input memory)?
+ */
+function nextPermutation(nums) {
+    const n = nums.length;
+    let i = n - 2;
+
+    while (i >= 0 && nums[i] >= nums[i + 1]) {
+        i--;
+    }
+
+    if (i >= 0) {
+        let j = n - 1;
+        while (j >= 0 && nums[j] <= nums[i]) {
+            j--;
+        }
+        swap(nums, i, j);
+    }
+
+    reverse(nums, i + 1, n - 1);
+}
+
+function swap(nums, i, j) {
+    const temp = nums[i];
+    nums[i] = nums[j];
+    nums[j] = temp;
+}
+
+function reverse(nums, start, end) {
+    while (start < end) {
+        swap(nums, start, end);
+        start++;
+        end--;
+    }
+}
+
+console.log('========= Q26 =========');
+const numsToFindNextPermutation1 = [1, 2, 3];
+nextPermutation(numsToFindNextPermutation1);
+console.log(`Next permutation: ${numsToFindNextPermutation1}`); // Output: [1, 3, 2]
+
+const numsToFindNextPermutation2 = [1, 3, 2];
+nextPermutation(numsToFindNextPermutation2);
+console.log(`Next permutation: ${numsToFindNextPermutation2}`); // Output: [2, 1, 3]
+
+const numsToFindNextPermutation3 = [3, 2, 1];
+nextPermutation(numsToFindNextPermutation3);
+console.log(`Next permutation: ${numsToFindNextPermutation3}`); // Output: [1, 2, 3]
+console.log('\n');
+
+/*
+ * Q27.
+ * Given a word W and a string S, find all starting indices in S which are
+ * anagrams of W.
+ * For example, given that W is "ab", and S is "abxaba", return 0, 3, and 4.
+ */
+function findAnagramIndices(s, w) {
+    let result = [];
+
+    if (s.length === 0 || w.length === 0 || s.length < w.length) {
+        return result;
+    }
+
+    let targetFreqMap = new Map();
+    let windowFreqMap = new Map();
+
+    for (const ch of w) {
+        targetFreqMap.set(ch, (targetFreqMap.get(ch) || 0) + 1);
+    }
+
+    const windowSize = w.length;
+    for (let i = 0; i < windowSize; i++) {
+        const ch = s[i];
+        windowFreqMap.set(ch, (windowFreqMap.get(ch) || 0) + 1);
+    }
+
+    if (isAnagram(targetFreqMap, windowFreqMap)) {
+        result.push(0);
+    }
+
+    for (let i = windowSize; i < s.length; i++) {
+        const incoming = s[i];
+        const outgoing = s[i - windowSize];
+
+        windowFreqMap.set(incoming, (windowFreqMap.get(incoming) || 0) + 1);
+        windowFreqMap.set(outgoing, windowFreqMap.get(outgoing) - 1);
+
+        if (windowFreqMap.get(outgoing) === 0) {
+            windowFreqMap.delete(outgoing);
+        }
+
+        if (isAnagram(targetFreqMap, windowFreqMap)) {
+            result.push(i - windowSize + 1);
+        }
+    }
+
+    return result;
+}
+
+function isAnagram(targetFreqMap, windowFreqMap) {
+    return (
+        targetFreqMap.size === windowFreqMap.size &&
+        [...targetFreqMap].every(([ch, freq]) => windowFreqMap.get(ch) === freq)
+    );
+}
+
+console.log('========= Q27 =========');
+const S = 'abxaba';
+const W = 'ab';
+console.log(`Anagram indices: ${findAnagramIndices(S, W)}`); // Output: [0, 3, 4]
+
+/*
+ * Q28.
+ * Given a binary tree, find the lowest common ancestor (LCA) of two given nodes
+ * in the tree. Assume that each node in the tree also has a pointer to its
+ * parent.
+ * https://en.wikipedia.org/wiki/Lowest_common_ancestor
+ * According to the definition of LCA on Wikipedia: “The lowest common ancestor
+ * is defined between two nodes v and w as the lowest node in T that has both v
+ * and w as descendants (where we allow a node to be a descendant of itself).”
+ */
+class TreeNodeWithParent {
+    constructor(val) {
+        this.val = val;
+        this.left = null;
+        this.right = null;
+        this.parent = null;
+    }
+}
+
+function findLowestCommonAncestor(root, p, q) {
+    if (!root || !p || !q) {
+        return null;
+    }
+
+    const pathToP = getPathToRoot(p);
+    const pathToQ = getPathToRoot(q);
+
+    let i = 0;
+    while (i < pathToP.length && i < pathToQ.length) {
+        if (pathToP[i] !== pathToQ[i]) {
+            break;
+        }
+        i++;
+    }
+
+    if (i > 0) {
+        return pathToP[i - 1];
+    }
+
+    return null;
+}
+
+function getPathToRoot(node) {
+    let path = [];
+
+    while (node) {
+        path.push(node);
+        node = node.parent;
+    }
+
+    return path.reverse();
+}
+
+console.log('========= Q28 =========');
+const treeWithParent = new TreeNodeWithParent(3);
+treeWithParent.left = new TreeNodeWithParent(5);
+treeWithParent.right = new TreeNodeWithParent(1);
+
+treeWithParent.left.parent = treeWithParent;
+treeWithParent.right.parent = treeWithParent;
+
+treeWithParent.left.left = new TreeNodeWithParent(6);
+treeWithParent.left.right = new TreeNodeWithParent(2);
+
+treeWithParent.left.left.parent = treeWithParent.left;
+treeWithParent.left.right.parent = treeWithParent.left;
+
+treeWithParent.left.right.left = new TreeNodeWithParent(7);
+treeWithParent.left.right.right = new TreeNodeWithParent(4);
+
+treeWithParent.left.right.left.parent = treeWithParent.left.right;
+treeWithParent.left.right.right.parent = treeWithParent.left.right;
+
+treeWithParent.right.left = new TreeNodeWithParent(0);
+treeWithParent.right.right = new TreeNodeWithParent(8);
+
+treeWithParent.right.left.parent = treeWithParent.right;
+treeWithParent.right.right.parent = treeWithParent.right;
+
+const p = treeWithParent.left;
+const q = treeWithParent.right;
+
+const lca = findLowestCommonAncestor(treeWithParent, p, q);
+if (lca) {
+    console.log(`Lowest Common Ancestor: ${lca.val}`);
+} else {
+    console.log(`Lowest Common Ancestor not found`);
+}
+console.log('\n');
+
+/*
+ * Q29.
+ * Given a string and a set of delimiters, reverse the words in the string while
+ * maintaining the relative order of the delimiters. For example, given
+ * "hello/world:here", return "here/world:hello"
+ * Follow-up: Does your solution work for the following cases:
+ * "hello/world:here/", "hello//world:here"
+ */
+function reverseWordsWithDelimiters(str, delimiters) {
+    let words = str.split(
+        new RegExp(`[${getDelimitersAsString(delimiters)}]+`)
+    );
+    let separators = str.split(
+        new RegExp(`[^${getDelimitersAsString(delimiters)}]+`)
+    );
+    separators = separators.filter((separator) => separator !== '');
+
+    reverseArray(words);
+
+    let reversed = '';
+    let i = 0;
+    let j = 0;
+    while (i < words.length || j < separators.length) {
+        if (i < words.length) {
+            reversed += words[i++];
+        }
+        if (j < separators.length) {
+            reversed += separators[j++];
+        }
+    }
+
+    return reversed;
+}
+
+function getDelimitersAsString(delimiters) {
+    let str = '';
+    for (const delimiter of delimiters) {
+        str += delimiter;
+    }
+    return str;
+}
+
+function reverseArray(arr) {
+    let start = 0;
+    let end = arr.length - 1;
+
+    while (start < end) {
+        const temp = arr[start];
+        arr[start] = arr[end];
+        arr[end] = temp;
+        start++;
+        end--;
+    }
+}
+
+console.log('========= Q29 =========');
+const str1 = 'hello/world:here';
+const str2 = 'hello/world:here/';
+const str3 = 'hello//world:here';
+const delimiters = new Set(['/', ':']);
+
+let reversed = reverseWordsWithDelimiters(str1, delimiters);
+console.log(`Reversed string: ${reversed}`);
+reversed = reverseWordsWithDelimiters(str2, delimiters);
+console.log(`Reversed string: ${reversed}`);
+reversed = reverseWordsWithDelimiters(str3, delimiters);
+console.log(`Reversed string: ${reversed}`);
+console.log('\n');
+
+/*
+ * Q30.
+ * Given two non-empty binary trees s and t, check whether tree t has exactly
+ * the same structure and node values with a subtree of s. A subtree of s is a
+ * tree consists of a node in s and all of this node's descendants. The tree s
+ * could also be considered as a subtree of itself.
+ */
+function isSubtree(s, t) {
+    if (!s) {
+        return false;
+    }
+
+    if (isSameTree(s, t)) {
+        return true;
+    }
+
+    return isSubtree(s.left, t) || isSubtree(s.right, t);
+}
+
+function isSameTree(s, t) {
+    if (!s && !t) {
+        return true;
+    }
+
+    if (!s || !t) {
+        return false;
+    }
+
+    return (
+        s.val === t.val &&
+        isSameTree(s.left, t.left) &&
+        isSameTree(s.right, t.right)
+    );
+}
+
+console.log('========= Q30 =========');
+const binaryTreeS = new TreeNode(3);
+binaryTreeS.left = new TreeNode(4);
+binaryTreeS.right = new TreeNode(5);
+binaryTreeS.left.left = new TreeNode(1);
+binaryTreeS.left.right = new TreeNode(2);
+binaryTreeS.left.right.left = new TreeNode(0);
+
+const binaryTreeT = new TreeNode(4);
+binaryTreeT.left = new TreeNode(1);
+binaryTreeT.right = new TreeNode(2);
+
+console.log(`Is t a subtree of s? ${isSubtree(binaryTreeS, binaryTreeT)}`);
 console.log('\n');

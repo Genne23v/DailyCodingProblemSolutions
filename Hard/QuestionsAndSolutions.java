@@ -1,11 +1,15 @@
 package Hard;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,6 +32,18 @@ class XORNode {
 
     public long getBoth() {
         return both;
+    }
+}
+
+class TreeNode {
+    int val;
+    TreeNode left;
+    TreeNode right;
+
+    TreeNode(int x) {
+        val = x;
+        left = null;
+        right = null;
     }
 }
 
@@ -695,6 +711,454 @@ public class QuestionsAndSolutions {
         }
     }
 
+    // S21.
+    static class DirectedGraph {
+        private Map<Integer, Set<Integer>> adjacencyList;
+        private int[] nodeValues;
+
+        public DirectedGraph(String nodes, int[][] edges) {
+            adjacencyList = new HashMap<>();
+            nodeValues = new int[nodes.length()];
+
+            for (int i = 0; i < nodes.length(); i++) {
+                adjacencyList.put(i, new HashSet<>());
+                nodeValues[i] = nodes.charAt(i) - '0';
+            }
+
+            for (int[] edge : edges) {
+                adjacencyList.get(edge[0]).add(edge[1]);
+            }
+        }
+
+        public Integer findLargestValuePath() {
+            int numNodes = nodeValues.length;
+            int[] visited = new int[numNodes];
+            Map<Character, Integer> freqMap = new HashMap<>();
+            int maxValue = 0;
+
+            for (int i = 0; i < numNodes; i++) {
+                if (visited[i] == 0) {
+                    Integer pathValue = dfs(i, visited, freqMap);
+
+                    if (pathValue == null) {
+                        return null;
+                    }
+                    maxValue = Math.max(maxValue, pathValue);
+                }
+            }
+
+            return maxValue;
+        }
+
+        public Integer dfs(int node, int[] visited, Map<Character, Integer> freqMap) {
+            visited[node] = 1;
+            char currNode = (char) nodeValues[node];
+            freqMap.put(currNode, freqMap.getOrDefault(currNode, 0) + 1);
+            Set<Integer> neighbors = adjacencyList.getOrDefault(node, Collections.emptySet());
+            Integer maxValue = freqMap.get(currNode);
+
+            for (int neighbor : neighbors) {
+                if (visited[neighbor] == 1) {
+                    return null;
+                }
+
+                Integer pathValue = dfs(neighbor, visited, freqMap);
+                if (pathValue == null) {
+                    return null;
+                }
+                maxValue = Math.max(maxValue, pathValue);
+            }
+
+            visited[node] = 0;
+            freqMap.put(currNode, freqMap.get(currNode) - 1);
+            if (freqMap.get(currNode) == 0) {
+                freqMap.remove(currNode);
+            }
+
+            return maxValue;
+        }
+    }
+
+    // S22.
+    public static int lengthOfLIS(int[] nums) {
+        int n = nums.length;
+        if (n == 0) {
+            return 0;
+        }
+
+        int[] dp = new int[n];
+        dp[0] = 1;
+        int maxLength = 1;
+
+        for (int i = 1; i < n; i++) {
+            int maxVal = 0;
+            for (int j = 0; j < i; j++) {
+                if (nums[i] > nums[j]) {
+                    maxVal = Math.max(maxVal, dp[j]);
+                }
+            }
+            dp[i] = maxVal + 1;
+            maxLength = Math.max(maxLength, dp[i]);
+        }
+
+        return maxLength;
+    }
+
+    // S23.
+    public static boolean validateRules(List<String> rules) {
+        Map<String, Set<String>> relationships = new HashMap<>();
+
+        for (String rule : rules) {
+            String[] parts = rule.split(" ");
+            String point1 = parts[0];
+            String direction = parts[1];
+            String point2 = parts[2];
+
+            if (!validateRule(relationships, point1, direction, point2)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static boolean validateRule(Map<String, Set<String>> relationships, String point1, String direction,
+            String point2) {
+        Set<String> existingDirections1 = relationships.getOrDefault(point1, new HashSet<>());
+        Set<String> existingDirections2 = relationships.getOrDefault(point2, new HashSet<>());
+
+        if (existingDirections1.contains(directionOpposite(direction)) || existingDirections2.contains(direction)) {
+            return false;
+        }
+
+        existingDirections1.add(direction);
+        existingDirections2.add(directionOpposite(direction));
+
+        relationships.put(point1, existingDirections1);
+        relationships.put(point2, existingDirections2);
+
+        return true;
+    }
+
+    private static String directionOpposite(String direction) {
+        switch (direction) {
+            case "N":
+                return "S";
+            case "S":
+                return "N";
+            case "E":
+                return "W";
+            case "W":
+                return "E";
+            case "NE":
+                return "SW";
+            case "SW":
+                return "NE";
+            case "NW":
+                return "SE";
+            case "SE":
+                return "NW";
+            default:
+                return "";
+        }
+    }
+
+    // S24.
+    public static List<String> findCourseOrder(Map<String, List<String>> prerequisites) {
+        Map<String, List<String>> graph = buildGraph(prerequisites);
+        Set<String> visited = new HashSet<>();
+        Set<String> visiting = new HashSet<>();
+        List<String> courseOrder = new ArrayList<>();
+
+        for (String course : graph.keySet()) {
+            if (!visited.contains(course) && !dfs(course, graph, visited, visiting, courseOrder)) {
+                return null;
+            }
+        }
+
+        Collections.reverse(courseOrder);
+        return courseOrder;
+    }
+
+    private static Map<String, List<String>> buildGraph(Map<String, List<String>> prerequisites) {
+        Map<String, List<String>> graph = new HashMap<>();
+
+        for (String course : prerequisites.keySet()) {
+            graph.put(course, new ArrayList<>());
+        }
+
+        for (String course : prerequisites.keySet()) {
+            for (String prerequisite : prerequisites.get(course)) {
+                graph.get(prerequisite).add(course);
+            }
+        }
+
+        return graph;
+    }
+
+    private static boolean dfs(String course, Map<String, List<String>> graph, Set<String> visited,
+            Set<String> visiting, List<String> courseOrder) {
+        visiting.add(course);
+
+        for (String prerequisite : graph.get(course)) {
+
+            if (visiting.contains(prerequisite)) {
+                return false;
+            }
+
+            if (!visited.contains(prerequisite) && !dfs(prerequisite, graph, visited, visiting, courseOrder)) {
+                return false;
+            }
+        }
+
+        visiting.remove(course);
+        visited.add(course);
+        courseOrder.add(course);
+        return true;
+    }
+
+    // S25.
+    static class Result {
+        int size;
+        int max;
+        int min;
+        boolean isBST;
+
+        Result(int size, int max, int min, boolean isBST) {
+            this.size = size;
+            this.max = max;
+            this.min = min;
+            this.isBST = isBST;
+        }
+    }
+
+    public static int largestBST(TreeNode root) {
+        return largestBSTHelper(root).size;
+    }
+
+    public static Result largestBSTHelper(TreeNode root) {
+        if (root == null) {
+            return new Result(0, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
+        }
+
+        Result left = largestBSTHelper(root.left);
+        Result right = largestBSTHelper(root.right);
+
+        if (!left.isBST || !right.isBST || root.val < left.max || root.val > right.min) {
+            return new Result(Math.max(left.size, right.size), 0, 0, false);
+        }
+
+        int size = left.size + right.size + 1;
+        int min = root.left != null ? left.min : root.val;
+        int max = root.right != null ? right.max : root.val;
+
+        return new Result(size, max, min, true);
+    }
+
+    // S26.
+    public static void nextPermutation(int[] nums) {
+        int n = nums.length;
+        int i = n - 2;
+
+        while (i >= 0 && nums[i] >= nums[i + 1]) {
+            i--;
+        }
+
+        if (i >= 0) {
+            int j = n - 1;
+            while (j > i && nums[j] <= nums[i]) {
+                j--;
+            }
+            swap(nums, i, j);
+        }
+
+        reverse(nums, i + 1, n - 1);
+    }
+
+    private static void swap(int[] nums, int i, int j) {
+        int temp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = temp;
+    }
+
+    private static void reverse(int[] nums, int start, int end) {
+        while (start < end) {
+            swap(nums, start, end);
+            start++;
+            end--;
+        }
+    }
+
+    // S27.
+    public static List<Integer> findAnagramIndices(String s, String w) {
+        List<Integer> result = new ArrayList<>();
+
+        if (s.length() == 0 || w.length() == 0 || s.length() < w.length()) {
+            return result;
+        }
+
+        Map<Character, Integer> targetFreqMap = new HashMap<>();
+        Map<Character, Integer> windowFreqMap = new HashMap<>();
+
+        for (char ch : w.toCharArray()) {
+            targetFreqMap.put(ch, targetFreqMap.getOrDefault(ch, 0) + 1);
+        }
+
+        int windowSize = w.length();
+
+        for (int i = 0; i < windowSize; i++) {
+            char ch = s.charAt(i);
+            windowFreqMap.put(ch, windowFreqMap.getOrDefault(ch, 0) + 1);
+        }
+
+        if (isAnagram(targetFreqMap, windowFreqMap)) {
+            result.add(0);
+        }
+
+        for (int i = windowSize; i < s.length(); i++) {
+            char incoming = s.charAt(i);
+            char outgoing = s.charAt(i - windowSize);
+
+            windowFreqMap.put(incoming, windowFreqMap.getOrDefault(incoming, 0) + 1);
+            windowFreqMap.put(outgoing, windowFreqMap.get(outgoing) - 1);
+
+            if (windowFreqMap.get(outgoing) == 0) {
+                windowFreqMap.remove(outgoing);
+            }
+
+            if (isAnagram(targetFreqMap, windowFreqMap)) {
+                result.add(i - windowSize + 1);
+            }
+        }
+
+        return result;
+    }
+
+    private static boolean isAnagram(Map<Character, Integer> targetFreqMap, Map<Character, Integer> windowFreqMap) {
+        return targetFreqMap.equals(windowFreqMap);
+    }
+
+    // S28.
+    static class TreeNodeWithParent {
+        int val;
+        TreeNodeWithParent left;
+        TreeNodeWithParent right;
+        TreeNodeWithParent parent;
+
+        TreeNodeWithParent(int val) {
+            this.val = val;
+            this.left = null;
+            this.right = null;
+            this.parent = null;
+        }
+    }
+
+    public static TreeNodeWithParent findLowestCommonAncestor(TreeNodeWithParent root, TreeNodeWithParent p,
+            TreeNodeWithParent q) {
+        if (root == null || p == null || q == null) {
+            return null;
+        }
+
+        List<TreeNodeWithParent> pathToP = getPathToRoot(p);
+        List<TreeNodeWithParent> pathToQ = getPathToRoot(q);
+
+        int i = 0;
+        while (i < pathToP.size() && i < pathToQ.size()) {
+            if (pathToP.get(i) != pathToQ.get(i)) {
+                break;
+            }
+            i++;
+        }
+
+        if (i > 0) {
+            return pathToP.get(i - 1);
+        }
+
+        return null;
+    }
+
+    private static List<TreeNodeWithParent> getPathToRoot(TreeNodeWithParent node) {
+        List<TreeNodeWithParent> path = new ArrayList<>();
+
+        while (node != null) {
+            path.add(node);
+            node = node.parent;
+        }
+
+        Collections.reverse(path);
+
+        return path;
+    }
+
+    // S29.
+    public static String reverseWordsWithDelimiters(String str, Set<Character> delimiters) {
+        String[] words = str.split("[\\" + getDelimitersAsString(delimiters) + "]+");
+        String[] separators = str.split("[^" + getDelimitersAsString(delimiters) + "]+");
+        separators = Arrays.stream(separators).filter(s -> !s.isEmpty()).toArray(String[]::new);
+
+        reverseArray(words);
+        
+        StringBuilder reversed = new StringBuilder();
+        int i = 0, j = 0;
+
+        while (i < words.length || j < separators.length) {
+            if (i < words.length) {
+                reversed.append(words[i++]);
+            }
+            if (j < separators.length) {
+                reversed.append(separators[j++]);
+            }
+        }
+
+        return reversed.toString();
+    }
+
+    private static String getDelimitersAsString(Set<Character> delimiters) {
+        StringBuilder sb = new StringBuilder();
+        for (char delimiter : delimiters) {
+            sb.append(delimiter);
+        }
+        return sb.toString();
+    }
+
+    private static void reverseArray(String[] arr) {
+        int start = 0;
+        int end = arr.length - 1;
+
+        while (start < end) {
+            String temp = arr[start];
+            arr[start] = arr[end];
+            arr[end] = temp;
+            start++;
+            end--;
+        }
+    }
+
+    // S30.
+    public static boolean isSubtree(TreeNode s, TreeNode t) {
+        if (s == null) {
+            return false;
+        }
+
+        if (isSameTree(s, t)) {
+            return true;
+        }
+
+        return isSubtree(s.left, t) || isSubtree(s.right, t);
+    }
+
+    private static boolean isSameTree(TreeNode s, TreeNode t) {
+        if (s == null && t == null) {
+            return true;
+        }
+
+        if (s == null || t == null) {
+            return false;
+        }
+
+        return s.val == t.val && isSameTree(s.left, t.left) && isSameTree(s.right, t.right);
+    }
+
     public static void main(String[] args) {
         /*
          * Q1.
@@ -1134,6 +1598,260 @@ public class QuestionsAndSolutions {
         System.out.println(lfuCache.get(3)); // Output: 30
         System.out.println(lfuCache.get(4)); // Output: 40
 
-    }
+        /*
+         * Q21.
+         * In a directed graph, each node is assigned an uppercase letter. We define a
+         * path's value as the number of most frequently-occurring letter along that
+         * path. For example, if a path in the graph goes through "ABACA", the value of
+         * the path is 3, since there are 3 occurrences of 'A' on the path.
+         * Given a graph with n nodes and m directed edges, return the largest value
+         * path of the graph. If the largest value is infinite, then return null.
+         * The graph is represented with a string and an edge list. The i-th character
+         * represents the uppercase letter of the i-th node. Each tuple in the edge list
+         * (i, j) means there is a directed edge from the i-th node to the j-th node.
+         * Self-edges are possible, as well as multi-edges.
+         * For example, the following input graph:
+         * ABACA
+         * [(0, 1),
+         * (0, 2),
+         * (2, 3),
+         * (3, 4)]
+         * Would have maximum value 3 using the path of vertices [0, 2, 3, 4], (A, A, C,
+         * A).
+         * The following input graph:
+         * A
+         * [(0, 0)]
+         * Should return null, since we have an infinite loop.
+         */
+        System.out.println("========= Q21 ==========");
+        String nodes1 = "ABACA";
+        int[][] edges1 = {
+                { 0, 1 },
+                { 0, 2 },
+                { 2, 3 },
+                { 3, 4 }
+        };
 
+        DirectedGraph graph1 = new DirectedGraph(nodes1, edges1);
+        Integer largestValuePath = graph1.findLargestValuePath();
+        System.out.println("Largest value path: " + largestValuePath);
+
+        String nodes2 = "A";
+        int[][] edges2 = {
+                { 0, 0 }
+        };
+        DirectedGraph graph2 = new DirectedGraph(nodes2, edges2);
+        largestValuePath = graph2.findLargestValuePath();
+        System.out.println("Largest value path: " + largestValuePath);
+
+        /*
+         * Q22.
+         * Given an array of numbers, find the length of the longest increasing
+         * subsequence in the array. The subsequence does not necessarily have to be
+         * contiguous.
+         * For example, given the array [0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11,
+         * 7, 15], the longest increasing subsequence has length 6: it is 0, 2, 6, 9,
+         * 11, 15.
+         */
+        System.out.println("========= Q22 ==========");
+        int[] numsToFindLIS = { 0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15 };
+        int longestIncreasingSubsequenceLength = lengthOfLIS(numsToFindLIS);
+        System.out.println("Length of the longest increasing subsequence: " + longestIncreasingSubsequenceLength);
+
+        /*
+         * Q23.
+         * A rule looks like this:
+         * A NE B
+         * This means this means point A is located northeast of point B.
+         * A SW C
+         * means that point A is southwest of C.
+         * Given a list of rules, check if the sum of the rules validate. For example:
+         * A N B
+         * B NE C
+         * C N A
+         * does not validate, since A cannot be both north and south of C.
+         * A NW B
+         * A N B
+         * is considered valid.
+         */
+        System.out.println("========= Q23 ==========");
+        List<String> rules1 = Arrays.asList("A N B", "B NE C", "C N A");
+        boolean isValid = validateRules(rules1);
+        System.out.println("Rules 1 validate: " + isValid);
+
+        List<String> rules2 = Arrays.asList("A NW B", "A N B");
+        isValid = validateRules(rules2);
+        System.out.println("Rules 2 validate: " + isValid);
+
+        /*
+         * Q24.
+         * We're given a hashmap associating each courseId key with a list of courseIds
+         * values, which represents that the prerequisites of courseId are courseIds.
+         * Return a sorted ordering of courses such that we can finish all courses.
+         * Return null if there is no such ordering.
+         * For example, given {'CSC300': ['CSC100', 'CSC200'], 'CSC200': ['CSC100'],
+         * 'CSC100': []}, should return ['CSC100', 'CSC200', 'CSCS300'].
+         */
+        System.out.println("========= Q24 ==========");
+        Map<String, List<String>> prerequisites = new HashMap<>();
+        prerequisites.put("CSC300", Arrays.asList("CSC100", "CSC200"));
+        prerequisites.put("CSC200", Arrays.asList("CSC100"));
+        prerequisites.put("CSC100", new ArrayList<>());
+
+        List<String> courseOrder = findCourseOrder(prerequisites);
+        if (courseOrder == null) {
+            System.out.println("No valid course ordering exists.");
+        } else {
+            System.out.println("Course ordering: " + courseOrder);
+        }
+
+        /*
+         * Q25.
+         * Given a tree, find the largest tree/subtree that is a BST.
+         * Given a tree, return the size of the largest tree/subtree that is a BST.
+         */
+        System.out.println("========= Q25 ==========");
+        TreeNode root = new TreeNode(10);
+        root.left = new TreeNode(5);
+        root.right = new TreeNode(15);
+        root.left.left = new TreeNode(1);
+        root.left.right = new TreeNode(8);
+        root.right.right = new TreeNode(7);
+
+        int largestBSTSize = largestBST(root);
+        System.out.println("Size of the largest BST: " + largestBSTSize);
+
+        /*
+         * Q26.
+         * Given a number represented by a list of digits, find the next greater
+         * permutation of a number, in terms of lexicographic ordering. If there is not
+         * greater permutation possible, return the permutation with the lowest
+         * value/ordering.
+         * For example, the list [1,2,3] should return [1,3,2]. The list [1,3,2] should
+         * return [2,1,3]. The list [3,2,1] should return [1,2,3].
+         * Can you perform the operation without allocating extra memory (disregarding
+         * the input memory)?
+         */
+        System.out.println("========= Q26 ==========");
+        int[] numsToFindNextPermutation1 = { 1, 2, 3 };
+        nextPermutation(numsToFindNextPermutation1);
+        System.out.println("Next permutation: " + Arrays.toString(numsToFindNextPermutation1));
+
+        int[] numsToFindNextPermutation2 = { 1, 3, 2 };
+        nextPermutation(numsToFindNextPermutation2);
+        System.out.println("Next permutation: " + Arrays.toString(numsToFindNextPermutation2));
+
+        int[] numsToFindNextPermutation3 = { 3, 2, 1 };
+        nextPermutation(numsToFindNextPermutation3);
+        System.out.println("Next permutation: " + Arrays.toString(numsToFindNextPermutation3));
+
+        /*
+         * Q27.
+         * Given a word W and a string S, find all starting indices in S which are
+         * anagrams of W.
+         * For example, given that W is "ab", and S is "abxaba", return 0, 3, and 4.
+         */
+        System.out.println("========= Q27 ==========");
+        String S = "abxaba";
+        String W = "ab";
+        List<Integer> indices = findAnagramIndices(S, W);
+        System.out.println("Anagram indices: " + indices);
+
+        /*
+         * Q28.
+         * Given a binary tree, find the lowest common ancestor (LCA) of two given nodes
+         * in the tree. Assume that each node in the tree also has a pointer to its
+         * parent.
+         * https://en.wikipedia.org/wiki/Lowest_common_ancestor
+         * According to the definition of LCA on Wikipedia: “The lowest common ancestor
+         * is defined between two nodes v and w as the lowest node in T that has both v
+         * and w as descendants (where we allow a node to be a descendant of itself).”
+         */
+        System.out.println("========= Q28 ==========");
+        TreeNodeWithParent treeWithParent = new TreeNodeWithParent(3);
+        TreeNodeWithParent nodeWithParent1 = new TreeNodeWithParent(5);
+        TreeNodeWithParent nodeWithParent2 = new TreeNodeWithParent(1);
+        TreeNodeWithParent nodeWithParent3 = new TreeNodeWithParent(6);
+        TreeNodeWithParent nodeWithParent4 = new TreeNodeWithParent(2);
+        TreeNodeWithParent nodeWithParent5 = new TreeNodeWithParent(0);
+        TreeNodeWithParent nodeWithParent6 = new TreeNodeWithParent(8);
+        TreeNodeWithParent nodeWithParent7 = new TreeNodeWithParent(7);
+        TreeNodeWithParent nodeWithParent8 = new TreeNodeWithParent(4);
+
+        treeWithParent.left = nodeWithParent1;
+        treeWithParent.right = nodeWithParent2;
+        nodeWithParent1.parent = treeWithParent;
+        nodeWithParent2.parent = treeWithParent;
+
+        nodeWithParent1.left = nodeWithParent3;
+        nodeWithParent1.right = nodeWithParent4;
+        nodeWithParent3.parent = nodeWithParent1;
+        nodeWithParent4.parent = nodeWithParent1;
+
+        nodeWithParent2.left = nodeWithParent5;
+        nodeWithParent2.right = nodeWithParent6;
+        nodeWithParent5.parent = nodeWithParent2;
+        nodeWithParent6.parent = nodeWithParent2;
+
+        nodeWithParent4.left = nodeWithParent7;
+        nodeWithParent4.right = nodeWithParent8;
+        nodeWithParent7.parent = nodeWithParent4;
+        nodeWithParent8.parent = nodeWithParent4;
+
+        TreeNodeWithParent p = nodeWithParent1;
+        TreeNodeWithParent q = nodeWithParent2;
+
+        TreeNodeWithParent lca = findLowestCommonAncestor(treeWithParent, p, q);
+        if (lca != null) {
+            System.out.println("Lowest Common Ancestor: " + lca.val);
+        } else {
+            System.out.println("Lowest Common Ancestor not found.");
+        }
+
+        /*
+         * Q29.
+         * Given a string and a set of delimiters, reverse the words in the string while
+         * maintaining the relative order of the delimiters. For example, given
+         * "hello/world:here", return "here/world:hello"
+         * Follow-up: Does your solution work for the following cases:
+         * "hello/world:here/", "hello//world:here"
+         */
+        System.out.println("========= Q29 ==========");
+        String str1 = "hello/world:here";
+        String str2 = "hello/world:here/";
+        String str3 = "hello//world:here";
+        Set<Character> delimiters = new HashSet<>();
+        delimiters.add('/');
+        delimiters.add(':');
+
+        String reversed = reverseWordsWithDelimiters(str1, delimiters);
+        System.out.println("Reversed string: " + reversed);
+        reversed = reverseWordsWithDelimiters(str2, delimiters);
+        System.out.println("Reversed string: " + reversed);
+        reversed = reverseWordsWithDelimiters(str3, delimiters);
+        System.out.println("Reversed string: " + reversed);
+
+        /*
+         * Q30.
+         * Given two non-empty binary trees s and t, check whether tree t has exactly
+         * the same structure and node values with a subtree of s. A subtree of s is a
+         * tree consists of a node in s and all of this node's descendants. The tree s
+         * could also be considered as a subtree of itself.
+         */
+        System.out.println("========= Q30 ==========");
+        TreeNode binaryTreeS = new TreeNode(3);
+        binaryTreeS.left = new TreeNode(4);
+        binaryTreeS.right = new TreeNode(5);
+        binaryTreeS.left.left = new TreeNode(1);
+        binaryTreeS.left.right = new TreeNode(2);
+        binaryTreeS.left.right.left = new TreeNode(0);
+
+        TreeNode binaryTreeT = new TreeNode(4);
+        binaryTreeT.left = new TreeNode(1);
+        binaryTreeT.right = new TreeNode(2);
+
+        boolean isSubtree = isSubtree(binaryTreeS, binaryTreeT);
+        System.out.println("Is t a subtree of s? " + isSubtree);
+
+    }
 }
