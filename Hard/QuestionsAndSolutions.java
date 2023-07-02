@@ -4,7 +4,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Set;
+import java.util.Stack;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1159,6 +1161,292 @@ public class QuestionsAndSolutions {
         return s.val == t.val && isSameTree(s.left, t.left) && isSameTree(s.right, t.right);
     }
 
+    // S31.
+    public static boolean canMakePalindrome(String s, int k) {
+        int n = s.length();
+        int[][] dp = new int[n][n];
+
+        for (int i = 0; i < n; i++) {
+            dp[i][i] = 0;
+        }
+
+        for (int len = 2; len <= n; len++) {
+            for (int i = 0; i < n - len + 1; i++) {
+                int j = i + len - 1;
+
+                if (s.charAt(i) == s.charAt(j)) {
+                    dp[i][j] = dp[i + 1][j - 1];
+                } else {
+                    dp[i][j] = Math.min(dp[i + 1][j], dp[i][j - 1]) + 1;
+                }
+            }
+        }
+
+        return dp[0][n - 1] <= k;
+    }
+
+    // S32.
+    public static boolean isNumber(String s) {
+        s = s.trim();
+        String pattern = "[-+]?(\\d+\\.?|\\.\\d+)\\d*(e[-+]?\\d+)?";
+        return s.matches(pattern);
+    }
+
+    // S33.
+    public static int coinChange(int n) {
+        int[] coins = { 25, 10, 5, 1 };
+
+        int[] dp = new int[n + 1];
+        Arrays.fill(dp, n + 1);
+
+        dp[0] = 0;
+
+        for (int i = 1; i <= n; i++) {
+            for (int coin : coins) {
+                if (coin <= i) {
+                    dp[i] = Math.min(dp[i], 1 + dp[i - coin]);
+                }
+            }
+        }
+
+        return dp[n] > n ? -1 : dp[n];
+    }
+
+    // S34.
+    static class MultiStack {
+        private int[] list;
+        private int[] tops;
+        private int stackSize;
+        private int numStacks;
+
+        public MultiStack(int stackSize, int numStacks) {
+            this.stackSize = stackSize;
+            this.numStacks = numStacks;
+            this.list = new int[stackSize * numStacks];
+            this.tops = new int[numStacks];
+            Arrays.fill(tops, -1);
+        }
+
+        public void push(int item, int stackNumber) {
+            if (isFull(stackNumber)) {
+                System.out.println("Stack " + stackNumber + " is full. Cannot push item: " + item);
+                return;
+            }
+
+            int index = getTopIndex(stackNumber);
+            index++;
+            list[stackSize * stackNumber + index] = item;
+            tops[stackNumber] = index;
+        }
+
+        public int pop(int stackNumber) {
+            if (isEmpty(stackNumber)) {
+                System.out.println("Stack " + stackNumber + " is empty. Cannot pop item.");
+                return -1;
+            }
+
+            int index = getTopIndex(stackNumber);
+            int item = list[stackSize * stackNumber + index];
+            tops[stackNumber] = index - 1;
+            return item;
+        }
+
+        public boolean isEmpty(int stackNumber) {
+            return tops[stackNumber] == -1;
+        }
+
+        public boolean isFull(int stackNumber) {
+            return tops[stackNumber] == (stackSize * (stackNumber + 1)) - 1;
+        }
+
+        private int getTopIndex(int stackNumber) {
+            return tops[stackNumber];
+        }
+    }
+
+    // S35.
+    public static boolean isBalanced(String str) {
+        int minOpen = 0;
+        int maxOpen = 0;
+
+        for (char c : str.toCharArray()) {
+            if (c == '(') {
+                minOpen++;
+                maxOpen++;
+            } else if (c == ')') {
+                minOpen = Math.max(minOpen - 1, 0);
+                maxOpen--;
+            } else if (c == '*') {
+                minOpen = Math.max(minOpen - 1, 0);
+                maxOpen++;
+            }
+
+            if (maxOpen < 0) {
+                return false; // More closing parentheses encountered than open parentheses
+            }
+        }
+
+        return minOpen == 0;
+    }
+
+    // S36.
+    public static void sort(List<Integer> lst) {
+        int n = lst.size();
+        for (int i = 0; i < n - 1; i++) {
+            int minIndex = i;
+            for (int j = i + 1; j < n; j++) {
+                if (lst.get(j) < lst.get(minIndex)) {
+                    minIndex = j;
+                }
+            }
+            reverse(lst, i, minIndex);
+        }
+    }
+
+    public static void reverse(List<Integer> lst, int start, int end) {
+        while (start < end) {
+            int temp = lst.get(start);
+            lst.set(start, lst.get(end));
+            lst.set(end, temp);
+            start++;
+            end--;
+        }
+    }
+
+    // S37.
+    static class SublistSum {
+        private List<Integer> prefixSums;
+
+        public SublistSum(List<Integer> lst) {
+            prefixSums = new ArrayList<>(lst.size() + 1);
+            prefixSums.add(0);
+            int sum = 0;
+            for (int num : lst) {
+                sum += num;
+                prefixSums.add(sum);
+            }
+        }
+
+        public int sum(int i, int j) {
+            if (i < 0 || j > prefixSums.size() || i > j) {
+                throw new IllegalArgumentException("Invalid sublist range");
+            }
+            return prefixSums.get(j) - prefixSums.get(i);
+        }
+    }
+
+    // S38.
+    static class Point {
+        int x;
+        int y;
+
+        public Point(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+    }
+
+    public static List<Point> findNearestPoints(List<Point> points, Point centralPoint, int k) {
+        PriorityQueue<Point> pq = new PriorityQueue<>(k,
+                Comparator.comparingDouble(p -> -calculateDistance(p, centralPoint)));
+
+        for (Point point : points) {
+            pq.offer(point);
+            if (pq.size() > k) {
+                pq.poll();
+            }
+        }
+
+        return new ArrayList<>(pq);
+    }
+
+    private static double calculateDistance(Point p1, Point p2) {
+        int dx = p1.x - p2.x;
+        int dy = p1.y - p2.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    // S39.
+    public static int findSmallestDistance(String text, String word1, String word2) {
+        String[] words = text.split("\\s+");
+        int minDistance = Integer.MAX_VALUE;
+        int prevIndex = -1;
+
+        for (int i = 0; i < words.length; i++) {
+            if (words[i].equals(word1)) {
+                if (prevIndex != -1 && i - prevIndex < minDistance) {
+                    minDistance = i - prevIndex;
+                }
+                prevIndex = i;
+            } else if (words[i].equals(word2)) {
+                if (prevIndex != -1 && i - prevIndex < minDistance) {
+                    minDistance = i - prevIndex;
+                }
+                prevIndex = i;
+            }
+        }
+
+        return minDistance - 1;
+    }
+
+    // S40.
+    private static class GraphNode {
+        char id;
+        List<Edge> edges;
+
+        public GraphNode(char id) {
+            this.id = id;
+            edges = new ArrayList<>();
+        }
+    }
+
+    private static class Edge {
+        GraphNode destination;
+        int weight;
+
+        public Edge(GraphNode destination, int weight) {
+            this.destination = destination;
+            this.weight = weight;
+        }
+    }
+
+    private static int longestPath = 0;
+
+    public static int calculateLongestPath(GraphNode root) {
+        if (root == null) {
+            return 0;
+        }
+
+        calculatePath(root, null);
+
+        return longestPath;
+    }
+
+    private static int calculatePath(GraphNode node, GraphNode parent) {
+        if (node.edges.size() == 1 && node != parent) {
+            return 0;
+        }
+
+        int maxPath1 = 0;
+        int maxPath2 = 0;
+
+        for (Edge edge : node.edges) {
+            if (edge.destination != parent) {
+                int subPath = calculatePath(edge.destination, node) + edge.weight;
+                if (subPath > maxPath1) {
+                    maxPath2 = maxPath1;
+                    maxPath1 = subPath;
+                } else if (subPath > maxPath2) {
+                    maxPath2 = subPath;
+                }
+            }
+        }
+
+        longestPath = Math.max(longestPath, maxPath1 + maxPath2);
+
+        return maxPath1;
+    }
+
     public static void main(String[] args) {
         /*
          * Q1.
@@ -1853,5 +2141,203 @@ public class QuestionsAndSolutions {
         boolean isSubtree = isSubtree(binaryTreeS, binaryTreeT);
         System.out.println("Is t a subtree of s? " + isSubtree);
 
+        /*
+         * Q31.
+         * Given a string which we can delete at most k, return whether you can make a
+         * palindrome.
+         * For example, given 'waterrfetawx' and a k of 2, you could delete f and x to
+         * get 'waterretaw'.
+         */
+        System.out.println("========= Q31 ==========");
+        String palindromeCandidate = "waterrfetawx";
+        int numOfRemoval = 2;
+
+        boolean canMakePalindrome = canMakePalindrome(palindromeCandidate, numOfRemoval);
+        System.out.println("Can make a palindrome: " + canMakePalindrome);
+
+        /*
+         * Q32.
+         * Given a string, return whether it represents a number. Here are the different
+         * kinds of numbers:
+         * "10", a positive integer
+         * "-10", a negative integer
+         * "10.1", a positive real number
+         * "-10.1", a negative real number
+         * "1e5", a number in scientific notation
+         * And here are examples of non-numbers:
+         * "a"
+         * "x 1"
+         * "a -2"
+         * "-"
+         */
+        System.out.println("========= Q32 ==========");
+        String[] inputs = { "10", "-10", "10.1", "-10.1", "1e5", "a", "x 1", "a -2", "-" };
+
+        for (String input : inputs) {
+            boolean isNum = isNumber(input);
+            System.out.println(input + " is a number: " + isNum);
+        }
+
+        /*
+         * Q33.
+         * Find the minimum number of coins required to make n cents.
+         * You can use standard American denominations, that is, 1¢, 5¢, 10¢, and 25¢.
+         * For example, given n = 16, return 3 since we can make it with a 10¢, a 5¢,
+         * and a 1¢.
+         */
+        System.out.println("========= Q33 ==========");
+        int sum = 16;
+        int minimumCoins = coinChange(sum);
+        System.out.println("Minimum number of coins required: " + minimumCoins);
+
+        /*
+         * Q34.
+         * Implement 3 stacks using a single list:
+         * " class Stack:                              "
+         * "     def __init__(self):                   "
+         * "         self.list = []                    "
+         * 
+         * "     def pop(self, stack_number):          "
+         * "         pass                              "
+         * 
+         * "     def push(self, item, stack_number):   "
+         * "         pass                              "
+         */
+        System.out.println("========= Q34 ==========");
+        MultiStack stack = new MultiStack(10, 3);
+
+        stack.push(1, 0);
+        stack.push(2, 0);
+        stack.push(3, 1);
+        stack.push(4, 1);
+        stack.push(5, 2);
+        stack.push(6, 2);
+
+        System.out.println("Pop from Stack 0: " + stack.pop(0));
+        System.out.println("Pop from Stack 1: " + stack.pop(1));
+        System.out.println("Pop from Stack 2: " + stack.pop(2));
+
+        /*
+         * Q35.
+         * You're given a string consisting solely of (, ), and *. * can represent
+         * either a (, ), or an empty string. Determine whether the parentheses are
+         * balanced.
+         * For example, (()* and (*) are balanced. )*( is not balanced.
+         */
+        System.out.println("========= Q35 ==========");
+        String string1 = "(()*";
+        String string2 = "(*)";
+        String string3 = ")*(";
+
+        System.out.println("Is '" + string1 + "' balanced? " + isBalanced(string1));
+        System.out.println("Is '" + string2 + "' balanced? " + isBalanced(string2));
+        System.out.println("Is '" + string3 + "' balanced? " + isBalanced(string3));
+
+        /*
+         * Q36.
+         * Given a list, sort it using this method: reverse(lst, i, j), which reverses
+         * lst from i to j.
+         */
+        System.out.println("========= Q36 ==========");
+        List<Integer> lst = new ArrayList<>(List.of(9, 2, 5, 1, 7));
+        System.out.println("Original List: " + lst);
+        sort(lst);
+        System.out.println("Sorted List: " + lst);
+
+        /*
+         * Q37.
+         * Given a list of numbers L, implement a method sum(i, j) which returns the sum
+         * from the sublist L[i:j] (including i, excluding j).
+         * For example, given L = [1, 2, 3, 4, 5], sum(1, 3) should return sum([2, 3]),
+         * which is 5.
+         * You can assume that you can do some pre-processing. sum() should be optimized
+         * over the pre-processing step.
+         */
+        System.out.println("========= Q37 ==========");
+        List<Integer> L = List.of(1, 2, 3, 4, 5);
+        SublistSum sublistSum = new SublistSum(L);
+
+        System.out.println("Sum of sublist [1:3]: " + sublistSum.sum(1, 3));
+        System.out.println("Sum of sublist [2:5]: " + sublistSum.sum(2, 5));
+        System.out.println("Sum of sublist [0:5]: " + sublistSum.sum(0, 5));
+
+        /*
+         * Q38.
+         * Given a list of points, a central point, and an integer k, find the nearest k
+         * points from the central point.
+         * For example, given the list of points [(0, 0), (5, 4), (3, 1)], the central
+         * point (1, 2), and k = 2, return [(0, 0), (3, 1)].
+         */
+        System.out.println("========= Q38 ==========");
+        List<Point> points = new ArrayList<>();
+        points.add(new Point(0, 0));
+        points.add(new Point(5, 4));
+        points.add(new Point(3, 1));
+
+        Point centralPoint = new Point(1, 2);
+        int numOfPoints = 2;
+
+        List<Point> nearestPoints = findNearestPoints(points, centralPoint, numOfPoints);
+
+        System.out.println("Nearest " + numOfPoints + " points to (" + centralPoint.x + ", " + centralPoint.y + "):");
+        for (Point point : nearestPoints) {
+            System.out.println("(" + point.x + ", " + point.y + ")");
+        }
+
+        /*
+         * Q39.
+         * Find an efficient algorithm to find the smallest distance (measured in number
+         * of words) between any two given words in a string.
+         * For example, given words "hello", and "world" and a text content of
+         * "dog cat hello cat dog dog hello cat world", return 1 because there's only
+         * one word "cat" in between the two words.
+         */
+        System.out.println("========= Q39 ==========");
+        String textToWordDistance = "dog cat hello cat dog dog hello cat world";
+        String word1 = "hello";
+        String word2 = "world";
+        int smallestDistance = findSmallestDistance(textToWordDistance, word1, word2);
+        System.out.println(smallestDistance); // Output: 1
+
+        /*
+         * Q40.
+         * Given a tree where each edge has a weight, compute the length of the longest
+         * path in the tree.
+         * For example, given the following tree:
+         * "    a      "
+         * "   /|\     "
+         * "  b c d    "
+         * "     / \   "
+         * "    e   f  "
+         * "   / \     "
+         * "  g   h    "
+         * and the weights: a-b: 3, a-c: 5, a-d: 8, d-e: 2, d-f: 4, e-g: 1, e-h: 1, the
+         * longest path would be c -> a -> d -> f, with a length of 17.
+         * The path does not have to pass through the root, and each node can have any
+         * amount of children.
+         */
+        System.out.println("========= Q40 ==========");
+        GraphNode a = new GraphNode('a');
+        GraphNode b = new GraphNode('b');
+        GraphNode c = new GraphNode('c');
+        GraphNode d = new GraphNode('d');
+        GraphNode e = new GraphNode('e');
+        GraphNode f = new GraphNode('f');
+        GraphNode g = new GraphNode('g');
+        GraphNode h = new GraphNode('h');
+
+        a.edges.add(new Edge(b, 3));
+        a.edges.add(new Edge(c, 5));
+        a.edges.add(new Edge(d, 8));
+
+        d.edges.add(new Edge(e, 2));
+        d.edges.add(new Edge(f, 4));
+
+        e.edges.add(new Edge(g, 1));
+        e.edges.add(new Edge(h, 1));
+
+        int longestPath = calculateLongestPath(a);
+        System.out.println("Longest path length: " + longestPath); // Output: 17
     }
+
 }

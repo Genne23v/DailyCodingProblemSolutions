@@ -1854,3 +1854,471 @@ binaryTreeT.right = new TreeNode(2);
 
 console.log(`Is t a subtree of s? ${isSubtree(binaryTreeS, binaryTreeT)}`);
 console.log('\n');
+
+/*
+ * Q31.
+ * Given a string which we can delete at most k, return whether you can make a
+ * palindrome.
+ * For example, given 'waterrfetawx' and a k of 2, you could delete f and x to
+ * get 'waterretaw'.
+ */
+function canMakePalindrome(s, k) {
+    const n = s.length;
+    let dp = new Array(n).fill(0).map(() => new Array(n).fill(0));
+
+    for (let len = 2; len <= n; len++) {
+        for (let i = 0; i < n - len; i++) {
+            let j = i + len - 1;
+
+            if (s[i] === s[j]) {
+                dp[i][j] = dp[i + 1][j - 1];
+            } else {
+                dp[i][j] = Math.min(dp[i + 1][j], dp[i][j - 1]) + 1;
+            }
+        }
+    }
+
+    return dp[0][n - 1] <= k;
+}
+
+console.log('========= Q31 =========');
+const palindromeCandidate = 'waterrfetawx';
+const numOfRemoval = 2;
+console.log(
+    `Can make palindrome: ${canMakePalindrome(
+        palindromeCandidate,
+        numOfRemoval
+    )}`
+);
+console.log('\n');
+
+/*
+ * Q32.
+ * Given a string, return whether it represents a number. Here are the different
+ * kinds of numbers:
+ * "10", a positive integer
+ * "-10", a negative integer
+ * "10.1", a positive real number
+ * "-10.1", a negative real number
+ * "1e5", a number in scientific notation
+ * And here are examples of non-numbers:
+ * "a"
+ * "x 1"
+ * "a -2"
+ * "-"
+ */
+function isNumber(s) {
+    s = s.trim();
+    const pattern = /^[-+]?(?:\d+\.?|\.\d+)\d*(?:e[-+]?\d+)?$/;
+    return pattern.test(s);
+}
+
+console.log('========= Q32 =========');
+const inputs = ['10', '-10', '10.1', '-10.1', '1e5', 'a', 'x 1', 'a -2', '-'];
+for (const input of inputs) {
+    console.log(`${input} is a number: ${isNumber(input)}`);
+}
+console.log('\n');
+
+/*
+ * Q33.
+ * Find the minimum number of coins required to make n cents.
+ * You can use standard American denominations, that is, 1¢, 5¢, 10¢, and 25¢.
+ * For example, given n = 16, return 3 since we can make it with a 10¢, a 5¢,
+ * and a 1¢.
+ */
+function coinChange(n) {
+    let coins = [25, 10, 5, 1];
+
+    let dp = new Array(n + 1).fill(n + 1);
+    dp[0] = 0;
+
+    for (let i = 1; i <= n; i++) {
+        for (const coin of coins) {
+            if (coin <= i) {
+                dp[i] = Math.min(dp[i], dp[i - coin] + 1);
+            }
+        }
+    }
+    return dp[n] > n ? -1 : dp[n];
+}
+
+console.log('========= Q33 =========');
+const sum = 16;
+console.log(
+    `Minimum number of coins required to make ${sum} cents: ${coinChange(sum)}`
+);
+console.log('\n');
+
+/*
+ * Q34.
+ * Implement 3 stacks using a single list:
+ * " class Stack:                              "
+ * "     def __init__(self):                   "
+ * "         self.list = []                    "
+ *
+ * "     def pop(self, stack_number):          "
+ * "         pass                              "
+ *
+ * "     def push(self, item, stack_number):   "
+ * "         pass                              "
+ */
+class MultiStack {
+    #_list;
+    #_tops;
+    #_stackSize;
+    #_numStacks;
+
+    constructor(stackSize, numStacks) {
+        this.#_stackSize = stackSize;
+        this.#_numStacks = numStacks;
+        this.#_list = new Array(stackSize * numStacks);
+        this.#_tops = new Array(numStacks).fill(-1);
+    }
+
+    push(item, stackNumber) {
+        if (this.isFull(stackNumber)) {
+            console.log(
+                `Stack ${stackNumber} is full. Cannot push item: ${item}`
+            );
+            return;
+        }
+
+        let index = this.getTopIndex(stackNumber);
+        index++;
+        this.#_list[this.#_stackSize * stackNumber + index] = item;
+        this.#_tops[stackNumber] = index;
+    }
+
+    pop(stackNumber) {
+        if (this.isEmpty(stackNumber)) {
+            console.log(`Stack ${stackNumber} is empty. Cannot pop item.`);
+            return -1;
+        }
+
+        let index = this.getTopIndex(stackNumber);
+        const item = this.#_list[this.#_stackSize * stackNumber + index];
+        this.#_tops[stackNumber] = index - 1;
+        return item;
+    }
+
+    isEmpty(stackNumber) {
+        return this.#_tops[stackNumber] === -1;
+    }
+
+    isFull(stackNumber) {
+        return (
+            this.#_tops[stackNumber] ===
+            this.#_stackSize * (stackNumber + 1) - 1
+        );
+    }
+
+    getTopIndex(stackNumber) {
+        return this.#_tops[stackNumber];
+    }
+}
+
+console.log('========= Q34 =========');
+const stack = new MultiStack(10, 3);
+stack.push(1, 0);
+stack.push(2, 0);
+stack.push(3, 1);
+stack.push(4, 1);
+stack.push(5, 2);
+stack.push(6, 2);
+
+console.log(`Pop from stack 0: ${stack.pop(0)}`);
+console.log(`Pop from stack 1: ${stack.pop(1)}`);
+console.log(`Pop from stack 2: ${stack.pop(2)}`);
+console.log('\n');
+
+/*
+ * Q35.
+ * You're given a string consisting solely of (, ), and *. * can represent
+ * either a (, ), or an empty string. Determine whether the parentheses are
+ * balanced.
+ * For example, (()* and (*) are balanced. )*( is not balanced.
+ */
+function isBalanced(str) {
+    let minOpen = 0;
+    let maxOpen = 0;
+
+    for (const c of str) {
+        if (c == '(') {
+            minOpen++;
+            maxOpen++;
+        } else if (c == ')') {
+            minOpen = Math.max(minOpen - 1, 0);
+            maxOpen--;
+        } else {
+            minOpen = Math.max(minOpen - 1, 0);
+            maxOpen++;
+        }
+
+        if (maxOpen < 0) {
+            return false; // More closing parentheses encountered than open parentheses
+        }
+    }
+
+    return minOpen == 0;
+}
+
+console.log('========= Q35 =========');
+const string1 = '(()*';
+const string2 = '(*)';
+const string3 = ')*(';
+
+console.log(`Is ${string1} balanced: ${isBalanced(string1)}`);
+console.log(`Is ${string2} balanced: ${isBalanced(string2)}`);
+console.log(`Is ${string3} balanced: ${isBalanced(string3)}`);
+console.log('\n');
+
+/*
+ * Q36.
+ * Given a list, sort it using this method: reverse(lst, i, j), which reverses
+ * lst from i to j.
+ */
+function sort(lst) {
+    const n = lst.length;
+    for (let i = 0; i < n; i++) {
+        let minIndex = i;
+        for (let j = i + 1; j < n; j++) {
+            if (lst[j] < lst[minIndex]) {
+                minIndex = j;
+            }
+        }
+        reverse(lst, i, minIndex);
+    }
+}
+
+function reverse(lst, i, j) {
+    while (i < j) {
+        const temp = lst[i];
+        lst[i] = lst[j];
+        lst[j] = temp;
+        i++;
+        j--;
+    }
+}
+
+console.log('========= Q36 =========');
+const lst = [9, 2, 5, 1, 7];
+console.log(`Original list: ${lst}`);
+sort(lst);
+console.log(`Sorted list: ${lst}`);
+console.log('\n');
+
+/*
+ * Q37.
+ * Given a list of numbers L, implement a method sum(i, j) which returns the sum
+ * from the sublist L[i:j] (including i, excluding j).
+ * For example, given L = [1, 2, 3, 4, 5], sum(1, 3) should return sum([2, 3]),
+ * which is 5.
+ * You can assume that you can do some pre-processing. sum() should be optimized
+ * over the pre-processing step.
+ */
+class SublistSum {
+    #_prefixSums;
+
+    constructor(lst) {
+        this.#_prefixSums = [];
+        let sum = 0;
+        this.#_prefixSums.push(0);
+        for (const num of lst) {
+            sum += num;
+            this.#_prefixSums.push(sum);
+        }
+    }
+
+    sum(i, j) {
+        if (i < 0 || j > this.#_prefixSums.length - 1 || i > j) {
+            throw new Error('Invalid sublist range');
+        }
+        return this.#_prefixSums[j] - this.#_prefixSums[i];
+    }
+}
+
+console.log('========= Q37 =========');
+const L = [1, 2, 3, 4, 5];
+const sublistSum = new SublistSum(L);
+
+console.log(`Sum of sublist [1:3]: ${sublistSum.sum(1, 3)}`);
+console.log(`Sum of sublist [2:5]: ${sublistSum.sum(2, 5)}`);
+console.log(`Sum of sublist [0:5]: ${sublistSum.sum(0, 5)}`);
+console.log('\n');
+
+/*
+ * Q38.
+ * Given a list of points, a central point, and an integer k, find the nearest k
+ * points from the central point.
+ * For example, given the list of points [(0, 0), (5, 4), (3, 1)], the central
+ * point (1, 2), and k = 2, return [(0, 0), (3, 1)].
+ */
+class Point {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+function findNearestPoints(points, centralPoint, k) {
+    let pq = [];
+
+    for (const point of points) {
+        pq.push(point);
+        pq.sort(
+            (p1, p2) =>
+                calculateDistance(p2, centralPoint) -
+                calculateDistance(p1, centralPoint)
+        );
+
+        if (pq.length > k) {
+            pq.shift();
+        }
+    }
+
+    return pq;
+}
+
+function calculateDistance(p1, p2) {
+    const dx = p1.x - p2.x;
+    const dy = p1.y - p2.y;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+console.log('========= Q38 =========');
+const points = [new Point(0, 0), new Point(5, 4), new Point(3, 1)];
+const centralPoint = new Point(1, 2);
+const numOfPoints = 2;
+const nearestPoints = findNearestPoints(points, centralPoint, numOfPoints);
+console.log(
+    `Nearest ${numOfPoints} points to (${centralPoint.x}: ${nearestPoints.y}): `
+);
+for (const point of nearestPoints) {
+    console.log(`(${point.x}, ${point.y})`);
+}
+console.log('\n');
+
+/*
+ * Q39.
+ * Find an efficient algorithm to find the smallest distance (measured in number
+ * of words) between any two given words in a string.
+ * For example, given words "hello", and "world" and a text content of
+ * "dog cat hello cat dog dog hello cat world", return 1 because there's only
+ * one word "cat" in between the two words.
+ */
+function findSmallestDistance(text, word1, word2) {
+    const words = text.split(' ');
+    let minDistance = Number.MAX_SAFE_INTEGER;
+    let prevIndex = -1;
+
+    for (let i = 0; i < words.length; i++) {
+        if (words[i] === word1) {
+            if (prevIndex !== -1 && i - prevIndex < minDistance) {
+                minDistance = i - prevIndex;
+            }
+            prevIndex = i;
+        } else if (words[i] === word2) {
+            if (prevIndex !== -1 && i - prevIndex < minDistance) {
+                minDistance = i - prevIndex;
+            }
+            prevIndex = i;
+        }
+    }
+    return minDistance - 1;
+}
+
+console.log('========= Q39 =========');
+const textToFindWordDistance = 'dog cat hello cat dog dog hello cat world';
+const word1 = 'hello';
+const word2 = 'world';
+console.log(`${findSmallestDistance(textToFindWordDistance, word1, word2)}`);
+console.log('\n');
+
+/*
+ * Q40.
+ * Given a tree where each edge has a weight, compute the length of the longest
+ * path in the tree.
+ * For example, given the following tree:
+ * "    a      "
+ * "   /|\     "
+ * "  b c d    "
+ * "     / \   "
+ * "    e   f  "
+ * "   / \     "
+ * "  g   h    "
+ * and the weights: a-b: 3, a-c: 5, a-d: 8, d-e: 2, d-f: 4, e-g: 1, e-h: 1, the
+ * longest path would be c -> a -> d -> f, with a length of 17.
+ * The path does not have to pass through the root, and each node can have any
+ * amount of children.
+ */
+class GraphNode {
+    constructor(id) {
+        this.id = id;
+        this.edges = [];
+    }
+}
+class Edge {
+    constructor(destination, weight) {
+        this.destination = destination;
+        this.weight = weight;
+    }
+}
+
+let longestPath = 0;
+
+function calculateLongestPath(root) {
+    if (!root) {
+        return 0;
+    }
+
+    calculatePath(root, null);
+
+    return longestPath;
+}
+
+function calculatePath(node, parent) {
+    if (node.edges.length === 1 && node !== parent) {
+        return 0;
+    }
+
+    let maxPath1 = 0;
+    let maxPath2 = 0;
+
+    for (const edge of node.edges) {
+        if (edge.destination !== parent) {
+            const subPath = calculatePath(edge.destination, node) + edge.weight;
+            if (subPath > maxPath1) {
+                maxPath2 = maxPath1;
+                maxPath1 = subPath;
+            } else if (subPath > maxPath2) {
+                maxPath2 = subPath;
+            }
+        }
+    }
+    longestPath = Math.max(longestPath, maxPath1 + maxPath2);
+    return maxPath1;
+}
+
+console.log('========= Q40 =========');
+const a = new GraphNode('a');
+const b = new GraphNode('b');
+const c = new GraphNode('c');
+const d = new GraphNode('d');
+const e = new GraphNode('e');
+const f = new GraphNode('f');
+const g = new GraphNode('g');
+const h = new GraphNode('h');
+
+a.edges.push(new Edge(b, 3));
+a.edges.push(new Edge(c, 5));
+a.edges.push(new Edge(d, 8));
+
+d.edges.push(new Edge(e, 2));
+d.edges.push(new Edge(f, 4));
+
+e.edges.push(new Edge(g, 1));
+e.edges.push(new Edge(h, 1));
+
+console.log(`Longest Path Length: ${calculateLongestPath(a)}`);
+console.log('\n');
