@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Random;
 import java.util.Set;
 import java.util.Stack;
 import java.util.ArrayDeque;
@@ -1447,6 +1448,281 @@ public class QuestionsAndSolutions {
         return maxPath1;
     }
 
+    // S41.
+    public static int evaluateRPN(String[] tokens) {
+        Stack<Integer> stack = new Stack<>();
+
+        for (String token : tokens) {
+            if (isOperator(token)) {
+                int operand2 = stack.pop();
+                int operand1 = stack.pop();
+                int result = performOperation(operand1, operand2, token);
+                stack.push(result);
+            } else {
+                int operand = Integer.parseInt(token);
+                stack.push(operand);
+            }
+        }
+
+        return stack.pop();
+    }
+
+    private static boolean isOperator(String token) {
+        return token.equals("+") || token.equals("-") || token.equals("*") || token.equals("/");
+    }
+
+    private static int performOperation(int operand1, int operand2, String operator) {
+        switch (operator) {
+            case "+":
+                return operand1 + operand2;
+            case "-":
+                return operand1 - operand2;
+            case "*":
+                return operand1 * operand2;
+            case "/":
+                return operand1 / operand2;
+        }
+        return 0;
+    }
+
+    // S42.
+    public static List<List<Integer>> findPalindromePairs(String[] words) {
+        List<List<Integer>> pairs = new ArrayList<>();
+
+        for (int i = 0; i < words.length; i++) {
+            for (int j = 0; j < words.length; j++) {
+                if (i != j && isPalindrome(words[i] + words[j])) {
+                    List<Integer> pair = new ArrayList<>();
+                    pair.add(i);
+                    pair.add(j);
+                    pairs.add(pair);
+                }
+            }
+        }
+
+        return pairs;
+    }
+
+    private static boolean isPalindrome(String word) {
+        int i = 0;
+        int j = word.length() - 1;
+
+        while (i < j) {
+            if (word.charAt(i) != word.charAt(j)) {
+                return false;
+            }
+            i++;
+            j--;
+        }
+
+        return true;
+    }
+
+    // S43.
+    private static double calculateExpectedValue(int target1, int target2, int numSimulations) {
+        int totalRolls = 0;
+
+        for (int i = 0; i < numSimulations; i++) {
+            int rolls = simulateGame(target1, target2);
+            totalRolls += rolls;
+        }
+
+        return (double) totalRolls / numSimulations;
+    }
+
+    private static int simulateGame(int target1, int target2) {
+        Random random = new Random();
+        int rolls = 0;
+        boolean target1Found = false;
+
+        while (true) {
+            int roll = random.nextInt(6) + 1;
+            rolls++;
+
+            if (target1Found && roll == target2) {
+                break;
+            }
+
+            target1Found = (roll == target1);
+        }
+
+        return rolls;
+    }
+
+    // S44.
+    public static List<String> splitIntoPalindromes(String s) {
+        List<String> result = new ArrayList<>();
+        splitIntoPalindromesHelper(s, 0, new ArrayList<>(), result);
+        return result;
+    }
+
+    private static void splitIntoPalindromesHelper(String s, int start, List<String> current, List<String> result) {
+        if (start == s.length()) {
+            result.clear();
+            result.addAll(current);
+            return;
+        }
+
+        for (int i = start + 1; i <= s.length(); i++) {
+            String substring = s.substring(start, i);
+            if (isPalindrome(substring)) {
+                current.add(substring);
+                splitIntoPalindromesHelper(s, i, current, result);
+                current.remove(current.size() - 1);
+            }
+        }
+    }
+
+    // S45.
+    // Solution in Q45
+
+    // S46.
+    public static int minSubsetSumDifference(int[] nums) {
+        int totalSum = 0;
+        for (int num : nums) {
+            totalSum += num;
+        }
+
+        boolean[][] dp = new boolean[nums.length + 1][totalSum + 1];
+
+        for (int i = 0; i <= nums.length; i++) {
+            dp[i][0] = true;
+        }
+
+        for (int i = 1; i <= nums.length; i++) {
+            for (int j = 1; j <= totalSum; j++) {
+                if (nums[i - 1] <= j) {
+                    dp[i][j] = dp[i - 1][j] || dp[i - 1][j - nums[i - 1]];
+                } else {
+                    dp[i][j] = dp[i - 1][j];
+                }
+            }
+        }
+
+        int minDiff = Integer.MAX_VALUE;
+
+        for (int j = totalSum / 2; j >= 0; j--) {
+            if (dp[nums.length][j]) {
+                minDiff = totalSum - 2 * j;
+                break;
+            }
+        }
+
+        printSubsets(nums, dp, (totalSum - minDiff) / 2);
+
+        return minDiff;
+    }
+
+    public static void printSubsets(int[] nums, boolean[][] dp, int median) {
+        List<Integer> subset1 = new ArrayList<>();
+        List<Integer> subset2 = new ArrayList<>();
+        int i = nums.length;
+        int j = median;
+
+        while (i > 0 && j > 0) {
+            if (nums[i - 1] <= j && dp[i - 1][j - nums[i - 1]]) {
+                subset1.add(nums[i - 1]);
+                j -= nums[i - 1];
+            }
+            i--;
+        }
+
+        subset2.addAll(Arrays.asList(Arrays.stream(nums).boxed().toArray(Integer[]::new)));
+        subset2.removeAll(subset1);
+
+        System.out.println("Subset 1: " + subset1);
+        System.out.println("Subset 2: " + subset2);
+    }
+
+    // S47.
+    public static int maxProfit(int[] prices, int fee) {
+        int n = prices.length;
+        int[][] dp = new int[n][2];
+
+        dp[0][0] = 0;
+        dp[0][1] = -prices[0];
+
+        for (int i = 1; i < n; i++) {
+            dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1] + prices[i] - fee);
+            dp[i][1] = Math.max(dp[i - 1][1], dp[i - 1][0] - prices[i]);
+        }
+
+        return dp[n - 1][0];
+    }
+
+    // S48.
+    public static int countElements(int[][] matrix, int i1, int j1, int i2, int j2) {
+        int count = 0;
+        int num1 = matrix[i1][j1];
+        int num2 = matrix[i2][j2];
+
+        for (int[] row : matrix) {
+            for (int num : row) {
+                if (num < num1 || num > num2) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
+    // S49.
+    public static String balanceParentheses(String s) {
+        StringBuilder balancedString = new StringBuilder();
+        Stack<Character> stack = new Stack<>();
+
+        for (char c : s.toCharArray()) {
+            if (c == '(') {
+                stack.push(c);
+                balancedString.append(c);
+            } else if (c == ')') {
+                if (!stack.isEmpty() && stack.peek() == '(') {
+                    stack.pop();
+                    balancedString.append(c);
+                } else {
+                    balancedString.append('(').append(c);
+                }
+            } else {
+                balancedString.append(c);
+            }
+        }
+
+        while (!stack.isEmpty()) {
+            balancedString.append(')');
+            stack.pop();
+        }
+
+        return balancedString.toString();
+    }
+
+    // S50.
+    static class Interval {
+        int start;
+        int end;
+
+        Interval(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+    }
+
+    public static List<Integer> findStabPoints(List<Interval> intervals) {
+        intervals.sort(Comparator.comparingInt(a -> a.end));
+        List<Integer> points = new ArrayList<>();
+        int currentPoint = intervals.get(0).end;
+
+        for (Interval interval : intervals) {
+            if (interval.start > currentPoint) {
+                points.add(currentPoint);
+                currentPoint = interval.end;
+            }
+        }
+
+        points.add(currentPoint);
+        return points;
+    }
+
     public static void main(String[] args) {
         /*
          * Q1.
@@ -2338,6 +2614,214 @@ public class QuestionsAndSolutions {
 
         int longestPath = calculateLongestPath(a);
         System.out.println("Longest path length: " + longestPath); // Output: 17
-    }
 
+        /*
+         * Q41.
+         * https://en.wikipedia.org/wiki/Reverse_Polish_notation
+         * Given an arithmetic expression in Reverse Polish Notation, write a program to
+         * evaluate it.
+         * The expression is given as a list of numbers and operands. For example: [5,
+         * 3, '+'] should return 5 + 3 = 8.
+         * For example, [15, 7, 1, 1, '+', '-', '/', 3, '*', 2, 1, 1, '+', '+', '-']
+         * should return 5, since it is equivalent to ((15 / (7 - (1 + 1))) * 3) - (2 +
+         * (1 + 1)) = 5.
+         * You can assume the given expression is always valid.
+         */
+        System.out.println("========= Q41 ==========");
+        String[] expression = { "15", "7", "1", "1", "+", "-", "/", "3", "*", "2", "1", "1", "+", "+", "-" };
+        int evalResult = evaluateRPN(expression);
+        System.out.println("Result: " + evalResult);
+
+        /*
+         * Q42.
+         * Given a list of words, find all pairs of unique indices such that the
+         * concatenation of the two words is a palindrome.
+         * For example, given the list ["code", "edoc", "da", "d"], return [(0, 1), (1,
+         * 0), (2, 3)].
+         */
+        System.out.println("========= Q42 ==========");
+        String[] words = { "code", "edoc", "da", "d" };
+        List<List<Integer>> pairs = findPalindromePairs(words);
+
+        for (List<Integer> pair : pairs) {
+            System.out.println("(" + pair.get(0) + ", " + pair.get(1) + ")");
+        }
+
+        /*
+         * Q43.
+         * Alice wants to join her school's Probability Student Club. Membership dues
+         * are computed via one of two simple probabilistic games.
+         * The first game: roll a die repeatedly. Stop rolling once you get a five
+         * followed by a six. Your number of rolls is the amount you pay, in dollars.
+         * The second game: same, except that the stopping condition is a five followed
+         * by a five.
+         * Which of the two games should Alice elect to play? Does it even matter? Write
+         * a program to simulate the two games and calculate their expected value.
+         */
+        System.out.println("========= Q43 ==========");
+        int numSimulations = 1000000;
+
+        double game1ExpectedValue = calculateExpectedValue(5, 6, numSimulations);
+        double game2ExpectedValue = calculateExpectedValue(5, 5, numSimulations);
+
+        System.out.println("Expected value for Game 1: " + game1ExpectedValue);
+        System.out.println("Expected value for Game 2: " + game2ExpectedValue);
+
+        if (game1ExpectedValue < game2ExpectedValue) {
+            System.out.println("Alice should elect to play Game 1.");
+        } else if (game2ExpectedValue < game1ExpectedValue) {
+            System.out.println("Alice should elect to play Game 2.");
+        } else {
+            System.out.println("Alice can choose either game; they have the same expected value.");
+        }
+
+        /*
+         * Q44.
+         * Given a string, split it into as few strings as possible such that each
+         * string is a palindrome.
+         * For example, given the input string racecarannakayak, return ["racecar",
+         * "anna", "kayak"].
+         * Given the input string abc, return ["a", "b", "c"].
+         */
+        System.out.println("========= Q44 ==========");
+        String inputStr1 = "racecarannakayak";
+        List<String> splitResult1 = splitIntoPalindromes(inputStr1);
+        System.out.println("Input: " + inputStr1);
+        System.out.println("Result: " + splitResult1);
+
+        String inputStr2 = "abc";
+        List<String> splitResult2 = splitIntoPalindromes(inputStr2);
+        System.out.println("Input: " + inputStr2);
+        System.out.println("Result: " + splitResult2);
+
+        /*
+         * Q45.
+         * Describe what happens when you type a URL into your browser and press Enter.
+         */
+        System.out.println("========= Q45 ==========");
+        /*
+         * 1. Browser parses the URL to extract different components of the URL like
+         * protocol, host, port, path, query string etc.
+         * 2. The browser checks its cache to find the IP address corresponding to the
+         * domain name. If not found, it sends a DNS request to a DNS server to obtain
+         * the IP address of the server hosting the website.
+         * 3. The browser initiates a TCP connection with the server using the obtained
+         * IP address and the default port for the protocol.
+         * 4. The browser sends a HTTP request to the server, including the requested
+         * path, query parameters, headers, and any additional data required.
+         * 5. The server receives the HTTP request and processes it. This may involve
+         * executing server-side scripts, accessing databases, or performing other
+         * operations to generate a response.
+         * 6. The server generates an HTTP response containing the requested content,
+         * along with status code, headers, and any additional data.
+         * 7. The browser receives the HTTP response and starts rendering the webpage.
+         * It interprets the HTML, CSS, and JavaScript code to construct the visual
+         * layout, apply styles, and execute any scripts.
+         * 8. As the browser parses the HTML, it encounters additional resources such as
+         * images, stylesheets, or scripts, referenced in the webpage. It sends separate
+         * requests for each resource and starts downloading them in parallel.
+         * 9. Once all the resources are downloaded and processed, the browser displays
+         * the fully rendered webpage to the user, including text, image, and
+         * interactive elements.
+         * 10. The user can now interact with the webpage by clicking on links,
+         * submitting forms, or performing other actions, which trigger additional
+         * requests and responses.
+         */
+
+        /*
+         * Q46.
+         * Given an array of positive integers, divide the array into two subsets such
+         * that the difference between the sum of the subsets is as small as possible.
+         * For example, given [5, 10, 15, 20, 25], return the sets {10, 25} and {5, 15,
+         * 20}, which has a difference of 5, which is the smallest possible difference.
+         */
+        System.out.println("========= Q46 ==========");
+        int[] numsToDivide = { 5, 10, 15, 20, 25 };
+        int minDiff = minSubsetSumDifference(numsToDivide);
+        System.out.println("Minimum subset sum difference: " + minDiff);
+
+        /*
+         * Q47.
+         * Given a array of numbers representing the stock prices of a company in
+         * chronological order, write a function that calculates the maximum profit you
+         * could have made from buying and selling that stock. You're also given a
+         * number fee that represents a transaction fee for each buy and sell
+         * transaction.
+         * You must buy before you can sell the stock, but you can make as many
+         * transactions as you like.
+         * For example, given [1, 3, 2, 8, 4, 10] and fee = 2, you should return 9,
+         * since you could buy the stock at 1 dollar, and sell at 8 dollars, and then
+         * buy it at 4 dollars and sell it at 10 dollars. Since we did two transactions,
+         * there is a 4 dollar fee, so we have 7 + 6 = 13 profit minus 4 dollars of
+         * fees.
+         */
+        System.out.println("========= Q47 ==========");
+        int[] prices = { 1, 3, 2, 8, 4, 10 };
+        int fee = 2;
+        int maxProfitWithFee = maxProfit(prices, fee);
+        System.out.println("Maximum profit: " + maxProfitWithFee);
+
+        /*
+         * Q48.
+         * Let A be an N by M matrix in which every row and every column is sorted.
+         * Given i1, j1, i2, and j2, compute the number of elements of M smaller than
+         * M[i1, j1] and larger than M[i2, j2].
+         * For example, given the following matrix:
+         * [[1, 3, 7, 10, 15, 20],
+         * [2, 6, 9, 14, 22, 25],
+         * [3, 8, 10, 15, 25, 30],
+         * [10, 11, 12, 23, 30, 35],
+         * [20, 25, 30, 35, 40, 45]]
+         * And i1 = 1, j1 = 1, i2 = 3, j2 = 3, return 15 as there are 15 numbers in the
+         * matrix smaller than 6 or greater than 23.
+         */
+        System.out.println("========= Q48 ==========");
+        int[][] matrix = {
+                { 1, 3, 7, 10, 15, 20 },
+                { 2, 6, 9, 14, 22, 25 },
+                { 3, 8, 10, 15, 25, 30 },
+                { 10, 11, 12, 23, 30, 35 },
+                { 20, 25, 30, 35, 40, 45 }
+        };
+
+        int i1 = 1, j1 = 1, i2 = 3, j2 = 3;
+        int elementCount = countElements(matrix, i1, j1, i2, j2);
+        System.out.println("Number of elements: " + elementCount);
+
+        /*
+         * Q49.
+         * Given a string of parentheses, find the balanced string that can be produced
+         * from it using the minimum number of insertions and deletions. If there are
+         * multiple solutions, return any of them.
+         * For example, given "(()", you could return "(())". Given "))()(", you could
+         * return "()()()()".
+         */
+        System.out.println("========= Q49 ==========");
+        String parentheses1 = "(()";
+        String balanced1 = balanceParentheses(parentheses1);
+        System.out.println("Balanced string for '" + parentheses1 + "': " + balanced1);
+
+        String parentheses2 = "))()(";
+        String balanced2 = balanceParentheses(parentheses2);
+        System.out.println("Balanced string for '" + parentheses2 + "': " + balanced2);
+
+        /*
+         * Q50.
+         * Let X be a set of n intervals on the real line. We say that a set of points P
+         * "stabs" X if every interval in X contains at least one point in P. Compute
+         * the smallest set of points that stabs X.
+         * For example, given the intervals [(1, 4), (4, 5), (7, 9), (9, 12)], you
+         * should return [4, 9].
+         */
+        System.out.println("========= Q50 ==========");
+        List<Interval> intervals = Arrays.asList(
+                new Interval(1, 4),
+                new Interval(4, 5),
+                new Interval(7, 9),
+                new Interval(9, 12));
+
+        List<Integer> stabPoints = findStabPoints(intervals);
+        System.out.println("Smallest set of stab points: " + stabPoints);
+
+    }
 }

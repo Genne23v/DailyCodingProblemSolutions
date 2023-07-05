@@ -2322,3 +2322,499 @@ e.edges.push(new Edge(h, 1));
 
 console.log(`Longest Path Length: ${calculateLongestPath(a)}`);
 console.log('\n');
+
+/*
+ * Q41.
+ * https://en.wikipedia.org/wiki/Reverse_Polish_notation
+ * Given an arithmetic expression in Reverse Polish Notation, write a program to
+ * evaluate it.
+ * The expression is given as a list of numbers and operands. For example: [5,
+ * 3, '+'] should return 5 + 3 = 8.
+ * For example, [15, 7, 1, 1, '+', '-', '/', 3, '*', 2, 1, 1, '+', '+', '-']
+ * should return 5, since it is equivalent to ((15 / (7 - (1 + 1))) * 3) - (2 +
+ * (1 + 1)) = 5.
+ * You can assume the given expression is always valid.
+ */
+function evaluateRPN(tokens) {
+    let stack = [];
+
+    for (const token of tokens) {
+        if (isOperator(token)) {
+            const operand2 = stack.pop();
+            const operand1 = stack.pop();
+            const result = performOperation(operand1, operand2, token);
+            stack.push(result);
+        } else {
+            const operand = parseInt(token);
+            stack.push(operand);
+        }
+    }
+    return stack.pop();
+}
+
+function isOperator(token) {
+    return token === '+' || token === '-' || token === '*' || token === '/';
+}
+
+function performOperation(operand1, operand2, operator) {
+    switch (operator) {
+        case '+':
+            return operand1 + operand2;
+        case '-':
+            return operand1 - operand2;
+        case '*':
+            return operand1 * operand2;
+        case '/':
+            return operand1 / operand2;
+    }
+    return 0;
+}
+
+console.log('========= Q41 =========');
+const expression = [
+    '15',
+    '7',
+    '1',
+    '1',
+    '+',
+    '-',
+    '/',
+    '3',
+    '*',
+    '2',
+    '1',
+    '1',
+    '+',
+    '+',
+    '-',
+];
+console.log(`Result: ${evaluateRPN(expression)}`);
+console.log('\n');
+
+/*
+ * Q42.
+ * Given a list of words, find all pairs of unique indices such that the
+ * concatenation of the two words is a palindrome.
+ * For example, given the list ["code", "edoc", "da", "d"], return [(0, 1), (1,
+ * 0), (2, 3)].
+ */
+function findPalindromePairs(words) {
+    let pairs = [];
+
+    for (let i = 0; i < words.length; i++) {
+        for (let j = 0; j < words.length; j++) {
+            if (i !== j && isPalindrome(words[i] + words[j])) {
+                let pair = [i, j];
+                pairs.push(pair);
+            }
+        }
+    }
+    return pairs;
+}
+
+function isPalindrome(word) {
+    let i = 0;
+    let j = word.length - 1;
+
+    while (i < j) {
+        if (word[i] !== word[j]) {
+            return false;
+        }
+        i++;
+        j--;
+    }
+    return true;
+}
+
+console.log('========= Q42 =========');
+const words = ['code', 'edoc', 'da', 'd'];
+const pairs = findPalindromePairs(words);
+for (const pair of pairs) {
+    console.log(`(${pair[0]}, ${pair[1]})`);
+}
+console.log('\n');
+
+/*
+ * Q43.
+ * Alice wants to join her school's Probability Student Club. Membership dues
+ * are computed via one of two simple probabilistic games.
+ * The first game: roll a die repeatedly. Stop rolling once you get a five
+ * followed by a six. Your number of rolls is the amount you pay, in dollars.
+ * The second game: same, except that the stopping condition is a five followed
+ * by a five.
+ * Which of the two games should Alice elect to play? Does it even matter? Write
+ * a program to simulate the two games and calculate their expected value.
+ */
+function calculateExpectedValue(target1, target2, numSimulations) {
+    let totalRolls = 0;
+
+    for (let i = 0; i < numSimulations; i++) {
+        const rolls = simulateGame(target1, target2);
+        totalRolls += rolls;
+    }
+
+    return totalRolls / numSimulations;
+}
+
+function simulateGame(target1, target2) {
+    let rolls = 0;
+    let target1Found = false;
+
+    while (true) {
+        const roll = Math.floor(Math.random() * 6) + 1;
+        rolls++;
+
+        if (target1Found && roll === target2) {
+            break;
+        }
+
+        target1Found = roll === target1;
+    }
+
+    return rolls;
+}
+
+console.log('========= Q43 =========');
+const numSimulations = 1000000;
+const game1ExpectedValue = calculateExpectedValue(5, 6, numSimulations);
+const game2ExpectedValue = calculateExpectedValue(5, 5, numSimulations);
+
+console.log(`Expected Value for Game 1: ${game1ExpectedValue}`);
+console.log(`Expected Value for Game 2: ${game2ExpectedValue}`);
+
+if (game1ExpectedValue < game2ExpectedValue) {
+    console.log('Alice should elect to play Game 1.');
+} else if (game1ExpectedValue > game2ExpectedValue) {
+    console.log('Alice should elect to play Game 2.');
+} else {
+    console.log(
+        'Alice can choose either game; they have the same expected value.'
+    );
+}
+console.log('\n');
+
+/*
+ * Q44.
+ * Given a string, split it into as few strings as possible such that each
+ * string is a palindrome.
+ * For example, given the input string racecarannakayak, return ["racecar",
+ * "anna", "kayak"].
+ * Given the input string abc, return ["a", "b", "c"].
+ */
+function splitIntoPalindrome(s) {
+    let result = [];
+    splitIntoPalindromesHelper(s, 0, [], result);
+    return result;
+}
+
+function splitIntoPalindromesHelper(s, start, current, result) {
+    if (start === s.length) {
+        result.length = 0;
+        result.push(current.slice());
+        return;
+    }
+
+    for (let i = start + 1; i <= s.length; i++) {
+        const substring = s.substring(start, i);
+        if (isPalindrome(substring)) {
+            current.push(substring);
+            splitIntoPalindromesHelper(s, i, current, result);
+            current.pop();
+        }
+    }
+}
+
+console.log('========= Q44 =========');
+const inputStr1 = 'racecarannakayak';
+const splitResult1 = splitIntoPalindrome(inputStr1);
+console.log(`Input: ${inputStr1}`);
+console.log(`Result: ${splitResult1}`);
+
+const inputStr2 = 'abc';
+const splitResult2 = splitIntoPalindrome(inputStr2);
+console.log(`Input: ${inputStr2}`);
+console.log(`Result: ${splitResult2}`);
+console.log('\n');
+
+/*
+ * Q45.
+ * Describe what happens when you type a URL into your browser and press Enter.
+ */
+console.log('========= Q45 =========');
+/*
+ * 1. Browser parses the URL to extract different components of the URL like
+ * protocol, host, port, path, query string etc.
+ * 2. The browser checks its cache to find the IP address corresponding to the
+ * domain name. If not found, it sends a DNS request to a DNS server to obtain
+ * the IP address of the server hosting the website.
+ * 3. The browser initiates a TCP connection with the server using the obtained
+ * IP address and the default port for the protocol.
+ * 4. The browser sends a HTTP request to the server, including the requested
+ * path, query parameters, headers, and any additional data required.
+ * 5. The server receives the HTTP request and processes it. This may involve
+ * executing server-side scripts, accessing databases, or performing other
+ * operations to generate a response.
+ * 6. The server generates an HTTP response containing the requested content,
+ * along with status code, headers, and any additional data.
+ * 7. The browser receives the HTTP response and starts rendering the webpage.
+ * It interprets the HTML, CSS, and JavaScript code to construct the visual
+ * layout, apply styles, and execute any scripts.
+ * 8. As the browser parses the HTML, it encounters additional resources such as
+ * images, stylesheets, or scripts, referenced in the webpage. It sends separate
+ * requests for each resource and starts downloading them in parallel.
+ * 9. Once all the resources are downloaded and processed, the browser displays
+ * the fully rendered webpage to the user, including text, image, and
+ * interactive elements.
+ * 10. The user can now interact with the webpage by clicking on links,
+ * submitting forms, or performing other actions, which trigger additional
+ * requests and responses.
+ */
+console.log('\n');
+
+/*
+ * Q46.
+ * Given an array of positive integers, divide the array into two subsets such
+ * that the difference between the sum of the subsets is as small as possible.
+ * For example, given [5, 10, 15, 20, 25], return the sets {10, 25} and {5, 15,
+ * 20}, which has a difference of 5, which is the smallest possible difference.
+ */
+function minSubsetSumDifference(nums) {
+    let totalSum = 0;
+    for (const num of nums) {
+        totalSum += num;
+    }
+
+    let dp = new Array(nums.length + 1)
+        .fill(false)
+        .map(() => new Array(totalSum + 1).fill(false));
+
+    for (let i = 0; i <= nums.length; i++) {
+        dp[i][0] = true;
+    }
+
+    for (let i = 1; i <= nums.length; i++) {
+        for (let j = 1; j <= totalSum; j++) {
+            if (nums[i - 1] <= j) {
+                dp[i][j] = dp[i - 1][j] || dp[i - 1][j - nums[i - 1]];
+            } else {
+                dp[i][j] = dp[i - 1][j];
+            }
+        }
+    }
+
+    let minDiff = Number.MAX_SAFE_INTEGER;
+
+    for (let j = Math.floor(totalSum / 2); j >= 0; j--) {
+        if (dp[nums.length][j]) {
+            minDiff = totalSum - 2 * j;
+            break;
+        }
+    }
+
+    printSubsets(nums, dp, (totalSum - minDiff) / 2);
+
+    return minDiff;
+}
+
+function printSubsets(nums, dp, median) {
+    let subset1 = [];
+    let subset2 = [];
+    let i = nums.length;
+    let j = median;
+
+    while (i > 0 && j > 0) {
+        if (nums[i - 1] <= j && dp[i - 1][j - nums[i - 1]]) {
+            subset1.push(nums[i - 1]);
+            j -= nums[i - 1];
+        }
+        i--;
+    }
+
+    for (const num of nums) {
+        if (!subset1.includes(num)) {
+            subset2.push(num);
+        }
+    }
+
+    console.log(`Subset 1: ${subset1}`);
+    console.log(`Subset 2: ${subset2}`);
+}
+
+console.log('========= Q46 =========');
+const numsToDivide = [5, 10, 15, 20, 25];
+const minDiff = minSubsetSumDifference(numsToDivide);
+console.log(`Minimum subset sum difference: ${minDiff}`);
+console.log('\n');
+
+/*
+ * Q47.
+ * Given a array of numbers representing the stock prices of a company in
+ * chronological order, write a function that calculates the maximum profit you
+ * could have made from buying and selling that stock. You're also given a
+ * number fee that represents a transaction fee for each buy and sell
+ * transaction.
+ * You must buy before you can sell the stock, but you can make as many
+ * transactions as you like.
+ * For example, given [1, 3, 2, 8, 4, 10] and fee = 2, you should return 9,
+ * since you could buy the stock at 1 dollar, and sell at 8 dollars, and then
+ * buy it at 4 dollars and sell it at 10 dollars. Since we did two transactions,
+ * there is a 4 dollar fee, so we have 7 + 6 = 13 profit minus 4 dollars of
+ * fees.
+ */
+function maxProfit(prices, fee) {
+    const n = prices.length;
+    let dp = new Array(n).fill(0).map(() => new Array(2).fill(0));
+
+    dp[0][0] = 0;
+    dp[0][1] = -prices[0];
+
+    for (let i = 1; i < n; i++) {
+        dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1] + prices[i] - fee);
+        dp[i][1] = Math.max(dp[i - 1][1], dp[i - 1][0] - prices[i]);
+    }
+
+    return dp[n - 1][0];
+}
+
+console.log('========= Q47 =========');
+const prices = [1, 3, 2, 8, 4, 10];
+const fee = 2;
+const maxProfitWithFee = maxProfit(prices, fee);
+console.log(`Maximum profit: ${maxProfitWithFee}`);
+console.log('\n');
+
+/*
+ * Q48.
+ * Let A be an N by M matrix in which every row and every column is sorted.
+ * Given i1, j1, i2, and j2, compute the number of elements of M smaller than
+ * M[i1, j1] and larger than M[i2, j2].
+ * For example, given the following matrix:
+ * [[1, 3, 7, 10, 15, 20],
+ * [2, 6, 9, 14, 22, 25],
+ * [3, 8, 10, 15, 25, 30],
+ * [10, 11, 12, 23, 30, 35],
+ * [20, 25, 30, 35, 40, 45]]
+ * And i1 = 1, j1 = 1, i2 = 3, j2 = 3, return 15 as there are 15 numbers in the
+ * matrix smaller than 6 or greater than 23.
+ */
+function countElements(matrix, i1, j1, i2, j2) {
+    let count = 0;
+    const num1 = matrix[i1][j1];
+    const num2 = matrix[i2][j2];
+
+    for (const row of matrix) {
+        for (const num of row) {
+            if (num < num1 || num > num2) {
+                count++;
+            }
+        }
+    }
+
+    return count;
+}
+
+console.log('========= Q48 =========');
+const matrix = [
+    [1, 3, 7, 10, 15, 20],
+    [2, 6, 9, 14, 22, 25],
+    [3, 8, 10, 15, 25, 30],
+    [10, 11, 12, 23, 30, 35],
+    [20, 25, 30, 35, 40, 45],
+];
+const i1 = 1;
+const j1 = 1;
+const i2 = 3;
+const j2 = 3;
+const elementCount = countElements(matrix, i1, j1, i2, j2);
+console.log(`Number of elements: ${elementCount}`);
+console.log('\n');
+
+/*
+ * Q49.
+ * Given a string of parentheses, find the balanced string that can be produced
+ * from it using the minimum number of insertions and deletions. If there are
+ * multiple solutions, return any of them.
+ * For example, given "(()", you could return "(())". Given "))()(", you could
+ * return "()()()()".
+ */
+function balanceParentheses(s) {
+    let balanceString = '';
+    let stack = [];
+
+    for (const c of s) {
+        if (c === '(') {
+            stack.push(c);
+            balanceString += c;
+        } else if (c === ')') {
+            if (stack.length > 0 && stack[stack.length - 1] === '(') {
+                stack.pop();
+                balanceString += c;
+            } else {
+                balanceString += '(' + c;
+            }
+        } else {
+            balanceString += c;
+        }
+    }
+
+    while (stack.length > 0) {
+        balanceString += ')';
+        stack.pop();
+    }
+
+    return balanceString;
+}
+
+console.log('========= Q49 =========');
+const parentheses1 = '(()';
+const parentheses2 = '))()(';
+
+console.log(
+    `Balanced string for ${parentheses1}: ${balanceParentheses(parentheses1)}`
+);
+console.log(
+    `Balanced string for ${parentheses2}: ${balanceParentheses(parentheses2)}`
+);
+console.log('\n');
+
+/*
+ * Q50.
+ * Let X be a set of n intervals on the real line. We say that a set of points P
+ * "stabs" X if every interval in X contains at least one point in P. Compute
+ * the smallest set of points that stabs X.
+ * For example, given the intervals [(1, 4), (4, 5), (7, 9), (9, 12)], you
+ * should return [4, 9].
+ */
+class Interval {
+    constructor(start, end) {
+        this.start = start;
+        this.end = end;
+    }
+}
+
+function findStabPoints(intervals) {
+    intervals.sort((a, b) => a.end - b.end);
+    let points = [];
+    let currentPoint = intervals[0].end;
+
+    for (const interval of intervals) {
+        if (interval.start > currentPoint) {
+            points.push(currentPoint);
+            currentPoint = interval.end;
+        }
+    }
+
+    points.push(currentPoint)
+    return points;
+}
+
+console.log('========= Q50 =========');
+const intervals = [
+    new Interval(1, 4),
+    new Interval(4, 5),
+    new Interval(7, 9),
+    new Interval(9, 12),
+];
+const stabPoints = findStabPoints(intervals);
+console.log(`Smallest set of stab points: ${stabPoints}`);
+console.log('\n');
