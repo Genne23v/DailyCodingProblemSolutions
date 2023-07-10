@@ -2258,7 +2258,7 @@ class GraphNode {
         this.edges = [];
     }
 }
-class Edge {
+class TreeNodeEdge {
     constructor(destination, weight) {
         this.destination = destination;
         this.weight = weight;
@@ -2310,15 +2310,15 @@ const f = new GraphNode('f');
 const g = new GraphNode('g');
 const h = new GraphNode('h');
 
-a.edges.push(new Edge(b, 3));
-a.edges.push(new Edge(c, 5));
-a.edges.push(new Edge(d, 8));
+a.edges.push(new TreeNodeEdge(b, 3));
+a.edges.push(new TreeNodeEdge(c, 5));
+a.edges.push(new TreeNodeEdge(d, 8));
 
-d.edges.push(new Edge(e, 2));
-d.edges.push(new Edge(f, 4));
+d.edges.push(new TreeNodeEdge(e, 2));
+d.edges.push(new TreeNodeEdge(f, 4));
 
-e.edges.push(new Edge(g, 1));
-e.edges.push(new Edge(h, 1));
+e.edges.push(new TreeNodeEdge(g, 1));
+e.edges.push(new TreeNodeEdge(h, 1));
 
 console.log(`Longest Path Length: ${calculateLongestPath(a)}`);
 console.log('\n');
@@ -2804,7 +2804,7 @@ function findStabPoints(intervals) {
         }
     }
 
-    points.push(currentPoint)
+    points.push(currentPoint);
     return points;
 }
 
@@ -2818,3 +2818,711 @@ const intervals = [
 const stabPoints = findStabPoints(intervals);
 console.log(`Smallest set of stab points: ${stabPoints}`);
 console.log('\n');
+
+/*
+ * Q51.
+ * Write a program that computes the length of the longest common subsequence of
+ * three given strings. For example, given "epidemiologist", "refrigeration",
+ * and "supercalifragilisticexpialodocious", it should return 5, since the
+ * longest common subsequence is "eieio".
+ */
+function longestCommonSubsequenceLength(text1, text2, text3) {
+    const m = text1.length;
+    const n = text2.length;
+    const p = text3.length;
+
+    let dp = new Array(m + 1)
+        .fill(0)
+        .map(() =>
+            new Array(n + 1).fill(0).map(() => new Array(p + 1).fill(0))
+        );
+
+    for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+            for (let k = 1; k <= p; k++) {
+                if (
+                    text1[i - 1] === text2[j - 1] &&
+                    text1[i - 1] === text3[k - 1]
+                ) {
+                    dp[i][j][k] = dp[i - 1][j - 1][k - 1] + 1;
+                } else {
+                    dp[i][j][k] = Math.max(
+                        dp[i - 1][j][k],
+                        dp[i][j - 1][k],
+                        dp[i][j][k - 1]
+                    );
+                }
+            }
+        }
+    }
+    return dp[m][n][p];
+}
+
+console.log('========= Q51 =========');
+const text1 = 'epidemiologist';
+const text2 = 'refrigeration';
+const text3 = 'supercalifragilisticexpialodocious';
+const commonSubstringLength = longestCommonSubsequenceLength(
+    text1,
+    text2,
+    text3
+);
+console.log(`Length of longest common subsequence: ${commonSubstringLength}`);
+console.log('\n');
+
+/*
+ * Q52.
+ * We say a number is sparse if there are no adjacent ones in its binary
+ * representation. For example, 21 (10101) is sparse, but 22 (10110) is not. For
+ * a given input N, find the smallest sparse number greater than or equal to N.
+ * Do this in faster than O(N log N) time.
+ */
+function findSparseNumber(N) {
+    const binary = N.toString(2);
+    const binaryArray = binary.split('');
+
+    for (let i = 1; i < binaryArray.length; i++) {
+        if (binaryArray[i] === '1' && binaryArray[i - 1] === '1') {
+            for (let j = i; j < binaryArray.length; j = j + 2) {
+                binaryArray[j] = '0';
+                if (j + 1 < binaryArray.length) {
+                    binaryArray[j + 1] = '1';
+                }
+            }
+            return parseInt(binaryArray.join(''), 2);
+        }
+    }
+    return N;
+}
+
+console.log('========= Q52 =========');
+const nonSparseNum = 22;
+const sparseNum = findSparseNumber(nonSparseNum);
+console.log(
+    `Smallest sparse number greater than or equal to ${nonSparseNum}: ${sparseNum}`
+);
+console.log('\n');
+
+/*
+ * Q53.
+ * Connect 4 is a game where opponents take turns dropping red or black discs
+ * into a 7 x 6 vertically suspended grid. The game ends either when one player
+ * creates a line of four consecutive discs of their color (horizontally,
+ * vertically, or diagonally), or when there are no more spots left in the grid.
+ * Design and implement Connect 4.
+ */
+const readline = require('readline');
+class Connect4 {
+    #_ROWS = 6;
+    #_COLUMNS = 7;
+    #_EMPTY = '-';
+    #_RED = 'R';
+    #_BLACK = 'B';
+    #_board = [];
+    #_currentPlayer;
+
+    initializeGame() {
+        this.#_board = new Array(this.#_ROWS)
+            .fill(this.#_EMPTY)
+            .map(() => new Array(this.#_COLUMNS).fill(this.#_EMPTY));
+        this.#_currentPlayer = this.#_RED;
+    }
+
+    async playGame() {
+        let gameEnded = false;
+
+        while (!gameEnded) {
+            this.#_displayBoard();
+            console.log(`Player ${this.#_currentPlayer}'s turn`);
+            const column = parseInt(await this.#_getPlayerMove());
+
+            if (
+                this.#_columnIsValid(column) &&
+                this.#_columnIsNotFull(column)
+            ) {
+                const row = this.#_dropDisc(column);
+                if (this.#_checkWin(row, column)) {
+                    this.#_displayBoard();
+                    console.log(`Player ${this.#_currentPlayer} wins!`);
+                    gameEnded = true;
+                } else if (this.#_boardIsFull()) {
+                    this.#_displayBoard();
+                    console.log("It's a draw!");
+                    gameEnded = true;
+                } else {
+                    this.#_switchPlayers();
+                }
+            } else {
+                console.log('Invalid move. Please try again.');
+            }
+        }
+    }
+
+    #_displayBoard() {
+        let printBoard = '';
+        for (let i = this.#_ROWS - 1; i >= 0; i--) {
+            for (let j = 0; j < this.#_COLUMNS; j++) {
+                printBoard += this.#_board[i][j] + ' ';
+            }
+            printBoard += '\n';
+        }
+        console.log(printBoard + '\n');
+    }
+
+    async #_getPlayerMove() {
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout,
+        });
+
+        return new Promise((resolve) => {
+            rl.question('Enter a column (0-6): ', (userInput) => {
+                rl.close();
+                resolve(userInput);
+            });
+        });
+    }
+
+    #_columnIsValid(column) {
+        return column >= 0 && column < this.#_COLUMNS;
+    }
+
+    #_columnIsNotFull(column) {
+        return this.#_board[this.#_ROWS - 1][column] === this.#_EMPTY;
+    }
+
+    #_dropDisc(column) {
+        let row = 0;
+        while (row < this.#_ROWS) {
+            if (this.#_board[row][column] === this.#_EMPTY) {
+                break;
+            }
+            row++;
+        }
+        this.#_board[row][column] = this.#_currentPlayer;
+        return row;
+    }
+
+    #_checkWin(row, column) {
+        return (
+            this.#_checkHorizontal(row) ||
+            this.#_checkVertical(column) ||
+            this.#_checkDiagonal(row, column)
+        );
+    }
+
+    #_checkHorizontal(row) {
+        let count = 0;
+        for (let i = 0; i < this.#_COLUMNS; i++) {
+            if (this.#_board[row][i] === this.#_currentPlayer) {
+                count++;
+                if (count === 4) {
+                    return true;
+                }
+            } else {
+                count = 0;
+            }
+        }
+        return false;
+    }
+
+    #_checkVertical(column) {
+        let count = 0;
+        for (let i = 0; i < this.#_ROWS; i++) {
+            if (this.#_board[i][column] === this.#_currentPlayer) {
+                count++;
+                if (count === 4) {
+                    return true;
+                }
+            } else {
+                count = 0;
+            }
+        }
+        return false;
+    }
+
+    #_checkDiagonal(row, column) {
+        let count = 0;
+        let i = row;
+        let j = column;
+        while (
+            i >= 0 &&
+            j < this.#_COLUMNS &&
+            this.#_board[i][j] === this.#_currentPlayer
+        ) {
+            count++;
+            if (count === 4) {
+                return true;
+            }
+            i--;
+            j++;
+        }
+
+        i = row;
+        j = column;
+        while (
+            i >= 0 &&
+            j >= 0 &&
+            this.#_board[i][j] === this.#_currentPlayer
+        ) {
+            count++;
+            if (count === 4) {
+                return true;
+            }
+            i--;
+            j--;
+        }
+
+        return false;
+    }
+
+    #_boardIsFull() {
+        for (let i = 0; i < this.#_ROWS; i++) {
+            for (let j = 0; j < this.#_COLUMNS; j++) {
+                if (this.#_board[i][j] === this.#_EMPTY) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    #_switchPlayers() {
+        this.#_currentPlayer =
+            this.#_currentPlayer === this.#_RED ? this.#_BLACK : this.#_RED;
+    }
+}
+
+console.log('========= Q53 =========');
+const connect4 = new Connect4();
+connect4.initializeGame();
+connect4.playGame();
+console.log('\n');
+
+/*
+ * Q54.
+ * Typically, an implementation of in-order traversal of a binary tree has O(h)
+ * space complexity, where h is the height of the tree. Write a program to
+ * compute the in-order traversal of a binary tree using O(1) space.
+ */
+function morrisTraversal(root) {
+    let current = root;
+    while (current) {
+        if (!current.left) {
+            console.log(current.val);
+            current = current.right;
+        } else {
+            // Find the rightmost node in the left subtree
+            let predecessor = current.left;
+            while (predecessor.right && predecessor.right !== current) {
+                predecessor = predecessor.right;
+            }
+
+            if (!predecessor.right) {
+                // Make current the right child of its inorder predecessor
+                predecessor.right = current;
+                current = current.left;
+            } else {
+                predecessor.right = null; // Restore the original tree structure
+                console.log(current.val);
+                current = current.right;
+            }
+        }
+    }
+}
+
+console.log('========= Q54 =========');
+const rootForInorderTraversal = new TreeNode(1);
+rootForInorderTraversal.left = new TreeNode(2);
+rootForInorderTraversal.right = new TreeNode(3);
+rootForInorderTraversal.left.left = new TreeNode(4);
+rootForInorderTraversal.left.right = new TreeNode(5);
+
+morrisTraversal(rootForInorderTraversal);
+console.log('\n');
+
+/*
+ * Q55.
+ * You come across a dictionary of sorted words in a language you've never seen
+ * before. Write a program that returns the correct order of letters in this
+ * language.
+ * For example, given ['xww', 'wxyz', 'wxyw', 'ywx', 'ywz'], you should return
+ * ['x', 'z', 'w', 'y'].
+ */
+function getLanguageOrder(words) {
+    let graph = new Map();
+
+    for (const word of words) {
+        for (const c of word) {
+            graph.set(c, new Set());
+        }
+    }
+
+    for (let i = 1; i < words.length; i++) {
+        const prevWord = words[i - 1];
+        const currWord = words[i];
+        const minLength = Math.min(prevWord.length, currWord.length);
+
+        for (let j = 0; j < minLength; j++) {
+            const prevChar = prevWord[j];
+            const currChar = currWord[j];
+
+            if (prevChar !== currChar) {
+                graph.get(prevChar).add(currChar);
+            }
+        }
+    }
+
+    let order = [];
+    let visited = new Set();
+
+    for (const c of graph.keys()) {
+        if (!visited.has(c)) {
+            dfsLetters(graph, c, visited, order);
+        }
+    }
+
+    return order;
+}
+
+function dfsLetters(graph, c, visited, order) {
+    visited.add(c);
+
+    for (const neighbor of graph.get(c)) {
+        if (!visited.has(neighbor)) {
+            dfsLetters(graph, neighbor, visited, order);
+        }
+    }
+
+    order.unshift(c);
+}
+
+console.log('========= Q55 =========');
+const wordsFromNewLang = ['xww', 'wxyz', 'wxyw', 'ywx', 'ywz'];
+const order = getLanguageOrder(wordsFromNewLang);
+console.log('Correct order of letters in the language:');
+for (const ch of order) {
+    console.log(ch);
+}
+console.log('\n');
+
+/*
+ * Q56.
+ * Recall that the minimum spanning tree is the subset of edges of a tree that
+ * connect all its vertices with the smallest possible total edge weight. Given
+ * an undirected graph with weighted edges, compute the maximum weight spanning
+ * tree.
+ */
+class Edge {
+    constructor(src, dest, weight) {
+        this.src = src;
+        this.dest = dest;
+        this.weight = weight;
+    }
+}
+
+class UnionFind {
+    constructor(size) {
+        this.parent = new Array(size);
+        this.rank = new Array(size);
+        for (let i = 0; i < size; i++) {
+            this.parent[i] = i;
+            this.rank[i] = 0;
+        }
+    }
+
+    find(x) {
+        if (this.parent[x] !== x) {
+            this.parent[x] = this.find(this.parent[x]);
+        }
+        return this.parent[x];
+    }
+
+    union(x, y) {
+        const rootX = this.find(x);
+        const rootY = this.find(y);
+
+        if (this.rank[rootX] < this.rank[rootY]) {
+            this.parent[rootX] = rootY;
+        } else if (this.rank[rootX] > this.rank[rootY]) {
+            this.parent[rootY] = rootX;
+        } else {
+            this.parent[rootY] = rootX;
+            this.rank[rootX]++;
+        }
+    }
+}
+
+function findMaximumSpanningTree(edges, numVertices) {
+    edges.sort((a, b) => b.weight - a.weight);
+
+    let uf = new UnionFind(numVertices);
+    let mst = [];
+
+    for (const edge of edges) {
+        const srcParent = uf.find(edge.src);
+        const destParent = uf.find(edge.dest);
+
+        if (srcParent !== destParent) {
+            uf.union(srcParent, destParent);
+            mst.push(edge);
+        }
+    }
+    return mst;
+}
+
+console.log('========= Q56 =========');
+const edges = [];
+edges.push(new Edge(0, 1, 10));
+edges.push(new Edge(0, 2, 6));
+edges.push(new Edge(0, 3, 5));
+edges.push(new Edge(1, 3, 15));
+edges.push(new Edge(2, 3, 4));
+
+const numVertices = 4;
+const mst = findMaximumSpanningTree(edges, numVertices);
+
+console.log('Edges of the maximum weight spanning tree:');
+for (const edge of mst) {
+    console.log(`${edge.src} -- ${edge.dest} : ${edge.weight}`);
+}
+console.log('\n');
+
+/*
+ * Q57.
+ * Given an array of numbers of length N, find both the minimum and maximum
+ * using less than 2 * (N - 2) comparisons.
+ */
+class MinAndMax {
+    constructor(min, max) {
+        this.min = min;
+        this.max = max;
+    }
+}
+
+function findMinMax(arr) {
+    if (arr.length === 0) {
+        throw new Error('Array must not be empty');
+    }
+
+    let min, max;
+
+    if (arr[0] < arr[1]) {
+        min = arr[0];
+        max = arr[1];
+    } else {
+        min = arr[1];
+        max = arr[0];
+    }
+
+    for (let i = 2; i < arr.length - 1; i += 2) {
+        const num1 = arr[i];
+        const num2 = arr[i + 1];
+
+        if (num1 < num2) {
+            min = Math.min(min, num1);
+            max = Math.max(max, num2);
+        } else {
+            min = Math.min(min, num2);
+            max = Math.max(max, num1);
+        }
+    }
+
+    if (arr.length % 2 === 1) {
+        const lastNum = arr[arr.length - 1];
+        min = Math.min(min, lastNum);
+        max = Math.max(max, lastNum);
+    }
+
+    return new MinAndMax(min, max);
+}
+
+console.log('========= Q57 =========');
+const arr = [5, 7, 1, 3, 9, 2];
+const minAndMax = findMinMax(arr);
+console.log(`Minimum: ${minAndMax.min}`);
+console.log(`Maximum: ${minAndMax.max}`);
+console.log('\n');
+
+/*
+ * Q58.
+ * https://en.wikipedia.org/wiki/Blackjack
+ * Blackjack is a two player card game whose rules are as follows:
+ * The player and then the dealer are each given two cards.
+ * The player can then "hit", or ask for arbitrarily many additional cards, so
+ * long as their total does not exceed 21.
+ * The dealer must then hit if their total is 16 or lower, otherwise pass.
+ * Finally, the two compare totals, and the one with the greatest sum not
+ * exceeding 21 is the winner.
+ * For this problem, cards values are counted as follows: each card between 2
+ * and 10 counts as their face value, face cards count as 10, and aces count as
+ * 1.
+ * Given perfect knowledge of the sequence of cards in the deck, implement a
+ * blackjack solver that maximizes the player's score (that is, wins minus
+ * losses).
+ */
+function solveBlackjack(deck) {
+    let wins = 0;
+    let losses = 0;
+
+    const iterations = 10000;
+    for (let i = 0; i < iterations; i++) {
+        const playerScore = playBlackjack(deck);
+        const dealerScore = playBlackjack(deck);
+
+        if (
+            playerScore <= 21 &&
+            (playerScore > dealerScore || dealerScore > 21)
+        ) {
+            wins++;
+        } else if (
+            playerScore > 21 ||
+            (playerScore < dealerScore && dealerScore <= 21)
+        ) {
+            losses++;
+        } else if (playerScore === dealerScore) {
+            continue;
+        }
+    }
+    return wins - losses;
+}
+
+function playBlackjack(deck) {
+    for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    let score = 0;
+    let numAces = 0;
+
+    for (const card of deck) {
+        if (card >= 2 && card <= 10) {
+            score += card;
+        } else if (card >= 11 && card <= 13) {
+            score += 10;
+        } else if (card == 1) {
+            score += 1;
+            numAces++;
+        }
+
+        while (numAces > 0 && score <= 11) {
+            score += 10;
+            numAces--;
+        }
+
+        if (score >= 13 || score >= 21) {
+            break;
+        }
+    }
+
+    return score;
+}
+
+console.log('========= Q58 =========');
+let deck = [];
+for (let i = 1; i <= 13; i++) {
+    deck.push(i);
+}
+
+const score = solveBlackjack(deck);
+console.log(`Score: ${score}`);
+console.log('\n');
+
+/*
+ * Q59.
+ * There are N couples sitting in a row of length 2 * N. They are currently
+ * ordered randomly, but would like to rearrange themselves so that each
+ * couple's partners can sit side by side.
+ * What is the minimum number of swaps necessary for this to happen?
+ */
+function minSwaps(row) {
+    const n = row.length;
+    let swaps = 0;
+
+    for (let i = 0; i < n; i++) {
+        const partner = row[i] ^ 1;
+        if (partner % 2 == 1 && row[i + 1] !== partner) {
+            const j = findPartnerIndex(row, i + 1, partner);
+            swap(row, i + 1, j);
+            swaps++;
+        } else if (partner % 2 == 0 && row[i - 1] !== partner) {
+            const j = findPartnerIndex(row, i + 1, partner);
+            swap(row, i - 1, j);
+            swaps++;
+        }
+    }
+    return swaps;
+}
+
+function findPartnerIndex(row, start, partner) {
+    for (let i = start; i < row.length; i++) {
+        if (row[i] === partner) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+console.log('========= Q59 =========');
+const row = [0, 3, 2, 1, 4, 7, 6, 5];
+console.log(`Swaps: ${minSwaps(row)}`);
+console.log('\n');
+
+/*
+ * Q60.
+ * You are given an array of length 24, where each element represents the number
+ * of new subscribers during the corresponding hour. Implement a data structure
+ * that efficiently supports the following:
+ * update(hour: int, value: int): Increment the element at index hour by value.
+ * query(start: int, end: int): Retrieve the number of subscribers that have
+ * signed up between start and end (inclusive).
+ * You can assume that all values get cleared at the end of the day, and that
+ * you will not be asked for start and end values that wrap around midnight.
+ */
+class SubscriberTracker {
+    #_prefixSum;
+    constructor(subscribers) {
+        this.#_prefixSum = new Array(subscribers.length + 1).fill(0);
+        this.buildPrefixSum(subscribers);
+    }
+
+    buildPrefixSum(subscribers) {
+        this.#_prefixSum[0] = 0;
+        for (let i = 1; i <= subscribers.length; i++) {
+            this.#_prefixSum[i] = this.#_prefixSum[i - 1] + subscribers[i - 1];
+        }
+    }
+
+    update(hour, value) {
+        if (hour >= 1 && hour <= this.#_prefixSum.length) {
+            while (hour < this.#_prefixSum.length) {
+                this.#_prefixSum[hour] += value;
+                hour++;
+            }
+        }
+    }
+
+    query(start, end) {
+        if (start > 0) {
+            return this.#_prefixSum[end] - this.#_prefixSum[start - 1];
+        } else {
+            return this.#_prefixSum[end];
+        }
+    }
+}
+
+console.log('========= Q60 =========');
+const subscribers = [
+    5, 3, 7, 2, 8, 4, 10, 6, 15, 9, 11, 5, 14, 7, 13, 8, 12, 6, 9, 10, 7, 11, 5,
+    4,
+];
+const tracker = new SubscriberTracker(subscribers);
+tracker.update(5, 10);
+tracker.update(10, 5);
+tracker.update(15, 8);
+
+console.log(tracker.query(1, 24)); // Output: 214
+console.log(tracker.query(5, 15)); // Output: 125
+console.log(tracker.query(10, 18)); // Output: 98
+console.log('\n');
+

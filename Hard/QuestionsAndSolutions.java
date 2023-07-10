@@ -1,21 +1,22 @@
 package Hard;
 
+import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.Random;
-import java.util.Set;
 import java.util.Stack;
+import java.util.Deque;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Collections;
+import java.util.Random;
+import java.util.Scanner;
+import java.util.Comparator;
 
 class XORNode {
     private int data;
@@ -1393,7 +1394,7 @@ public class QuestionsAndSolutions {
     // S40.
     private static class GraphNode {
         char id;
-        List<Edge> edges;
+        List<TreeNodeEdge> edges;
 
         public GraphNode(char id) {
             this.id = id;
@@ -1401,11 +1402,11 @@ public class QuestionsAndSolutions {
         }
     }
 
-    private static class Edge {
+    private static class TreeNodeEdge {
         GraphNode destination;
         int weight;
 
-        public Edge(GraphNode destination, int weight) {
+        public TreeNodeEdge(GraphNode destination, int weight) {
             this.destination = destination;
             this.weight = weight;
         }
@@ -1431,7 +1432,7 @@ public class QuestionsAndSolutions {
         int maxPath1 = 0;
         int maxPath2 = 0;
 
-        for (Edge edge : node.edges) {
+        for (TreeNodeEdge edge : node.edges) {
             if (edge.destination != parent) {
                 int subPath = calculatePath(edge.destination, node) + edge.weight;
                 if (subPath > maxPath1) {
@@ -1721,6 +1722,518 @@ public class QuestionsAndSolutions {
 
         points.add(currentPoint);
         return points;
+    }
+
+    // S51.
+    public static int longestCommonSubsequenceLength(String text1, String text2, String text3) {
+        int m = text1.length();
+        int n = text2.length();
+        int p = text3.length();
+
+        int[][][] dp = new int[m + 1][n + 1][p + 1];
+
+        for (int i = 1; i <= m; i++) {
+            for (int j = 1; j <= n; j++) {
+                for (int k = 1; k <= p; k++) {
+                    if (text1.charAt(i - 1) == text2.charAt(j - 1) && text1.charAt(i - 1) == text3.charAt(k - 1)) {
+                        dp[i][j][k] = dp[i - 1][j - 1][k - 1] + 1;
+                    } else {
+                        dp[i][j][k] = Math.max(Math.max(dp[i - 1][j][k], dp[i][j - 1][k]), dp[i][j][k - 1]);
+                    }
+                }
+            }
+        }
+
+        return dp[m][n][p];
+    }
+
+    // S52.
+    public static int findSparseNumber(int N) {
+        String binary = Integer.toBinaryString(N);
+        char[] binaryArray = binary.toCharArray();
+
+        for (int i = 1; i < binaryArray.length; i++) {
+            if (binaryArray[i] == '1' && binaryArray[i - 1] == '1') {
+                for (int j = i; j < binaryArray.length; j = j + 2) {
+                    binaryArray[j] = '0';
+                    if (j + 1 < binaryArray.length) {
+                        binaryArray[j + 1] = '1';
+                    }
+                }
+                return Integer.parseInt(String.valueOf(binaryArray), 2);
+            }
+        }
+        return N;
+    }
+
+    // S53.
+    static class Connect4 {
+        private static final int ROWS = 6;
+        private static final int COLUMNS = 7;
+
+        private static final char EMPTY = '-';
+        private static final char RED = 'R';
+        private static final char BLACK = 'B';
+
+        private static char[][] board;
+        private static char currentPlayer;
+
+        private static void initializeGame() {
+            board = new char[ROWS][COLUMNS];
+            for (char[] row : board) {
+                java.util.Arrays.fill(row, EMPTY);
+            }
+            currentPlayer = RED;
+        }
+
+        private static void playGame() {
+            boolean gameEnded = false;
+            Scanner scanner = new Scanner(System.in);
+
+            while (!gameEnded) {
+                displayBoard();
+                System.out.println("Player " + currentPlayer + "'s turn");
+                int column = getPlayerMove(scanner);
+
+                if (columnIsValid(column) && columnIsNotFull(column)) {
+                    int row = dropDisc(column);
+                    if (checkWin(row, column)) {
+                        displayBoard();
+                        System.out.println("Player " + currentPlayer + " wins!");
+                        gameEnded = true;
+                    } else if (boardIsFull()) {
+                        displayBoard();
+                        System.out.println("It's a draw!");
+                        gameEnded = true;
+                    } else {
+                        switchPlayer();
+                    }
+                } else {
+                    System.out.println("Invalid move. Please try again.");
+                }
+            }
+
+            scanner.close();
+        }
+
+        private static void displayBoard() {
+            for (int i = ROWS - 1; i >= 0; i--) {
+                for (int j = 0; j < COLUMNS; j++) {
+                    System.out.print(board[i][j] + " ");
+                }
+                System.out.println();
+            }
+            System.out.println();
+        }
+
+        private static int getPlayerMove(Scanner scanner) {
+            System.out.print("Enter a column (0-6): ");
+            return scanner.nextInt();
+        }
+
+        private static boolean columnIsValid(int column) {
+            return column >= 0 && column < COLUMNS;
+        }
+
+        private static boolean columnIsNotFull(int column) {
+            return board[ROWS - 1][column] == EMPTY;
+        }
+
+        private static int dropDisc(int column) {
+            int row = 0;
+            while (row < ROWS) {
+                if (board[row][column] == EMPTY) {
+                    break;
+                }
+                row++;
+            }
+            board[row][column] = currentPlayer;
+            return row;
+        }
+
+        private static boolean checkWin(int row, int column) {
+            return checkHorizontal(row) || checkVertical(column) || checkDiagonal(row, column);
+        }
+
+        private static boolean checkHorizontal(int row) {
+            int count = 0;
+            for (int i = 0; i < COLUMNS; i++) {
+                if (board[row][i] == currentPlayer) {
+                    count++;
+                    if (count == 4) {
+                        return true;
+                    }
+                } else {
+                    count = 0;
+                }
+            }
+            return false;
+        }
+
+        private static boolean checkVertical(int column) {
+            int count = 0;
+            for (int i = 0; i < ROWS; i++) {
+                if (board[i][column] == currentPlayer) {
+                    count++;
+                    if (count == 4) {
+                        return true;
+                    }
+                } else {
+                    count = 0;
+                }
+            }
+            return false;
+        }
+
+        private static boolean checkDiagonal(int row, int column) {
+            int count = 0;
+            int i = row;
+            int j = column;
+            while (i >= 0 && j < COLUMNS && board[i][j] == currentPlayer) {
+                count++;
+                if (count == 4) {
+                    return true;
+                }
+                i--;
+                j++;
+            }
+
+            i = row;
+            j = column;
+            while (i >= 0 && j >= 0 && board[i][j] == currentPlayer) {
+                count++;
+                if (count == 4) {
+                    return true;
+                }
+                i--;
+                j--;
+            }
+            return false;
+        }
+
+        private static boolean boardIsFull() {
+            for (int i = 0; i < ROWS; i++) {
+                for (int j = 0; j < COLUMNS; j++) {
+                    if (board[i][j] == EMPTY) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        private static void switchPlayer() {
+            currentPlayer = (currentPlayer == RED) ? BLACK : RED;
+        }
+    }
+
+    // S54.
+    public static void morrisTraversal(TreeNode root) {
+        TreeNode current = root;
+        while (current != null) {
+            if (current.left == null) {
+                System.out.print(current.val + " ");
+                current = current.right;
+            } else {
+                // Find the rightmost node in the left subtree
+                TreeNode predecessor = current.left;
+                while (predecessor.right != null && predecessor.right != current) {
+                    predecessor = predecessor.right;
+                }
+
+                if (predecessor.right == null) {
+                    // Make current the right child of its inorder predecessor
+                    predecessor.right = current;
+                    current = current.left;
+                } else {
+                    predecessor.right = null; // Restore the original tree structure
+                    System.out.print(current.val + " ");
+                    current = current.right;
+                }
+            }
+        }
+    }
+
+    // S55.
+    public static List<Character> getLanguageOrder(String[] words) {
+        Map<Character, Set<Character>> graph = new HashMap<>();
+
+        for (String word : words) {
+            for (char c : word.toCharArray()) {
+                graph.put(c, new HashSet<>());
+            }
+        }
+
+        for (int i = 1; i < words.length; i++) {
+            String prevWord = words[i - 1];
+            String currWord = words[i];
+            int minLength = Math.min(prevWord.length(), currWord.length());
+
+            for (int j = 0; j < minLength; j++) {
+                char prevChar = prevWord.charAt(j);
+                char currChar = currWord.charAt(j);
+
+                if (prevChar != currChar) {
+                    graph.get(prevChar).add(currChar);
+                    break;
+                }
+            }
+        }
+
+        // Perform topological sorting to get the order of letters
+        List<Character> order = new ArrayList<>();
+        Set<Character> visited = new HashSet<>();
+
+        for (char c : graph.keySet()) {
+            if (!visited.contains(c)) {
+                dfs(graph, c, visited, order);
+            }
+        }
+
+        return order;
+    }
+
+    private static void dfs(Map<Character, Set<Character>> graph, char c, Set<Character> visited,
+            List<Character> order) {
+        visited.add(c);
+
+        for (char neighbor : graph.get(c)) {
+            if (!visited.contains(neighbor)) {
+                dfs(graph, neighbor, visited, order);
+            }
+        }
+
+        order.add(0, c);
+    }
+
+    // S56.
+    static class Edge implements Comparable<Edge> {
+        int src, dest, weight;
+
+        public Edge(int src, int dest, int weight) {
+            this.src = src;
+            this.dest = dest;
+            this.weight = weight;
+        }
+
+        public int compareTo(Edge other) {
+            return other.weight - this.weight;
+        }
+    }
+
+    static class UnionFind {
+        int[] parent;
+        int[] rank;
+
+        public UnionFind(int size) {
+            parent = new int[size];
+            rank = new int[size];
+            for (int i = 0; i < size; i++) {
+                parent[i] = i;
+                rank[i] = 0;
+            }
+        }
+
+        public int find(int x) {
+            if (parent[x] != x) {
+                parent[x] = find(parent[x]);
+            }
+            return parent[x];
+        }
+
+        public void union(int x, int y) {
+            int rootX = find(x);
+            int rootY = find(y);
+
+            if (rank[rootX] < rank[rootY]) {
+                parent[rootX] = rootY;
+            } else if (rank[rootX] > rank[rootY]) {
+                parent[rootY] = rootX;
+            } else {
+                parent[rootY] = rootX;
+                rank[rootX]++;
+            }
+        }
+    }
+
+    public static List<Edge> findMaximumSpanningTree(List<Edge> edges, int numVertices) {
+        Collections.sort(edges);
+        UnionFind uf = new UnionFind(numVertices);
+        List<Edge> mst = new ArrayList<>();
+
+        for (Edge edge : edges) {
+            int srcParent = uf.find(edge.src);
+            int destParent = uf.find(edge.dest);
+
+            if (srcParent != destParent) {
+                uf.union(srcParent, destParent);
+                mst.add(edge);
+            }
+        }
+
+        return mst;
+    }
+
+    // S57.
+    static class MinAndMax {
+        int min;
+        int max;
+
+        public MinAndMax(int min, int max) {
+            this.min = min;
+            this.max = max;
+        }
+    }
+
+    public static MinAndMax findMinMax(int[] arr) {
+        if (arr.length == 0) {
+            throw new IllegalArgumentException("Array must not be empty.");
+        }
+
+        int min, max;
+
+        if (arr[0] < arr[1]) {
+            min = arr[0];
+            max = arr[1];
+        } else {
+            min = arr[1];
+            max = arr[0];
+        }
+
+        for (int i = 2; i < arr.length - 1; i += 2) {
+            int num1 = arr[i];
+            int num2 = arr[i + 1];
+
+            if (num1 < num2) {
+                min = Math.min(min, num1);
+                max = Math.max(max, num2);
+            } else {
+                min = Math.min(min, num2);
+                max = Math.max(max, num1);
+            }
+        }
+
+        if (arr.length % 2 != 0) {
+            int lastNum = arr[arr.length - 1];
+            min = Math.min(min, lastNum);
+            max = Math.max(max, lastNum);
+        }
+
+        return new MinAndMax(min, max);
+    }
+
+    // S58.
+    public static int solveBlackjack(List<Integer> deck) {
+        int wins = 0;
+        int losses = 0;
+
+        int iterations = 10000;
+        for (int i = 0; i < iterations; i++) {
+            int playerScore = playBlackjack(deck);
+            int dealerScore = playBlackjack(deck);
+
+            if (playerScore <= 21 && (playerScore > dealerScore || dealerScore > 21)) {
+                wins++;
+            } else if (playerScore > 21 || (playerScore < dealerScore && dealerScore <= 21)) {
+                losses++;
+            } else if (playerScore == dealerScore) {
+                continue;
+            }
+        }
+
+        return wins - losses;
+    }
+
+    private static int playBlackjack(List<Integer> deck) {
+        Collections.shuffle(deck);
+        int score = 0;
+        int numAces = 0;
+
+        for (int card : deck) {
+            if (card >= 2 && card <= 10) {
+                score += card;
+            } else if (card >= 11 && card <= 13) {
+                score += 10;
+            } else if (card == 1) {
+                score += 1;
+                numAces++;
+            }
+
+            while (numAces > 0 && score <= 11) {
+                score += 10;
+                numAces--;
+            }
+
+            if (score >= 13 || score >= 21) {
+                break;
+            }
+        }
+
+        return score;
+    }
+
+    // S59.
+    public static int minSwaps(int[] row) {
+        int n = row.length;
+        int swaps = 0;
+
+        for (int i = 0; i < n; i++) {
+            int partner = row[i] ^ 1;
+            if (partner % 2 == 1 && row[i + 1] != partner) {
+                int j = findPartnerIndex(row, i + 1, partner);
+                swap(row, i + 1, j);
+                swaps++;
+            } else if (partner % 2 == 0 && row[i - 1] != partner) {
+                int j = findPartnerIndex(row, i + 1, partner);
+                swap(row, i - 1, j);
+                swaps++;
+            }
+        }
+
+        return swaps;
+    }
+
+    private static int findPartnerIndex(int[] row, int start, int partner) {
+        for (int i = start; i < row.length; i++) {
+            if (row[i] == partner) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    // S60.
+    static class SubscriberTracker {
+        private int[] prefixSum;
+
+        public SubscriberTracker(int[] subscribers) {
+            this.prefixSum = new int[subscribers.length + 1];
+            buildPrefixSum(subscribers);
+        }
+
+        private void buildPrefixSum(int[] subscribers) {
+            prefixSum[0] = 0;
+            for (int i = 1; i <= subscribers.length; i++) {
+                prefixSum[i] = prefixSum[i - 1] + subscribers[i - 1];
+            }
+        }
+
+        public void update(int hour, int value) {
+            if (hour >= 1 && hour <= prefixSum.length) {
+                while (hour < prefixSum.length) {
+                    prefixSum[hour] += value;
+                    hour++;
+                }
+            }
+        }
+
+        public int query(int start, int end) {
+            if (start > 0) {
+                return prefixSum[end] - prefixSum[start - 1];
+            } else {
+                return prefixSum[end];
+            }
+        }
     }
 
     public static void main(String[] args) {
@@ -2602,15 +3115,15 @@ public class QuestionsAndSolutions {
         GraphNode g = new GraphNode('g');
         GraphNode h = new GraphNode('h');
 
-        a.edges.add(new Edge(b, 3));
-        a.edges.add(new Edge(c, 5));
-        a.edges.add(new Edge(d, 8));
+        a.edges.add(new TreeNodeEdge(b, 3));
+        a.edges.add(new TreeNodeEdge(c, 5));
+        a.edges.add(new TreeNodeEdge(d, 8));
 
-        d.edges.add(new Edge(e, 2));
-        d.edges.add(new Edge(f, 4));
+        d.edges.add(new TreeNodeEdge(e, 2));
+        d.edges.add(new TreeNodeEdge(f, 4));
 
-        e.edges.add(new Edge(g, 1));
-        e.edges.add(new Edge(h, 1));
+        e.edges.add(new TreeNodeEdge(g, 1));
+        e.edges.add(new TreeNodeEdge(h, 1));
 
         int longestPath = calculateLongestPath(a);
         System.out.println("Longest path length: " + longestPath); // Output: 17
@@ -2823,5 +3336,174 @@ public class QuestionsAndSolutions {
         List<Integer> stabPoints = findStabPoints(intervals);
         System.out.println("Smallest set of stab points: " + stabPoints);
 
+        /*
+         * Q51.
+         * Write a program that computes the length of the longest common subsequence of
+         * three given strings. For example, given "epidemiologist", "refrigeration",
+         * and "supercalifragilisticexpialodocious", it should return 5, since the
+         * longest common subsequence is "eieio".
+         */
+        System.out.println("========= Q51 ==========");
+        String text1 = "epidemiologist";
+        String text2 = "refrigeration";
+        String text3 = "supercalifragilisticexpialodocious";
+
+        int commonSubstringLength = longestCommonSubsequenceLength(text1, text2, text3);
+        System.out.println("Length of the longest common subsequence: " + commonSubstringLength);
+
+        /*
+         * Q52.
+         * We say a number is sparse if there are no adjacent ones in its binary
+         * representation. For example, 21 (10101) is sparse, but 22 (10110) is not. For
+         * a given input N, find the smallest sparse number greater than or equal to N.
+         * Do this in faster than O(N log N) time.
+         */
+        System.out.println("========= Q52 ==========");
+        int nonSparseNum = 22;
+        int sparseNumber = findSparseNumber(nonSparseNum);
+        System.out.println("Smallest sparse number greater than or equal to " + nonSparseNum + ": " + sparseNumber);
+
+        /*
+         * Q53.
+         * Connect 4 is a game where opponents take turns dropping red or black discs
+         * into a 7 x 6 vertically suspended grid. The game ends either when one player
+         * creates a line of four consecutive discs of their color (horizontally,
+         * vertically, or diagonally), or when there are no more spots left in the grid.
+         * Design and implement Connect 4.
+         */
+        System.out.println("========= Q53 ==========");
+        Connect4.initializeGame();
+        Connect4.playGame();
+
+        /*
+         * Q54.
+         * Typically, an implementation of in-order traversal of a binary tree has O(h)
+         * space complexity, where h is the height of the tree. Write a program to
+         * compute the in-order traversal of a binary tree using O(1) space.
+         */
+        System.out.println("========= Q54 ==========");
+        TreeNode rootForInorderTraversal = new TreeNode(1);
+        rootForInorderTraversal.left = new TreeNode(2);
+        rootForInorderTraversal.right = new TreeNode(3);
+        rootForInorderTraversal.left.left = new TreeNode(4);
+        rootForInorderTraversal.left.right = new TreeNode(5);
+
+        morrisTraversal(rootForInorderTraversal);
+        System.out.println();
+
+        /*
+         * Q55.
+         * You come across a dictionary of sorted words in a language you've never seen
+         * before. Write a program that returns the correct order of letters in this
+         * language.
+         * For example, given ['xww', 'wxyz', 'wxyw', 'ywx', 'ywz'], you should return
+         * ['x', 'z', 'w', 'y'].
+         */
+        System.out.println("========= Q55 ==========");
+        String[] wordsFromNewLang = { "xww", "wxyz", "wxyw", "ywx", "ywz" };
+        List<Character> order = getLanguageOrder(wordsFromNewLang);
+
+        System.out.println("Correct order of letters in the language:");
+        for (char ch : order) {
+            System.out.print(ch + " ");
+        }
+        System.out.println();
+
+        /*
+         * Q56.
+         * Recall that the minimum spanning tree is the subset of edges of a tree that
+         * connect all its vertices with the smallest possible total edge weight. Given
+         * an undirected graph with weighted edges, compute the maximum weight spanning
+         * tree.
+         */
+        System.out.println("========= Q56 ==========");
+        List<Edge> edges = new ArrayList<>();
+        edges.add(new Edge(0, 1, 10));
+        edges.add(new Edge(0, 2, 6));
+        edges.add(new Edge(0, 3, 5));
+        edges.add(new Edge(1, 3, 15));
+        edges.add(new Edge(2, 3, 4));
+
+        int numVertices = 4;
+
+        List<Edge> mst = findMaximumSpanningTree(edges, numVertices);
+
+        System.out.println("Edges of the maximum weight spanning tree:");
+        for (Edge edge : mst) {
+            System.out.println(edge.src + " -- " + edge.dest + " : " + edge.weight);
+        }
+
+        /*
+         * Q57.
+         * Given an array of numbers of length N, find both the minimum and maximum
+         * using less than 2 * (N - 2) comparisons.
+         */
+        System.out.println("========= Q57 ==========");
+        int[] arr = { 5, 7, 1, 3, 9, 2 };
+        MinAndMax minAndMax = findMinMax(arr);
+        System.out.println("Minimum: " + minAndMax.min);
+        System.out.println("Maximum: " + minAndMax.max);
+
+        /*
+         * Q58.
+         * https://en.wikipedia.org/wiki/Blackjack
+         * Blackjack is a two player card game whose rules are as follows:
+         * The player and then the dealer are each given two cards.
+         * The player can then "hit", or ask for arbitrarily many additional cards, so
+         * long as their total does not exceed 21.
+         * The dealer must then hit if their total is 16 or lower, otherwise pass.
+         * Finally, the two compare totals, and the one with the greatest sum not
+         * exceeding 21 is the winner.
+         * For this problem, cards values are counted as follows: each card between 2
+         * and 10 counts as their face value, face cards count as 10, and aces count as
+         * 1.
+         * Given perfect knowledge of the sequence of cards in the deck, implement a
+         * blackjack solver that maximizes the player's score (that is, wins minus
+         * losses).
+         */
+        System.out.println("========= Q58 ==========");
+        List<Integer> deck = new ArrayList<>();
+        for (int i = 1; i <= 13; i++) {
+            deck.add(i);
+        }
+
+        int score = solveBlackjack(deck);
+        System.out.println("Score: " + score);
+
+        /*
+         * Q59.
+         * There are N couples sitting in a row of length 2 * N. They are currently
+         * ordered randomly, but would like to rearrange themselves so that each
+         * couple's partners can sit side by side.
+         * What is the minimum number of swaps necessary for this to happen?
+         */
+        System.out.println("========= Q59 ==========");
+        int[] row = { 0, 3, 2, 1, 4, 7, 6, 5 };
+        int minSwaps = minSwaps(row);
+        System.out.println("Minimum number of swaps: " + minSwaps);
+
+        /*
+         * Q60.
+         * You are given an array of length 24, where each element represents the number
+         * of new subscribers during the corresponding hour. Implement a data structure
+         * that efficiently supports the following:
+         * update(hour: int, value: int): Increment the element at index hour by value.
+         * query(start: int, end: int): Retrieve the number of subscribers that have
+         * signed up between start and end (inclusive).
+         * You can assume that all values get cleared at the end of the day, and that
+         * you will not be asked for start and end values that wrap around midnight.
+         */
+        System.out.println("========= Q60 ==========");
+        int[] subscribers = { 5, 3, 7, 2, 8, 4, 10, 6, 15, 9, 11, 5, 14, 7, 13, 8, 12, 6, 9, 10, 7, 11, 5, 4 };
+        SubscriberTracker tracker = new SubscriberTracker(subscribers);
+        tracker.update(5, 10);
+        tracker.update(10, 5);
+        tracker.update(15, 8);
+
+        System.out.println(tracker.query(1, 24)); // Output: 214
+        System.out.println(tracker.query(5, 15)); // Output: 125
+        System.out.println(tracker.query(10, 18)); // Output: 98
+
     }
+
 }
