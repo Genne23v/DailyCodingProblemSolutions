@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.PriorityQueue;
 import java.util.Stack;
+import java.util.Vector;
 import java.util.Deque;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -2236,6 +2237,518 @@ public class QuestionsAndSolutions {
         }
     }
 
+    // S61.
+    public static int findMaximum(int a, int b) {
+        int diff = a - b;
+        int sign = (diff >> 31) & 0x1;
+
+        int maximum = a - sign * diff;
+
+        return maximum;
+    }
+
+    // S62.
+    static class TrieNode {
+        TrieNode[] children = new TrieNode[2];
+    }
+
+    static void insert(TrieNode root, int num) {
+        TrieNode node = root;
+        for (int i = 31; i >= 0; i--) {
+            int bit = (num >> i) & 1;
+
+            if (node.children[bit] == null) {
+                node.children[bit] = new TrieNode();
+            }
+
+            node = node.children[bit];
+        }
+    }
+
+    static int findMaximumXOR(int[] nums) {
+        if (nums == null || nums.length == 0) {
+            throw new IllegalArgumentException("Array is empty or null.");
+        }
+
+        TrieNode root = new TrieNode();
+
+        for (int num : nums) {
+            insert(root, num);
+        }
+
+        int maxXOR = Integer.MIN_VALUE;
+
+        for (int num : nums) {
+            TrieNode node = root;
+            int currXOR = 0;
+
+            for (int i = 31; i >= 0; i--) {
+                int bit = (num >> i) & 1;
+
+                // Choose the opposite bit if available in the Trie
+                if (node.children[1 - bit] != null) {
+                    currXOR |= (1 << i);
+                    node = node.children[1 - bit];
+                } else {
+                    node = node.children[bit];
+                }
+            }
+
+            maxXOR = Math.max(maxXOR, currXOR);
+        }
+
+        return maxXOR;
+    }
+
+    // S63.
+    static class WordTrieNode {
+        WordTrieNode[] children;
+        boolean isEndOfWord;
+
+        WordTrieNode() {
+            children = new WordTrieNode[26];
+            isEndOfWord = false;
+        }
+    }
+
+    public static List<Character> findWinningStartLetters(List<String> dictionary) {
+        List<Character> winningStartLetters = new ArrayList<>();
+        WordTrieNode root = buildTrie(dictionary);
+
+        for (char letter = 'a'; letter <= 'z'; letter++) {
+            if (root.children[letter - 'a'] == null) {
+                continue;
+            }
+            if (hasWinningStrategy(root, letter, 0)) {
+                winningStartLetters.add(letter);
+            }
+        }
+
+        return winningStartLetters;
+    }
+
+    public static boolean hasWinningStrategy(WordTrieNode node, char letter, int count) {
+        int index = letter - 'a';
+
+        count++;
+        WordTrieNode childNode = node.children[index];
+
+        if (childNode.isEndOfWord) {
+            if (count % 2 == 0) {
+                return true;
+            }
+            return false;
+        }
+
+        boolean winningInAllSubtrees = false;
+        for (char nextLetter = 'a'; nextLetter <= 'z'; nextLetter++) {
+            if (childNode.children[nextLetter - 'a'] == null) {
+                continue;
+            }
+            if (hasWinningStrategy(childNode, nextLetter, count)) {
+                winningInAllSubtrees = true;
+            } else {
+                return false;
+            }
+        }
+
+        return winningInAllSubtrees;
+    }
+
+    public static WordTrieNode buildTrie(List<String> dictionary) {
+        WordTrieNode root = new WordTrieNode();
+
+        for (String word : dictionary) {
+            WordTrieNode currentNode = root;
+
+            for (char letter : word.toCharArray()) {
+                int index = letter - 'a';
+
+                if (currentNode.children[index] == null) {
+                    currentNode.children[index] = new WordTrieNode();
+                }
+
+                currentNode = currentNode.children[index];
+            }
+
+            currentNode.isEndOfWord = true;
+        }
+
+        return root;
+    }
+
+    // S64.
+    static Set<String> seen = new HashSet<String>();
+    static Vector<Integer> edges = new Vector<Integer>();
+
+    static String findDeBruijnSequence(int k, String C) {
+        seen.clear();
+        edges.clear();
+
+        String startingNode = getStartString(k - 1, C.charAt(0));
+        dfs(startingNode, C.length(), C);
+
+        String result = "";
+
+        int l = (int) Math.pow(C.length(), k);
+        for (int i = 0; i < l; ++i)
+            result += C.charAt(edges.get(i));
+
+        return result;
+    }
+
+    static void dfs(String node, int k, String C) {
+        for (int i = 0; i < k; ++i) {
+            String str = node + C.charAt(i);
+            if (!seen.contains(str)) {
+                seen.add(str);
+                dfs(str.substring(1), k, C);
+                edges.add(i);
+            }
+        }
+    }
+
+    private static String getStartString(int n, char charAt) {
+        String str = "";
+        for (int i = 0; i < n; i++)
+            str += charAt;
+        return str;
+    }
+
+    // S65.
+    private static final int BOARD_SIZE = 8;
+
+    public static boolean isKingInCheck(char[][] chessboard) {
+        int kingRow = -1;
+        int kingCol = -1;
+
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int col = 0; col < BOARD_SIZE; col++) {
+                if (chessboard[row][col] == 'K') {
+                    kingRow = row;
+                    kingCol = col;
+                    break;
+                }
+            }
+            if (kingRow != -1) {
+                break;
+            }
+        }
+
+        return isAttackedByRook(chessboard, kingRow, kingCol)
+                || isAttackedByBishop(chessboard, kingRow, kingCol)
+                || isAttackedByQueen(chessboard, kingRow, kingCol)
+                || isAttackedByPawn(chessboard, kingRow, kingCol)
+                || isAttackedByKnight(chessboard, kingRow, kingCol);
+    }
+
+    private static boolean isValidPosition(int row, int col) {
+        return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
+    }
+
+    private static boolean isAttackedByRook(char[][] chessboard, int kingRow, int kingCol) {
+        int[][] directions = { { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 } };
+
+        for (int[] direction : directions) {
+            int row = kingRow + direction[0];
+            int col = kingCol + direction[1];
+
+            while (isValidPosition(row, col)) {
+                if (chessboard[row][col] != '.') {
+                    if (chessboard[row][col] == 'R' || chessboard[row][col] == 'Q') {
+                        return true;
+                    } else {
+                        break;
+                    }
+                }
+
+                row += direction[0];
+                col += direction[1];
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean isAttackedByBishop(char[][] chessboard, int kingRow, int kingCol) {
+        int[][] directions = { { -1, -1 }, { -1, 1 }, { 1, -1 }, { 1, 1 } };
+
+        for (int[] direction : directions) {
+            int row = kingRow + direction[0];
+            int col = kingCol + direction[1];
+
+            while (isValidPosition(row, col)) {
+                if (chessboard[row][col] != '.') {
+                    if (chessboard[row][col] == 'B' || chessboard[row][col] == 'Q') {
+                        return true;
+                    } else {
+                        break;
+                    }
+                }
+
+                row += direction[0];
+                col += direction[1];
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean isAttackedByQueen(char[][] chessboard, int kingRow, int kingCol) {
+        return isAttackedByRook(chessboard, kingRow, kingCol) || isAttackedByBishop(chessboard, kingRow, kingCol);
+    }
+
+    private static boolean isAttackedByPawn(char[][] chessboard, int kingRow, int kingCol) {
+        int[][] directions = { { -1, -1 }, { -1, 1 } };
+
+        for (int[] direction : directions) {
+            int row = kingRow + direction[0];
+            int col = kingCol + direction[1];
+
+            if (isValidPosition(row, col) && chessboard[row][col] == 'P') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean isAttackedByKnight(char[][] chessboard, int kingRow, int kingCol) {
+        int[][] moves = {
+                { -2, -1 }, { -2, 1 }, { -1, -2 }, { -1, 2 },
+                { 1, -2 }, { 1, 2 }, { 2, -1 }, { 2, 1 }
+        };
+
+        for (int[] move : moves) {
+            int row = kingRow + move[0];
+            int col = kingCol + move[1];
+
+            if (isValidPosition(row, col) && chessboard[row][col] == 'N') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // S66.
+    public static boolean binarySearch(int[] nums, int x) {
+        int left = 0;
+        int right = nums.length - 1;
+
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+
+            if (nums[mid] == x) {
+                return true;
+            } else if (nums[mid] < x) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+
+        return false;
+    }
+
+    // S67.
+    public static int evaluateMathExpression(String expression) {
+        Stack<Integer> operandStack = new Stack<>();
+        Stack<Character> operatorStack = new Stack<>();
+
+        int i = 0;
+        while (i < expression.length()) {
+            char ch = expression.charAt(i);
+
+            if (ch == ' ') {
+                i++;
+                continue;
+            }
+
+            if (Character.isDigit(ch) || ch == '-') {
+                int num = 0;
+                int sign = 1;
+                if (ch == '-') {
+                    sign = -1;
+                    i++;
+                }
+                while (i < expression.length() && Character.isDigit(expression.charAt(i))) {
+                    num = num * 10 + (expression.charAt(i) - '0');
+                    i++;
+                }
+                i--;
+                operandStack.push(sign * num);
+            } else if (ch == '(') {
+                operatorStack.push(ch);
+            } else if (ch == ')') {
+                while (!operatorStack.isEmpty() && operatorStack.peek() != '(') {
+                    performOperation(operandStack, operatorStack);
+                }
+                operatorStack.pop();
+            } else if (ch == '+' || ch == '-') {
+                while (!operatorStack.isEmpty() && operatorStack.peek() != '(') {
+                    performOperation(operandStack, operatorStack);
+                }
+                operatorStack.push(ch);
+            }
+
+            i++;
+        }
+
+        while (!operatorStack.isEmpty()) {
+            performOperation(operandStack, operatorStack);
+        }
+
+        return operandStack.pop();
+    }
+
+    public static void performOperation(Stack<Integer> operandStack, Stack<Character> operatorStack) {
+        int operand2 = operandStack.pop();
+        int operand1 = operandStack.pop();
+        char operator = operatorStack.pop();
+
+        int result;
+        if (operator == '+') {
+            result = operand1 + operand2;
+        } else {
+            result = operand1 - operand2;
+        }
+
+        operandStack.push(result);
+    }
+
+    // S68.
+    static class Building {
+        int left;
+        int right;
+        int height;
+
+        Building(int left, int right, int height) {
+            this.left = left;
+            this.right = right;
+            this.height = height;
+        }
+    }
+
+    static class Event implements Comparable<Event> {
+        int x;
+        boolean isStart;
+        int height;
+
+        Event(int x, boolean isStart, int height) {
+            this.x = x;
+            this.isStart = isStart;
+            this.height = height;
+        }
+
+        @Override
+        public int compareTo(Event other) {
+            if (this.x != other.x) {
+                return Integer.compare(this.x, other.x);
+            }
+
+            if (this.isStart && !other.isStart) {
+                return -1;
+            }
+            if (!this.isStart && other.isStart) {
+                return 1;
+            }
+
+            if (this.isStart) {
+                return Integer.compare(other.height, this.height);
+            }
+            return Integer.compare(this.height, other.height);
+        }
+    }
+
+    public static List<int[]> getSkyline(Building[] buildings) {
+        List<int[]> skyline = new ArrayList<>();
+
+        List<Event> events = new ArrayList<>();
+        for (Building building : buildings) {
+            events.add(new Event(building.left, true, building.height));
+            events.add(new Event(building.right, false, building.height));
+        }
+        Collections.sort(events);
+
+        PriorityQueue<Integer> heights = new PriorityQueue<>(Collections.reverseOrder());
+        heights.offer(0);
+
+        int prevHeight = 0;
+        for (Event event : events) {
+            if (event.isStart) {
+                heights.offer(event.height); // Add building height
+            } else {
+                heights.remove(event.height); // Remove building height
+            }
+
+            int currentHeight = heights.peek();
+            if (currentHeight != prevHeight) {
+                skyline.add(new int[] { event.x, currentHeight });
+                prevHeight = currentHeight;
+            }
+        }
+
+        return skyline;
+    }
+
+    // S69.
+    public static boolean isFirstPlayerWinNim(int[] heaps) {
+        int nimSum = 0;
+
+        for (int heap : heaps) {
+            nimSum ^= heap;
+        }
+
+        return nimSum != 0;
+    }
+
+    // S70.
+    public static Map<Integer, Integer> divideTeams(Map<Integer, List<Integer>> students) {
+        Map<Integer, Integer> teams = new HashMap<>();
+        Set<Integer> visited = new HashSet<>();
+
+        for (int student : students.keySet()) {
+            if (!visited.contains(student)) {
+                if (!dfs(student, students, teams, visited, 1)) {
+                    return null; // Graph is not bipartite
+                }
+            }
+        }
+
+        return teams;
+    }
+
+    public static boolean dfs(int student, Map<Integer, List<Integer>> students, Map<Integer, Integer> teams,
+            Set<Integer> visited, int team) {
+        visited.add(student);
+        teams.put(student, team);
+
+        for (int enemy : students.getOrDefault(student, Collections.emptyList())) {
+            if (visited.contains(enemy)) {
+                if (teams.get(enemy) == team) {
+                    return false;
+                }
+            } else {
+                if (!dfs(enemy, students, teams, visited, 3 - team)) {
+                    return false; // Enemy subtree is not bipartite
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public static List<Integer> getStudentsByTeam(Map<Integer, Integer> teams, int team) {
+        List<Integer> students = new ArrayList<>();
+        for (Map.Entry<Integer, Integer> entry : teams.entrySet()) {
+            if (entry.getValue() == team) {
+                students.add(entry.getKey());
+            }
+        }
+        return students;
+    }
+
     public static void main(String[] args) {
         /*
          * Q1.
@@ -3504,6 +4017,249 @@ public class QuestionsAndSolutions {
         System.out.println(tracker.query(5, 15)); // Output: 125
         System.out.println(tracker.query(10, 18)); // Output: 98
 
+        /*
+         * Q61.
+         * Find the maximum of two numbers without using any if-else statements,
+         * branching, or direct comparisons.
+         */
+        System.out.println("========= Q61 ==========");
+        int num1 = 10;
+        int num2 = 20;
+
+        int maximum = findMaximum(num1, num2);
+        System.out.println("The maximum of " + num1 + " and " + num2 + " is: " + maximum);
+
+        /*
+         * Q62.
+         * Given an array of integers, find the maximum XOR of any two elements.
+         */
+        System.out.println("========= Q62 ==========");
+        int[] numsToFindMaxXOR = { 3, 10, 5, 25, 2, 8 };
+        int maximumXOR = findMaximumXOR(numsToFindMaxXOR);
+        System.out.println("Maximum XOR: " + maximumXOR);
+
+        /*
+         * Q63.
+         * Ghost is a two-person word game where players alternate appending letters to
+         * a word. The first person who spells out a word, or creates a prefix for which
+         * there is no possible continuation, loses. Here is a sample game:
+         * Player 1: g
+         * Player 2: h
+         * Player 1: o
+         * Player 2: s
+         * Player 1: t [loses]
+         * Given a dictionary of words, determine the letters the first player should
+         * start with, such that with optimal play they cannot lose.
+         * For example, if the dictionary is ["cat", "calf", "dog", "bear"], the only
+         * winning start letter would be b.
+         */
+        System.out.println("========= Q63 ==========");
+        String[] dictionary = { "cat", "calf", "dog", "bear" };
+        List<String> dictionaryList = Arrays.asList(dictionary);
+
+        List<Character> winningStartLetters = findWinningStartLetters(dictionaryList);
+        System.out.println("Winning Start Letters: " + winningStartLetters);
+
+        /*
+         * Q64.
+         * Given a set of characters C and an integer k, a De Bruijn sequence is a
+         * cyclic sequence in which every possible k-length string of characters in C
+         * occurs exactly once.
+         * For example, suppose C = {0, 1} and k = 3. Then our sequence should contain
+         * the substrings {'000', '001', '010', '011', '100', '101', '110', '111'}, and
+         * one possible solution would be 00010111.
+         * Create an algorithm that finds a De Bruijn sequence.
+         */
+        System.out.println("========= Q64 ==========");
+        int lengthK = 3;
+        String C = "01";
+
+        String deBruijnSequence = findDeBruijnSequence(lengthK, C);
+        System.out.println("De Bruijn Sequence: " + deBruijnSequence);
+
+        /*
+         * Q65.
+         * You are presented with an 8 by 8 matrix representing the positions of pieces
+         * on a chess board. The only pieces on the board are the black king and various
+         * white pieces. Given this matrix, determine whether the king is in check.
+         * For details on how each piece moves, see here.
+         * https://en.wikipedia.org/wiki/Chess_piece#Moves_of_the_pieces
+         * For example, given the following matrix:
+         * ...K....
+         * ........
+         * .B......
+         * ......P.
+         * .......R
+         * ..N.....
+         * ........
+         * .....Q..
+         * You should return True, since the bishop is attacking the king diagonally.
+         */
+        System.out.println("========= Q65 ==========");
+        char[][] chessboard = {
+                { '.', '.', '.', 'K', '.', '.', '.', '.' },
+                { '.', '.', '.', '.', '.', '.', '.', '.' },
+                { '.', 'B', '.', '.', '.', '.', '.', '.' },
+                { '.', '.', '.', '.', '.', '.', 'P', '.' },
+                { '.', '.', '.', '.', '.', '.', '.', 'R' },
+                { '.', '.', 'N', '.', '.', '.', '.', '.' },
+                { '.', '.', '.', '.', '.', '.', '.', '.' },
+                { '.', '.', '.', '.', '.', 'Q', '.', '.' }
+        };
+
+        boolean isInCheck = isKingInCheck(chessboard);
+        System.out.println("Is the king in check? " + isInCheck);
+
+        /*
+         * Q66.
+         * Given a sorted list of integers of length N, determine if an element x is in
+         * the list without performing any multiplication, division, or bit-shift
+         * operations.
+         * Do this in O(log N) time.
+         */
+        System.out.println("========= Q66 ==========");
+        int[] sortedNums = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        int x = 7;
+
+        boolean isPresent = binarySearch(sortedNums, x);
+        System.out.println("Is " + x + " present? " + isPresent);
+
+        /*
+         * Q67.
+         * Given a string consisting of parentheses, single digits, and positive and
+         * negative signs, convert the string into a mathematical expression to obtain
+         * the answer.
+         * Don't use eval or a similar built-in parser.
+         * For example, given '-1 + (2 + 3)', you should return 4.
+         */
+        System.out.println("========= Q67 ==========");
+        String mathExpression = "-1 + (2 + 3)";
+
+        int answer = evaluateMathExpression(mathExpression);
+        System.out.println("Result: " + answer);
+
+        /*
+         * Q68.
+         * The skyline of a city is composed of several buildings of various widths and
+         * heights, possibly overlapping one another when viewed from a distance. We can
+         * represent the buildings using an array of (left, right, height) tuples, which
+         * tell us where on an imaginary x-axis a building begins and ends, and how tall
+         * it is. The skyline itself can be described by a list of (x, height) tuples,
+         * giving the locations at which the height visible to a distant observer
+         * changes, and each new height.
+         * Given an array of buildings as described above, create a function that
+         * returns the skyline.
+         * For example, suppose the input consists of the buildings [(0, 15, 3), (4, 11,
+         * 5), (19, 23, 4)]. In aggregate, these buildings would create a skyline that
+         * looks like the one below.
+         * "      ______               "
+         * "     |      |        ___   "
+         * "  ___|      |___    |   |  "
+         * " |   |   B  |   |   | C |  "
+         * " | A |      | A |   |   |  "
+         * " |   |      |   |   |   |  "
+         * " ------------------------  "
+         * As a result, your function should return [(0, 3), (4, 5), (11, 3), (15, 0),
+         * (19, 4), (23, 0)].
+         */
+        System.out.println("========= Q68 ==========");
+        Building[] buildings = {
+                new Building(0, 15, 3),
+                new Building(4, 11, 5),
+                new Building(19, 23, 4)
+        };
+
+        List<int[]> skyline = getSkyline(buildings);
+        for (int[] point : skyline) {
+            System.out.println(Arrays.toString(point));
+        }
+
+        /*
+         * Q69.
+         * The game of Nim is played as follows. Starting with three heaps, each
+         * containing a variable number of items, two players take turns removing one or
+         * more items from a single pile. The player who eventually is forced to take
+         * the last stone loses. For example, if the initial heap sizes are 3, 4, and 5,
+         * a game could be played as shown below:
+         * "   A  |  B  |  C   "
+         * " ----------------- "
+         * "   3  |  4  |  5   "
+         * "   3  |  1  |  3   "
+         * "   3  |  1  |  3   "
+         * "   0  |  1  |  3   "
+         * "   0  |  1  |  0   "
+         * "   0  |  0  |  0   "
+         * In other words, to start, the first player takes three items from pile B. The
+         * second player responds by removing two stones from pile C. The game continues
+         * in this way until player one takes last stone and loses.
+         * Given a list of non-zero starting values [a, b, c], and assuming optimal
+         * play, determine whether the first player has a forced win.
+         */
+        System.out.println("========= Q69 ==========");
+        int[] heaps = { 3, 4, 5 };
+
+        boolean isFirstPlayerWin = isFirstPlayerWinNim(heaps);
+        System.out.println("Does the first player have a forced win? " + isFirstPlayerWin);
+
+        /*
+         * Q70.
+         * A teacher must divide a class of students into two teams to play dodgeball.
+         * Unfortunately, not all the kids get along, and several refuse to be put on
+         * the same team as that of their enemies.
+         * Given an adjacency list of students and their enemies, write an algorithm
+         * that finds a satisfactory pair of teams, or returns False if none exists.
+         * For example, given the following enemy graph you should return the teams {0,
+         * 1, 4, 5} and {2, 3}.
+         * " students = {       "
+         * "     0: [3],        "
+         * "     1: [2],        "
+         * "     2: [1, 4],     "
+         * "     3: [0, 4, 5],  "
+         * "     4: [2, 3],     "
+         * "     5: [3]         "
+         * " }                  "
+         * On the other hand, given the input below, you should return False.
+         * " students = {          "
+         * "     0: [3],           "
+         * "     1: [2],           "
+         * "     2: [1, 3, 4],     "
+         * "     3: [0, 2, 4, 5],  "
+         * "     4: [2, 3],        "
+         * "     5: [3]            "
+         * " }                     "
+         */
+        System.out.println("========= Q70 ==========");
+        Map<Integer, List<Integer>> students1 = new HashMap<>();
+        students1.put(0, Arrays.asList(3));
+        students1.put(1, Arrays.asList(2));
+        students1.put(2, Arrays.asList(1, 4));
+        students1.put(3, Arrays.asList(0, 4, 5));
+        students1.put(4, Arrays.asList(2, 3));
+        students1.put(5, Arrays.asList(3));
+
+        Map<Integer, Integer> teams1 = divideTeams(students1);
+        if (teams1 == null) {
+            System.out.println("False");
+        } else {
+            System.out.println("Team 1: " + getStudentsByTeam(teams1, 1));
+            System.out.println("Team 2: " + getStudentsByTeam(teams1, 2));
+        }
+
+        Map<Integer, List<Integer>> students2 = new HashMap<>();
+        students2.put(0, Arrays.asList(3));
+        students2.put(1, Arrays.asList(2));
+        students2.put(2, Arrays.asList(1, 3, 4));
+        students2.put(3, Arrays.asList(0, 2, 4, 5));
+        students2.put(4, Arrays.asList(2, 3));
+        students2.put(5, Arrays.asList(3));
+
+        Map<Integer, Integer> teams2 = divideTeams(students2);
+        if (teams2 == null) {
+            System.out.println("False");
+        } else {
+            System.out.println("Team 1: " + getStudentsByTeam(teams2, 1));
+            System.out.println("Team 2: " + getStudentsByTeam(teams2, 2));
+        }
     }
 
 }

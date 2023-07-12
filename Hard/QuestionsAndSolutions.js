@@ -3526,3 +3526,746 @@ console.log(tracker.query(5, 15)); // Output: 125
 console.log(tracker.query(10, 18)); // Output: 98
 console.log('\n');
 
+/*
+ * Q61.
+ * Find the maximum of two numbers without using any if-else statements,
+ * branching, or direct comparisons.
+ */
+function findMaximum(a, b) {
+    const diff = a - b;
+    const sign = (diff >> 31) & 0x1;
+
+    const maximum = a - sign * diff;
+    return maximum;
+}
+
+console.log('========= Q61 =========');
+const num1 = 10;
+const num2 = 20;
+console.log(
+    `The maximum of ${num1} and ${num2} is: ${findMaximum(num1, num2)}`
+);
+console.log('\n');
+
+/*
+ * Q62.
+ * Given an array of integers, find the maximum XOR of any two elements.
+ */
+class TrieNode {
+    children = [];
+}
+
+function insert(root, num) {
+    let node = root;
+    for (let i = 31; i >= 0; i--) {
+        const bit = (num >> i) & 1;
+
+        if (node.children[bit] == null) {
+            node.children[bit] = new TrieNode();
+        }
+
+        node = node.children[bit];
+    }
+}
+
+function findMaximumXOR(nums) {
+    if (!nums || nums.length == 0) {
+        throw new Error('Array is empty or null.');
+    }
+
+    let root = new TrieNode();
+
+    for (const num of nums) {
+        insert(root, num);
+    }
+
+    let maxXOR = Number.MIN_SAFE_INTEGER;
+
+    for (const num of nums) {
+        let node = root;
+        let currXOR = 0;
+
+        for (let i = 31; i >= 0; i--) {
+            const bit = (num >> i) & 1;
+
+            // Choose the opposite bit if available in the Trie
+            if (node.children[1 - bit]) {
+                currXOR |= 1 << i;
+                node = node.children[1 - bit];
+            } else {
+                node = node.children[bit];
+            }
+        }
+        maxXOR = Math.max(maxXOR, currXOR);
+    }
+    return maxXOR;
+}
+
+console.log('========= Q62 =========');
+const numsToFindMaxXOR = [3, 10, 5, 25, 2, 8];
+const maximumXOR = findMaximumXOR(numsToFindMaxXOR);
+console.log(`Maximum XOR: ${maximumXOR}`);
+console.log('\n');
+
+/*
+ * Q63.
+ * Ghost is a two-person word game where players alternate appending letters to
+ * a word. The first person who spells out a word, or creates a prefix for which
+ * there is no possible continuation, loses. Here is a sample game:
+ * Player 1: g
+ * Player 2: h
+ * Player 1: o
+ * Player 2: s
+ * Player 1: t [loses]
+ * Given a dictionary of words, determine the letters the first player should
+ * start with, such that with optimal play they cannot lose.
+ * For example, if the dictionary is ["cat", "calf", "dog", "bear"], the only
+ * winning start letter would be b.
+ */
+class WordTrieNode {
+    constructor() {
+        this.children = new Array(26).fill(null);
+        this.isEndOfWord = false;
+    }
+}
+function findWinningStartLetters(dictionary) {
+    let winningStartLetters = [];
+    let root = buildTrie(dictionary);
+
+    for (const letter of 'abcdefghijklmnopqrstuvwxyz') {
+        if (!root.children[letter.charCodeAt(0) - 'a'.charCodeAt(0)]) {
+            continue;
+        }
+        if (hasWinningStrategy(root, letter, 0)) {
+            winningStartLetters.push(letter);
+        }
+    }
+
+    return winningStartLetters;
+}
+
+function hasWinningStrategy(node, letter, count) {
+    const index = letter.charCodeAt(0) - 'a'.charCodeAt(0);
+    count++;
+    let childNode = node.children[index];
+
+    if (childNode.isEndOfWord) {
+        if (count % 2 == 0) {
+            return true;
+        }
+        return false;
+    }
+
+    let winningInAllSubtrees = false;
+    for (const nextLetter of 'abcdefghijklmnopqrstuvwxyz') {
+        if (!childNode.children[nextLetter.charCodeAt(0) - 'a'.charCodeAt(0)]) {
+            continue;
+        }
+        if (hasWinningStrategy(childNode, nextLetter, count)) {
+            winningInAllSubtrees = true;
+        } else {
+            return false;
+        }
+    }
+
+    return winningInAllSubtrees;
+}
+
+function buildTrie(dictionary) {
+    let root = new WordTrieNode();
+
+    for (const word of dictionary) {
+        let currentNode = root;
+
+        for (const letter of word) {
+            const index = letter.charCodeAt(0) - 'a'.charCodeAt(0);
+
+            if (currentNode.children[index] == null) {
+                currentNode.children[index] = new WordTrieNode();
+            }
+            currentNode = currentNode.children[index];
+        }
+        currentNode.isEndOfWord = true;
+    }
+    return root;
+}
+
+console.log('========= Q63 =========');
+const dictionary = ['cat', 'calf', 'dog', 'bear'];
+const winningStartLetters = findWinningStartLetters(dictionary);
+console.log(`Winning Start Letters: ${winningStartLetters}`);
+console.log('\n');
+
+/*
+ * Q64.
+ * Given a set of characters C and an integer k, a De Bruijn sequence is a
+ * cyclic sequence in which every possible k-length string of characters in C
+ * occurs exactly once.
+ * For example, suppose C = {0, 1} and k = 3. Then our sequence should contain
+ * the substrings {'000', '001', '010', '011', '100', '101', '110', '111'}, and
+ * one possible solution would be 00010111.
+ * Create an algorithm that finds a De Bruijn sequence.
+ */
+
+function findDeBruijnSequence(k, C) {
+    let seen = new Set();
+    let edges = [];
+
+    const startingNode = getStartString(k - 1, C[0]);
+    dfsCombinations(startingNode, C.length, C, seen, edges);
+
+    let result = '';
+
+    const l = Math.pow(C.length, k);
+    for (let i = 0; i < l; i++) {
+        result += C[edges[i]];
+    }
+
+    return result;
+}
+
+function getStartString(k, c) {
+    let str = '';
+    for (let i = 0; i < k; i++) {
+        str += c;
+    }
+    return str;
+}
+
+function dfsCombinations(node, k, C, seen, edges) {
+    for (let i = 0; i < k; i++) {
+        const str = node + C[i];
+        if (!seen.has(str)) {
+            seen.add(str);
+            dfsCombinations(str.substring(1), k, C, seen, edges);
+            edges.push(i);
+        }
+    }
+}
+
+console.log('========= Q64 =========');
+const lengthK = 3;
+const C = '01';
+
+const deBruijnSequence = findDeBruijnSequence(lengthK, C);
+console.log(`De Bruijn Sequence: ${deBruijnSequence}`);
+console.log('\n');
+
+/*
+ * Q65.
+ * You are presented with an 8 by 8 matrix representing the positions of pieces
+ * on a chess board. The only pieces on the board are the black king and various
+ * white pieces. Given this matrix, determine whether the king is in check.
+ * For details on how each piece moves, see here.
+ * https://en.wikipedia.org/wiki/Chess_piece#Moves_of_the_pieces
+ * For example, given the following matrix:
+ * ...K....
+ * ........
+ * .B......
+ * ......P.
+ * .......R
+ * ..N.....
+ * ........
+ * .....Q..
+ * You should return True, since the bishop is attacking the king diagonally.
+ */
+const BOARD_SIZE = 8;
+
+function isKingInCheck(chessboard) {
+    let kingRow = -1;
+    let kingCol = -1;
+
+    for (let row = 0; row < BOARD_SIZE; row++) {
+        for (let col = 0; col < BOARD_SIZE; col++) {
+            if (chessboard[row][col] === 'K') {
+                kingRow = row;
+                kingCol = col;
+                break;
+            }
+        }
+        if (kingRow !== -1) {
+            break;
+        }
+    }
+
+    return (
+        isAttackedByRook(chessboard, kingRow, kingCol) ||
+        isAttackedByBishop(chessboard, kingRow, kingCol) ||
+        isAttackedByQueen(chessboard, kingRow, kingCol) ||
+        isAttackedByPawn(chessboard, kingRow, kingCol) ||
+        isAttackedByKnight(chessboard, kingRow, kingCol)
+    );
+}
+
+function isValidPosition(row, col) {
+    return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
+}
+
+function isAttackedByRook(chessboard, kingRow, kingCol) {
+    const directions = [
+        [-1, 0],
+        [1, 0],
+        [0, -1],
+        [0, 1],
+    ];
+
+    for (const [rowDir, colDir] of directions) {
+        let row = kingRow + rowDir;
+        let col = kingCol + colDir;
+
+        while (isValidPosition(row, col)) {
+            if (chessboard[row][col] !== '.') {
+                if (
+                    chessboard[row][col] === 'R' ||
+                    chessboard[row][col] === 'Q'
+                ) {
+                    return true;
+                }
+                break;
+            }
+            row += rowDir;
+            col += colDir;
+        }
+    }
+    return false;
+}
+
+function isAttackedByBishop(chessboard, kingRow, kingCol) {
+    const directions = [
+        [-1, -1],
+        [-1, 1],
+        [1, -1],
+        [1, 1],
+    ];
+
+    for (const [rowDir, colDir] of directions) {
+        let row = kingRow + rowDir;
+        let col = kingCol + colDir;
+
+        while (isValidPosition(row, col)) {
+            if (chessboard[row][col] !== '.') {
+                if (
+                    chessboard[row][col] === 'B' ||
+                    chessboard[row][col] === 'Q'
+                ) {
+                    return true;
+                }
+                break;
+            }
+            row += rowDir;
+            col += colDir;
+        }
+    }
+    return false;
+}
+
+function isAttackedByQueen(chessboard, kingRow, kingCol) {
+    return (
+        isAttackedByRook(chessboard, kingRow, kingCol) ||
+        isAttackedByBishop(chessboard, kingRow, kingCol)
+    );
+}
+
+function isAttackedByPawn(chessboard, kingRow, kingCol) {
+    const directions = [
+        [-1, -1],
+        [-1, 1],
+    ];
+
+    for (const [rowDir, colDir] of directions) {
+        const row = kingRow + rowDir;
+        const col = kingCol + colDir;
+
+        if (isValidPosition(row, col) && chessboard[row][col] === 'P') {
+            return true;
+        }
+    }
+    return false;
+}
+
+function isAttackedByKnight(chessboard, kingRow, kingCol) {
+    const moves = [
+        [-2, -1],
+        [-2, 1],
+        [-1, -2],
+        [-1, 2],
+        [1, -2],
+        [1, 2],
+        [2, -1],
+        [2, 1],
+    ];
+
+    for (const [rowDir, colDir] of moves) {
+        const row = kingRow + rowDir;
+        const col = kingCol + colDir;
+
+        if (isValidPosition(row, col) && chessboard[row][col] === 'N') {
+            return true;
+        }
+    }
+    return false;
+}
+
+console.log('========= Q65 =========');
+const chessboard = [
+    ['.', '.', '.', 'K', '.', '.', '.', '.'],
+    ['.', '.', '.', '.', '.', '.', '.', '.'],
+    ['.', 'B', '.', '.', '.', '.', '.', '.'],
+    ['.', '.', '.', '.', '.', '.', 'P', '.'],
+    ['.', '.', '.', '.', '.', '.', '.', 'R'],
+    ['.', '.', 'N', '.', '.', '.', '.', '.'],
+    ['.', '.', '.', '.', '.', '.', '.', '.'],
+    ['.', '.', '.', '.', '.', 'Q', '.', '.'],
+];
+
+console.log(`Is the king in check? ${isKingInCheck(chessboard)}`);
+console.log('\n');
+
+/*
+ * Q66.
+ * Given a sorted list of integers of length N, determine if an element x is in
+ * the list without performing any multiplication, division, or bit-shift
+ * operations.
+ * Do this in O(log N) time.
+ */
+function binarySearch(nums, x) {
+    let left = 0;
+    let right = nums.length - 1;
+
+    while (left <= right) {
+        const mid = left + Math.floor((right - left) / 2);
+
+        if (nums[mid] == x) {
+            return true;
+        } else if (nums[mid] < x) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+
+    return false;
+}
+
+console.log('========= Q66 =========');
+const sortedNums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const x = 7;
+
+console.log(`Is ${x} present? ${binarySearch(sortedNums, x)}`);
+console.log('\n');
+
+/*
+ * Q67.
+ * Given a string consisting of parentheses, single digits, and positive and
+ * negative signs, convert the string into a mathematical expression to obtain
+ * the answer.
+ * Don't use eval or a similar built-in parser.
+ * For example, given '-1 + (2 + 3)', you should return 4.
+ */
+function evaluateMathExpression(expression) {
+    let operandStack = [];
+    let operatorStack = [];
+
+    let i = 0;
+    while (i < expression.length) {
+        const ch = expression[i];
+
+        if (ch === ' ') {
+            i++;
+            continue;
+        }
+
+        if (/[0-9]/.test(ch) || ch === '-') {
+            let num = 0;
+            let sign = 1;
+            if (ch == '-') {
+                sign = -1;
+                i++;
+            }
+            while (i < expression.length && /[0-9]/.test(expression[i])) {
+                num = num * 10 + parseInt(expression[i]);
+                i++;
+            }
+            i--;
+            operandStack.push(sign * num);
+        } else if (ch === '(') {
+            operatorStack.push(ch);
+        } else if (ch === ')') {
+            while (
+                operatorStack.length > 0 &&
+                operatorStack[operatorStack.length - 1] !== '('
+            ) {
+                performMathOperation(operandStack, operatorStack);
+            }
+            operatorStack.pop();
+        } else if (ch === '+' || ch === '-') {
+            while (
+                operatorStack.length > 0 &&
+                operatorStack[operatorStack.length - 1] !== '('
+            ) {
+                performMathOperation(operandStack, operatorStack);
+            }
+            operatorStack.push(ch);
+        }
+        i++;
+    }
+
+    while (operatorStack.length > 0) {
+        performMathOperation(operandStack, operatorStack);
+    }
+
+    return operandStack.pop();
+}
+
+function performMathOperation(operandStack, operatorStack) {
+    const operand2 = operandStack.pop();
+    const operand1 = operandStack.pop();
+    const operator = operatorStack.pop();
+
+    let result = 0;
+    if (operator === '+') {
+        result = operand1 + operand2;
+    } else {
+        result = operand1 - operand2;
+    }
+    operandStack.push(result);
+}
+
+console.log('========= Q67 =========');
+const mathExpression = '-1 + (2 + 3)';
+console.log(`Result: ${evaluateMathExpression(mathExpression)}`);
+console.log('\n');
+
+/*
+ * Q68.
+ * The skyline of a city is composed of several buildings of various widths and
+ * heights, possibly overlapping one another when viewed from a distance. We can
+ * represent the buildings using an array of (left, right, height) tuples, which
+ * tell us where on an imaginary x-axis a building begins and ends, and how tall
+ * it is. The skyline itself can be described by a list of (x, height) tuples,
+ * giving the locations at which the height visible to a distant observer
+ * changes, and each new height.
+ * Given an array of buildings as described above, create a function that
+ * returns the skyline.
+ * For example, suppose the input consists of the buildings [(0, 15, 3), (4, 11,
+ * 5), (19, 23, 4)]. In aggregate, these buildings would create a skyline that
+ * looks like the one below.
+ * "      ______               "
+ * "     |      |        ___   "
+ * "  ___|      |___    |   |  "
+ * " |   |   B  |   |   | C |  "
+ * " | A |      | A |   |   |  "
+ * " |   |      |   |   |   |  "
+ * " ------------------------  "
+ * As a result, your function should return [(0, 3), (4, 5), (11, 3), (15, 0),
+ * (19, 4), (23, 0)].
+ */
+class Building {
+    constructor(left, right, height) {
+        this.left = left;
+        this.right = right;
+        this.height = height;
+    }
+}
+
+class Event {
+    constructor(x, isStart, height) {
+        this.x = x;
+        this.isStart = isStart;
+        this.height = height;
+    }
+}
+
+function getSkyline(buildings) {
+    let skyline = [];
+
+    let events = [];
+    for (const building of buildings) {
+        events.push(new Event(building.left, true, building.height));
+        events.push(new Event(building.right, false, building.height));
+    }
+    events.sort((a, b) => {
+        return a.x !== b.x
+            ? a.x - b.x
+            : a.isStart && !b.isStart
+            ? -1
+            : !a.isStart && b.isStart
+            ? 1
+            : a.isStart
+            ? b.height - a.height
+            : a.height - b.height;
+    });
+
+    let heights = [];
+    heights.push(0);
+
+    let prevHeight = 0;
+    for (const event of events) {
+        if (event.isStart) {
+            heights.push(event.height);
+        } else {
+            heights.splice(heights.indexOf(event.height), 1);
+        }
+
+        const currHeight = heights[heights.length - 1];
+        if (prevHeight !== currHeight) {
+            skyline.push({ x: event.x, height: currHeight });
+            prevHeight = currHeight;
+        }
+    }
+
+    return skyline;
+}
+
+console.log('========= Q68 =========');
+const buildings = [
+    new Building(0, 15, 3),
+    new Building(4, 11, 5),
+    new Building(19, 23, 4),
+];
+
+const skyline = getSkyline(buildings);
+for (const point of skyline) {
+    console.log(`(${point.x}, ${point.height})`);
+}
+console.log('\n');
+
+/*
+ * Q69.
+ * The game of Nim is played as follows. Starting with three heaps, each
+ * containing a variable number of items, two players take turns removing one or
+ * more items from a single pile. The player who eventually is forced to take
+ * the last stone loses. For example, if the initial heap sizes are 3, 4, and 5,
+ * a game could be played as shown below:
+ * "   A  |  B  |  C   "
+ * " ----------------- "
+ * "   3  |  4  |  5   "
+ * "   3  |  1  |  3   "
+ * "   3  |  1  |  3   "
+ * "   0  |  1  |  3   "
+ * "   0  |  1  |  0   "
+ * "   0  |  0  |  0   "
+ * In other words, to start, the first player takes three items from pile B. The
+ * second player responds by removing two stones from pile C. The game continues
+ * in this way until player one takes last stone and loses.
+ * Given a list of non-zero starting values [a, b, c], and assuming optimal
+ * play, determine whether the first player has a forced win.
+ */
+function isFirstPlayerWinNim(heaps) {
+    let nimSum = 0;
+    for (const heap of heaps) {
+        nimSum ^= heap;
+    }
+    return nimSum !== 0;
+}
+
+console.log('========= Q69 =========');
+const heaps = [3, 4, 5];
+console.log(
+    `Does the first player have a forced win? ${isFirstPlayerWinNim(heaps)}`
+);
+console.log('\n');
+
+/*
+ * Q70.
+ * A teacher must divide a class of students into two teams to play dodgeball.
+ * Unfortunately, not all the kids get along, and several refuse to be put on
+ * the same team as that of their enemies.
+ * Given an adjacency list of students and their enemies, write an algorithm
+ * that finds a satisfactory pair of teams, or returns False if none exists.
+ * For example, given the following enemy graph you should return the teams {0,
+ * 1, 4, 5} and {2, 3}.
+ * " students = {       "
+ * "     0: [3],        "
+ * "     1: [2],        "
+ * "     2: [1, 4],     "
+ * "     3: [0, 4, 5],  "
+ * "     4: [2, 3],     "
+ * "     5: [3]         "
+ * " }                  "
+ * On the other hand, given the input below, you should return False.
+ * " students = {          "
+ * "     0: [3],           "
+ * "     1: [2],           "
+ * "     2: [1, 3, 4],     "
+ * "     3: [0, 2, 4, 5],  "
+ * "     4: [2, 3],        "
+ * "     5: [3]            "
+ * " }                     "
+ */
+function divideTeams(students) {
+    let teams = new Map();
+    let visited = new Set();
+
+    for (const student of students.keys()) {
+        if (!visited.has(student)) {
+            if (!dfsStudents(student, students, teams, visited, 1)) {
+                return null;
+            }
+        }
+    }
+    return teams;
+}
+
+function dfsStudents(student, students, teams, visited, team) {
+    visited.add(student);
+    teams.set(student, team);
+
+    for (const enemy of students.get(student) || []) {
+        if (visited.has(enemy)) {
+            if (teams.get(enemy) === team) {
+                return false;
+            }
+        } else {
+            if (!dfsStudents(enemy, students, teams, visited, 3 - team)) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+function getStudentsByTeam(teams, team) {
+    let students = [];
+    for (const [student, teamNum] of teams) {
+        if (teamNum === team) {
+            students.push(student);
+        }
+    }
+    return students;
+}
+
+console.log('========= Q70 =========');
+let students1 = new Map();
+students1.set(0, [3]);
+students1.set(1, [2]);
+students1.set(2, [1, 4]);
+students1.set(3, [0, 4, 5]);
+students1.set(4, [2, 3]);
+students1.set(5, [3]);
+
+const teams1 = divideTeams(students1);
+if (!teams1){
+    console.log('False');
+} else {
+    console.log(`Team 1: ${getStudentsByTeam(teams1, 1)}`);
+    console.log(`Team 2: ${getStudentsByTeam(teams1, 2)}`);
+}
+
+let students2 = new Map();
+students2.set(0, [3]);
+students2.set(1, [2]);
+students2.set(2, [1, 3, 4]);
+students2.set(3, [0, 2, 4, 5]);
+students2.set(4, [2, 3]);
+students2.set(5, [3]);
+
+const teams2 = divideTeams(students2);
+if (!teams2){
+    console.log('False');
+} else {
+    console.log(`Team 1: ${getStudentsByTeam(teams2, 1)}`);
+    console.log(`Team 2: ${getStudentsByTeam(teams2, 2)}`);
+}
+console.log('\n');
+
